@@ -26,49 +26,34 @@
 
 <body>
 
-    <header>
-
-        <nav class="navbar">
-
-            <div class="logo">
-
-                <a href="index.html">
-                    Go Ride
+    <header class="header">
+        <div class="container">
+            <nav class="navbar" aria-label="Primary navigation">
+                <a class="brand" href="index.html">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo">
+                    <span>Go Ride</span>
                 </a>
 
-            </div>
+                <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
 
-            <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
+                <ul class="nav-links">
+                    <li><a class="nav-link is-active" href="#">Home</a></li>
+                    <li><a class="nav-link" href="#">Services</a></li>
+                    <li><a class="nav-link" href="#">Safety</a></li>
+                    <li><a class="nav-link" href="#">About</a></li>
+                    <li><a class="nav-link" href="#">Contact</a></li>
+                </ul>
 
-            <ul class="nav-links">
-
-                <li><a href="#">Home</a></li>
-
-                <li><a href="#">Services</a></li>
-
-                <li><a href="#">Safety</a></li>
-
-                <li><a href="#">About</a></li>
-
-                <li><a href="#">Contact</a></li>
-
-            </ul>
-
-
-            <div class="nav-buttons">
-
-                <a href="#" class="login-btn">
-                    Login
-                </a>
-
-                <a href="#" class="book-btn">
-                    Book Ride
-                </a>
-
-            </div>
-
-        </nav>
-
+                <div class="nav-buttons">
+                    <a href="#" class="login-btn">
+                        Login
+                    </a>
+                    <a href="#" class="book-btn">
+                        Book Ride
+                    </a>
+                </div>
+            </nav>
+        </div>
     </header>
 
     <section class="hero">
@@ -106,16 +91,25 @@
 
                 <div class="stats">
                     <div class="stat">
-                        <strong>4.9/5</strong>
-                        <span>Rated experience</span>
+                        <span class="stat-icon">⭐</span>
+                        <div>
+                            <strong>4.9/5</strong>
+                            <span>Rated experience</span>
+                        </div>
                     </div>
                     <div class="stat">
-                        <strong>24/7</strong>
-                        <span>On-demand support</span>
+                        <span class="stat-icon">🛡️</span>
+                        <div>
+                            <strong>24/7</strong>
+                            <span>On-demand support</span>
+                        </div>
                     </div>
                     <div class="stat">
-                        <strong>100+</strong>
-                        <span>Cities covered</span>
+                        <span class="stat-icon">📍</span>
+                        <div>
+                            <strong>100+</strong>
+                            <span>Cities covered</span>
+                        </div>
                     </div>
                 </div>
 
