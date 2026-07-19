@@ -368,6 +368,95 @@ section {
   background: var(--surface);
 }
 
+/* ===========================
+   HOW IT WORKS SECTION
+=========================== */
+
+.how-it-works {
+  padding: 6.25rem 0;
+  background: var(--background);
+}
+
+.how-it-works-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.875rem;
+}
+
+.step-card {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  min-height: 100%;
+}
+
+.step-card article {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.step-icon {
+  width: 4rem;
+  height: 4rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--background);
+  margin-top: 0.25rem;
+}
+
+.step-icon svg {
+  width: 1.6rem;
+  height: 1.6rem;
+  stroke-width: 1.8;
+}
+
+.step-card h3 {
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.step-card p {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.step-card:hover,
+.step-card:focus-within {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-hover);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+.step-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
 .services-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -544,6 +633,49 @@ footer {
   padding: 1.5rem 0 2.5rem;
   color: var(--muted);
   text-align: center;
+}
+
+/* ===========================
+   SAFETY FEATURES
+=========================== */
+
+.safety-features {
+  padding: 6.25rem 0;
+  background: var(--surface);
+}
+
+.safety-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.safety-image img {
+  width: 100%;
+}
+
+.safety-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.safety-list li {
+  background: var(--background);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  font-weight: 500;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.safety-list li:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
 }
 
 .safety-section {
