@@ -1,13 +1,18 @@
+@media (max-width: 1024px) {
+  .why-choose-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 900px) {
   .hero-content,
   .about-grid {
     grid-template-columns: 1fr;
   }
 
-  .cards,
-  .stats,
-  .why-choose-grid {
-    grid-template-columns: 1fr 1fr;
+  .services-grid,
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -43,6 +48,10 @@
     padding-top: 3rem;
   }
 
+  .hero-image {
+    margin-top: 2rem;
+  }
+
   .hero-buttons {
     flex-direction: column;
   }
@@ -54,5 +63,43 @@
   .stats,
   .why-choose-grid {
     grid-template-columns: 1fr;
+  }
+
+  .why-choose-card {
+    padding: 1.5rem;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  section {
+    padding: 4rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    width: min(100% - 1.5rem, 1160px);
+  }
+
+  .hero h1 {
+    font-size: 2.2rem;
+  }
+
+  .hero-buttons a,
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+  }
+
+  .stat {
+    padding: 0.85rem 0.95rem;
+  }
+
+  .why-choose-icon {
+    width: 3.4rem;
+    height: 3.4rem;
   }
 }

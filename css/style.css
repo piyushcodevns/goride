@@ -8,6 +8,7 @@
   --surface: #F8FAFC;
   --border: #E5E7EB;
   --shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+  --shadow-hover: 0 24px 48px rgba(37, 99, 235, 0.12);
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 20px;
@@ -312,7 +313,7 @@ img {
 }
 
 section {
-  padding: 1.2rem 0 4.25rem;
+  padding: 0;
 }
 
 .section-tag {
@@ -358,9 +359,13 @@ section {
   padding-top: 1rem;
 }
 
+/* ===========================
+   WHY CHOOSE SECTION
+=========================== */
+
 .why-choose-section {
-  padding: 5rem 0 4.25rem;
-  background: linear-gradient(180deg, rgba(248, 250, 252, 0.75), rgba(255, 255, 255, 0.3));
+  padding: 6.25rem 0;
+  background: var(--surface);
 }
 
 .services-grid {
@@ -373,15 +378,15 @@ section {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem;
+  gap: 1.875rem;
 }
 
 .why-choose-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--background);
   border: 1px solid var(--border);
-  border-radius: 1.45rem;
-  padding: 1.8rem;
-  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow);
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
   min-height: 100%;
 }
@@ -389,41 +394,49 @@ section {
 .why-choose-card article {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
   height: 100%;
 }
 
 .why-choose-card:hover,
 .why-choose-card:focus-within {
   transform: translateY(-6px);
-  box-shadow: 0 20px 45px rgba(37, 99, 235, 0.12);
+  box-shadow: var(--shadow-hover);
   border-color: rgba(37, 99, 235, 0.2);
 }
 
+.why-choose-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
 .why-choose-icon {
-  width: 3.2rem;
-  height: 3.2rem;
+  width: 4rem;
+  height: 4rem;
   display: grid;
   place-items: center;
-  border-radius: 1rem;
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(34, 197, 94, 0.12));
-  color: var(--primary);
-  margin-bottom: 0.2rem;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--background);
+  margin-bottom: 0.15rem;
 }
 
 .why-choose-icon svg {
-  width: 1.45rem;
-  height: 1.45rem;
+  width: 1.6rem;
+  height: 1.6rem;
   stroke-width: 1.8;
 }
 
 .why-choose-card h3 {
-  font-size: 1.06rem;
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .why-choose-card p {
   color: var(--muted);
   font-size: 0.95rem;
+  line-height: 1.7;
 }
 
 .service-card {
