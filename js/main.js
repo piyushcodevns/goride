@@ -18,7 +18,7 @@ faqItems.forEach((item) => {
 
   if (!button) return;
 
-  button.addEventListener('click', () => {
+  const toggleFaq = () => {
     const isOpen = item.classList.contains('is-open');
 
     faqItems.forEach((entry) => {
@@ -32,6 +32,14 @@ faqItems.forEach((item) => {
     if (!isOpen) {
       item.classList.add('is-open');
       button.setAttribute('aria-expanded', 'true');
+    }
+  };
+
+  button.addEventListener('click', toggleFaq);
+  button.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      toggleFaq();
     }
   });
 });
