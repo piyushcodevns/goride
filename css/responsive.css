@@ -5,7 +5,8 @@
   }
 
   .cards,
-  .stats {
+  .stats,
+  .why-choose-grid {
     grid-template-columns: 1fr 1fr;
   }
 }
@@ -50,7 +51,8 @@
     width: 100%;
   }
 
-  .stats {
+  .stats,
+  .why-choose-grid {
     grid-template-columns: 1fr;
   }
 }
