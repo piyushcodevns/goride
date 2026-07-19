@@ -37,18 +37,18 @@
                 <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
 
                 <ul class="nav-links">
-                    <li><a class="nav-link is-active" href="#">Home</a></li>
-                    <li><a class="nav-link" href="#">Services</a></li>
-                    <li><a class="nav-link" href="#">Safety</a></li>
-                    <li><a class="nav-link" href="#">About</a></li>
-                    <li><a class="nav-link" href="#">Contact</a></li>
+                    <li><a class="nav-link is-active" href="#home">Home</a></li>
+                    <li><a class="nav-link" href="#services">Services</a></li>
+                    <li><a class="nav-link" href="#safety">Safety</a></li>
+                    <li><a class="nav-link" href="#about">About</a></li>
+                    <li><a class="nav-link" href="#contact">Contact</a></li>
                 </ul>
 
                 <div class="nav-buttons">
-                    <a href="#" class="login-btn">
+                    <a href="login.html" class="login-btn">
                         Login
                     </a>
-                    <a href="#" class="book-btn">
+                    <a href="booking.html" class="book-btn">
                         Book Ride
                     </a>
                 </div>
@@ -56,7 +56,7 @@
         </div>
     </header>
 
-    <section class="hero">
+    <section id="home" class="hero">
 
         <div class="hero-content container">
 
@@ -67,9 +67,9 @@
                 </span>
 
                 <h1>
-                    Ride Smarter.
+                    Ride <span>Smarter.</span>
                     <br>
-                    Ride Faster.
+                    Ride <span>Faster.</span>
                 </h1>
 
                 <p>
@@ -79,11 +79,11 @@
 
                 <div class="hero-buttons">
 
-                    <a href="#" class="primary-btn">
+                    <a href="booking.html" class="primary-btn">
                         Book Ride
                     </a>
 
-                    <a href="#" class="secondary-btn">
+                    <a href="driver-signup.html" class="secondary-btn">
                         Become a Driver
                     </a>
 
@@ -126,53 +126,102 @@
         </div>
     </section>
 
-    <section class="services" aria-labelledby="services-heading">
+    <!-- ===========================
+         SERVICES SECTION START
+    ============================ -->
+
+    <section class="services" id="services" aria-labelledby="services-heading">
+
         <div class="container">
+
             <div class="section-header reveal">
-                <p class="section-eyebrow">Our Services</p>
-                <h2 id="services-heading">Choose Your Perfect Ride</h2>
-                <p class="section-copy">Safe, affordable and comfortable rides for every journey.</p>
+
+                <span class="section-tag">
+                    Our Services
+                </span>
+
+                <h2 id="services-heading">
+                    Choose the Perfect Ride for Every Journey
+                </h2>
+
+                <p>
+                    Whether you're commuting daily or planning a long trip,
+                    Go Ride offers safe, reliable and affordable ride options.
+                </p>
+
             </div>
 
             <div class="services-grid">
+
                 <article class="service-card reveal">
+
                     <div class="service-icon">
-                        <img src="assets/icons/bike.svg" alt="Bike ride icon">
+                        🛵
                     </div>
+
                     <h3>Bike</h3>
-                    <p>Fast and affordable city rides for quick trips and everyday commuting.</p>
+
+                    <p>
+                        Fast, affordable and perfect for beating city traffic.
+                    </p>
+
                 </article>
 
                 <article class="service-card reveal">
+
                     <div class="service-icon">
-                        <img src="assets/icons/auto.svg" alt="Auto ride icon">
+                        🛺
                     </div>
+
                     <h3>Auto</h3>
-                    <p>Compact, reliable rides for short distances and local travel.</p>
+
+                    <p>
+                        Comfortable rides for your everyday local travel.
+                    </p>
+
                 </article>
 
                 <article class="service-card reveal">
+
                     <div class="service-icon">
-                        <img src="assets/icons/mini.svg" alt="Mini cab icon">
+                        🚗
                     </div>
-                    <h3>Mini Cab</h3>
-                    <p>Comfortable rides for daily travel, shopping, and personal errands.</p>
+
+                    <h3>Mini</h3>
+
+                    <p>
+                        Budget-friendly cab rides with extra comfort.
+                    </p>
+
                 </article>
 
                 <article class="service-card reveal">
+
                     <div class="service-icon">
-                        <img src="assets/icons/sedan.svg" alt="Sedan ride icon">
+                        🚙
                     </div>
+
                     <h3>Sedan</h3>
-                    <p>Premium comfort for business travel, family rides, and airport trips.</p>
+
+                    <p>
+                        Premium rides for business trips and family travel.
+                    </p>
+
                 </article>
+
             </div>
+
         </div>
+
     </section>
 
-    <section class="container about-grid reveal">
+    <!-- ===========================
+         SERVICES SECTION END
+    ============================ -->
+
+    <section id="about" class="container about-grid reveal">
         <div>
-            <h2 class="section-title">Smart mobility for every city trip</h2>
+            <h2 class="section-title">Built for Smarter Urban Mobility</h2>
             <p class="section-copy">Whether you're heading to work, the airport, or a night out, Go Ride keeps every journey simple and reliable.</p>
         </div>
         <div class="cta-box">
@@ -182,8 +231,51 @@
         </div>
     </section>
 
-    <footer>
-        <div class="container">© 2026 Go Ride. Ride smarter, ride better.</div>
+    <section id="safety" class="safety-section container reveal">
+        <div class="section-header">
+            <span class="section-tag">Safety</span>
+            <h2>Coming Soon</h2>
+            <p>We are preparing a dedicated safety experience for riders and drivers.</p>
+        </div>
+    </section>
+
+    <footer id="contact" class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <a class="brand" href="index.html">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo">
+                        <span>Go Ride</span>
+                    </a>
+                    <p>Ride smarter, ride better with dependable travel for every journey.</p>
+                </div>
+                <div>
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#safety">Safety</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="#">Help Center <small>(Coming Soon)</small></a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#">FAQs <small>(Coming Soon)</small></a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Follow</h3>
+                    <ul>
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">LinkedIn</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">© 2026 Go Ride. All rights reserved.</div>
+        </div>
     </footer>
 
     <script src="js/main.js"></script>
