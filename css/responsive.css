@@ -42,7 +42,14 @@
     padding-top: 3rem;
   }
 
-  .cards,
+  .hero-buttons {
+    flex-direction: column;
+  }
+
+  .hero-buttons a {
+    width: 100%;
+  }
+
   .stats {
     grid-template-columns: 1fr;
   }
