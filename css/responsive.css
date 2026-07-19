@@ -17,6 +17,11 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .download-app-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
   .safety-list {
     grid-template-columns: 1fr;
   }
@@ -60,6 +65,18 @@
 
   .hero-buttons {
     flex-direction: column;
+  }
+
+  .download-app-content {
+    text-align: center;
+  }
+
+  .download-app-actions {
+    justify-content: center;
+  }
+
+  .download-app-features {
+    justify-items: center;
   }
 
   .hero-buttons a {

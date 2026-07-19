@@ -659,6 +659,171 @@ footer {
   gap: 2rem;
 }
 
+.download-app {
+  padding: 6.25rem 0;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.06), rgba(34, 197, 94, 0.06));
+}
+
+.download-app-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.download-app-content {
+  padding: 2.2rem;
+  border-radius: 1.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
+}
+
+.download-app-features {
+  list-style: none;
+  display: grid;
+  gap: 0.8rem;
+  margin: 1.4rem 0 1.8rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.download-app-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+}
+
+.store-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 10rem;
+  padding: 0.85rem 1.15rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+
+.store-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px rgba(37, 99, 235, 0.16);
+  border-color: var(--primary);
+}
+
+.google-btn {
+  background: linear-gradient(135deg, #ffffff, #f2f7ff);
+}
+
+.apple-btn {
+  background: linear-gradient(135deg, #0f172a, #1f2937);
+  color: #fff;
+}
+
+.download-app-visual {
+  display: flex;
+  justify-content: center;
+}
+
+.phone-frame {
+  position: relative;
+  width: min(100%, 320px);
+  padding: 0.85rem;
+  border-radius: 2.2rem;
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  box-shadow: 0 28px 55px rgba(15, 23, 42, 0.25);
+}
+
+.phone-notch {
+  position: absolute;
+  top: 0.6rem;
+  left: 50%;
+  width: 42%;
+  height: 1rem;
+  transform: translateX(-50%);
+  background: #020617;
+  border-radius: 0 0 1rem 1rem;
+}
+
+.phone-screen {
+  position: relative;
+  min-height: 540px;
+  padding: 1.4rem;
+  border-radius: 1.6rem;
+  background: linear-gradient(135deg, #eef5ff, #ffffff);
+  overflow: hidden;
+}
+
+.map-surface {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(37, 99, 235, 0.14) 1px, transparent 1px),
+    linear-gradient(rgba(37, 99, 235, 0.14) 1px, transparent 1px),
+    linear-gradient(135deg, #dceeff, #fdfefe);
+  background-size: 28px 28px, 28px 28px, cover;
+  border-radius: inherit;
+}
+
+.driver-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  margin-top: 1.2rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  z-index: 1;
+}
+
+.driver-pill span {
+  display: inline-grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.12);
+}
+
+.driver-pill strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.driver-pill small {
+  color: var(--muted);
+}
+
+.ride-card {
+  position: absolute;
+  left: 1.2rem;
+  right: 1.2rem;
+  bottom: 1.2rem;
+  padding: 1rem 1.1rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.15);
+  z-index: 1;
+}
+
+.ride-card p {
+  color: var(--muted);
+  margin-bottom: 0.2rem;
+}
+
+.ride-card strong {
+  color: var(--primary);
+  font-size: 1.1rem;
+}
+
 .testimonial-card {
   background: var(--background);
   padding: 2rem;
