@@ -12,7 +12,8 @@
   }
 
   .services-grid,
-  .stats {
+  .stats,
+  .testimonial-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -66,7 +67,8 @@
   }
 
   .stats,
-  .why-choose-grid {
+  .why-choose-grid,
+  .testimonial-grid {
     grid-template-columns: 1fr;
   }
 
