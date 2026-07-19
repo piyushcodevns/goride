@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <title>Services | Go Ride</title>
+    <meta name="description" content="Discover Go Ride's premium transportation services, from city rides and airport transfers to hourly rentals and corporate travel.">
+    <meta name="keywords" content="Go Ride services, ride booking, taxi, airport transfer, corporate travel, hourly rental, outstation, parcel delivery">
+    <meta name="author" content="Go Ride">
+    <meta name="theme-color" content="#2563EB">
+    <!-- <link rel="canonical" href="https://goride.com/services.html"> -->
+    <meta property="og:title" content="Services | Go Ride">
+    <meta property="og:description" content="Discover Go Ride's premium transportation services, from city rides and airport transfers to hourly rentals and corporate travel.">
+    <!-- <meta property="og:image" content="https://goride.com/assets/images/og-cover.jpg"> -->
+    <!-- TODO: Replace with PNG/JPG cover image later (e.g. assets/images/og-cover.jpg or 1200x630 png) -->
+    <!-- <meta property="og:url" content="https://goride.com/services.html"> -->
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Services | Go Ride">
+    <meta name="twitter:description" content="Discover Go Ride's premium transportation services, from city rides and airport transfers to hourly rentals and corporate travel.">
+    <!-- <meta name="twitter:image" content="https://goride.com/assets/images/og-cover.jpg"> -->
+    <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+
+    <!-- JSON-LD Breadcrumb Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://goride.com/index.html"
+      }, {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Services",
+        "item": "https://goride.com/services.html"
+      }]
+    }
+    </script>
+
+    <!-- JSON-LD Transportation Service Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TaxiService",
+      "name": "Go Ride Transportation Services",
+      "description": "Premium ride-booking services including city rides, airport transfers, outstation travel, and corporate mobility.",
+      "provider": {
+        "@type": "Organization",
+        "name": "Go Ride Technologies",
+        "logo": "https://goride.com/assets/svg/logo.svg"
+      },
+      "areaServed": "India",
+      "serviceType": "Ride Booking"
+    }
+    </script>
+
+    <!-- JSON-LD FAQ Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "How do I book a ride?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Enter your pickup and destination in the app or website, choose your preferred vehicle class, and tap 'Book Now' to connect with a nearby driver."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Can I cancel my booking?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, you can cancel your ride at any time. Cancellation fees may apply if the driver has already arrived or is close to your pickup location."
+        }
+      }, {
+        "@type": "Question",
+        "name": "What payment methods are available?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We accept secure payments via UPI, Credit/Debit cards, mobile wallets, corporate billing, and cash."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Is airport pickup available?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, you can book reliable airport transfers in advance or on-demand. Drivers will meet you at designated terminal pick-up points."
+        }
+      }]
+    }
+    </script>
+</head>
+<body>
+    <!-- Page Loader -->
+    <div id="page-loader" aria-hidden="true"></div>
+
+    <header class="header">
+        <div class="container">
+            <nav class="navbar" aria-label="Primary navigation">
+                <a class="brand" href="index.html">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo">
+                    <span>Go Ride</span>
+                </a>
+
+                <button type="button" class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="primary-menu">☰</button>
+
+                <ul id="primary-menu" class="nav-links">
+                    <li><a class="nav-link" href="index.html#home">Home</a></li>
+                    <li><a class="nav-link is-active" href="services.html" aria-current="page">Services</a></li>
+                    <li><a class="nav-link" href="index.html#why-choose">Why Choose</a></li>
+                    <li><a class="nav-link" href="index.html#how-it-works">How It Works</a></li>
+                    <li><a class="nav-link" href="index.html#safety">Safety</a></li>
+                    <li><a class="nav-link" href="index.html#download-app">Download App</a></li>
+                    <li><a class="nav-link" href="about.html">About</a></li>
+                    <li><a class="nav-link" href="contact.html">Contact</a></li>
+                </ul>
+
+                <div class="nav-buttons">
+                    <a href="login.html" class="login-btn">Login</a>
+                    <a href="booking.html" class="book-btn">Book Ride</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="about-page-hero">
+            <div class="container about-page-hero-grid">
+                <div class="reveal">
+                    <nav class="breadcrumb" aria-label="Breadcrumb">
+                        <ol>
+                            <li><a href="index.html">Home</a></li>
+                            <li aria-current="page">Services</li>
+                        </ol>
+                    </nav>
+                    <span class="hero-badge">Our Services</span>
+                    <h1>Reliable Ride Services for Every Journey</h1>
+                    <p>Whether it's your daily commute, airport transfer, outstation trip, or corporate travel, Go Ride gets you there safely and comfortably.</p>
+                    <div class="hero-buttons">
+                        <a href="booking.html" class="primary-btn">Book Ride</a>
+                        <a href="#our-services" class="secondary-btn">Explore Services</a>
+                    </div>
+                </div>
+
+                <div class="services-hero-graphic reveal">
+                    <img src="assets/svg/services-hero.svg" alt="Illustration of Go Ride transportation services and vehicles" class="hero-image" fetchpriority="high">
+                </div>
+            </div>
+        </section>
+
+        <!-- Our Services Section -->
+        <section class="page-section" id="our-services" aria-labelledby="services-list-heading">
+            <div class="container">
+                <div class="section-header reveal">
+                    <span class="section-tag">What We Offer</span>
+                    <h2 id="services-list-heading" class="section-title">Designed for Your Ultimate Convenience</h2>
+                    <p class="section-copy">Go Ride provides custom mobility solutions to ensure you have a dependable partner for every transit need.</p>
+                </div>
+
+                <div class="services-page-grid skeleton-onload">
+                    <article class="service-card reveal">
+                        <div class="icon-wrapper-custom" aria-hidden="true">
+                            <svg class="icon-svg-custom" viewBox="0 0 24 24" focusable="false"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+                        </div>
+                        <h3>City Ride</h3>
+                        <p>Comfortable daily travel within the city. Beat the rush hour with quick matching and hassle-free local navigation.</p>
+                        <a href="booking.html" class="service-link">Book Now <span class="service-link-arrow" aria-hidden="true">&rarr;</span></a>
+                    </article>
+
+                    <article class="service-card reveal">
+                        <div class="icon-wrapper-custom" aria-hidden="true">
+                            <svg class="icon-svg-custom" viewBox="0 0 24 24" focusable="false"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3.5c-.5-.5-2.5 0-4 1.5L13.5 8.5L5.3 6.7c-.9-.2-1.8.3-2 1.2c-.2.9.3 1.8 1.2 2l7.6 1.7l-4.5 4.5l-3.6-.8c-.7-.2-1.5.2-1.7.9c-.2.7.2 1.5.9 1.7l4.5 1l1 4.5c.2.7.9 1.1 1.7.9c.7-.2 1.1-1 1-1.7l-.8-3.6l4.5-4.5l1.7 7.6c.2.9 1.1 1.4 2 1.2c.9-.2 1.4-1.1 1.2-2z"/></svg>
+                        </div>
+                        <h3>Airport Transfer</h3>
+                        <p>On-time airport pickups and drop-offs. Track your flight live in-app and get driver coordination ahead of landing.</p>
+                        <a href="booking.html" class="service-link">Book Now <span class="service-link-arrow" aria-hidden="true">&rarr;</span></a>
+                    </article>
+
+                    <article class="service-card reveal">
+                        <div class="icon-wrapper-custom" aria-hidden="true">
+                            <svg class="icon-svg-custom" viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+                        </div>
+                        <h3>Outstation</h3>
+                        <p>Inter-city rides for weekend getaways, business tours, or family trips. Secure, comfortable, and reliable long runs.</p>
+                        <a href="booking.html" class="service-link">Book Now <span class="service-link-arrow" aria-hidden="true">&rarr;</span></a>
+                    </article>
+
+                    <article class="service-card reveal">
+                        <div class="icon-wrapper-custom" aria-hidden="true">
+                            <svg class="icon-svg-custom" viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <h3>Hourly Rental</h3>
+                        <p>Book a driver and car by the hour. Run errands, attend multiple client meetings, or shop without re-booking cabs.</p>
+                        <a href="booking.html" class="service-link">Book Now <span class="service-link-arrow" aria-hidden="true">&rarr;</span></a>
+                    </article>
+
+                    <article class="service-card reveal">
+                        <div class="icon-wrapper-custom" aria-hidden="true">
+                            <svg class="icon-svg-custom" viewBox="0 0 24 24" focusable="false"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                        </div>
+                        <h3>Corporate Travel</h3>
+                        <p>Premium office commute and business class vehicle fleets. Dedicated corporate billing and priority support.</p>
+                        <a href="booking.html" class="service-link">Book Now <span class="service-link-arrow" aria-hidden="true">&rarr;</span></a>
+                    </article>
+
+                    <article class="service-card reveal">
+                        <div class="icon-wrapper-custom" aria-hidden="true">
+                            <svg class="icon-svg-custom" viewBox="0 0 24 24" focusable="false"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><polygon points="12 22.08 12 12 3 6.92 3 17.08 12 22.08"/><polygon points="12 22.08 12 12 21 6.92 21 17.08 12 22.08"/><polygon points="12 12 3 6.92 12 1.84 21 6.92 12 12"/><line x1="12" y1="1.84" x2="12" y2="12"/></svg>
+                        </div>
+                        <h3>Parcel Delivery</h3>
+                        <p>Fast, contactless, and on-demand delivery for documents, grocery items, or small packages across the city.</p>
+                        <a href="booking.html" class="service-link">Book Now <span class="service-link-arrow" aria-hidden="true">&rarr;</span></a>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ride Categories Section -->
+        <section class="page-section" aria-labelledby="categories-heading">
+            <div class="container">
+                <div class="section-header reveal">
+                    <span class="section-tag">Ride Options</span>
+                    <h2 id="categories-heading" class="section-title">Select the Perfect Vehicle for Your Ride</h2>
+                    <p class="section-copy">Choose from our diverse fleet of vehicles to find the option that matches your comfort level and budget.</p>
+                </div>
+
+                <div class="categories-grid skeleton-onload">
+                    <section class="category-card reveal" aria-labelledby="cat-economy">
+                        <div class="icon-wrapper-custom" aria-hidden="true">
+                            <svg class="icon-svg-custom" viewBox="0 0 24 24" focusable="false"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+                        </div>
+                        <h3 id="cat-economy">Economy</h3>
+                        <p>Budget-friendly daily commutes.</p>
+                        <ul class="category-features">
+                            <li>Affordable pricing</li>
+                            <li>Comfortable 4 seats</li>
+                            <li>Best for daily travel</li>
+                        </ul>
+                    </section>
+
+                    <section class="category-card reveal" aria-labelledby="cat-premium">
+                        <div class="icon-wrapper-custom" aria-hidden="true">
+                            <svg class="icon-svg-custom" viewBox="0 0 24 24" focusable="false"><path d="M6 3h12l4 6-10 13L2 9z"/></svg>
+                        </div>
+                        <h3 id="cat-premium">Premium</h3>
+                        <p>Luxury rides for business travel.</p>
+                        <ul class="category-features">
+                            <li>Comfort business class</li>
+                            <li>Premium top-rated sedans</li>
+                            <li>Ideal for meetings</li>
+                        </ul>
+                    </section>
+
+                    <section class="category-card reveal" aria-labelledby="cat-suv">
+                        <div class="icon-wrapper-custom" aria-hidden="true">
+                            <svg class="icon-svg-custom" viewBox="0 0 24 24" focusable="false"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                        </div>
+                        <h3 id="cat-suv">SUV</h3>
+                        <p>Spacious cars for group journeys.</p>
+                        <ul class="category-features">
+                            <li>Spacious 6-7 seats</li>
+                            <li>Ample luggage room</li>
+                            <li>Perfect for family travel</li>
+                        </ul>
+                    </section>
+
+                    <section class="category-card reveal" aria-labelledby="cat-bike">
+                        <div class="icon-wrapper-custom" aria-hidden="true">
+                            <svg class="icon-svg-custom" viewBox="0 0 24 24" focusable="false"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h4"/></svg>
+                        </div>
+                        <h3 id="cat-bike">Bike</h3>
+                        <p>Fast, solo rides for heavy traffic.</p>
+                        <ul class="category-features">
+                            <li>Traffic-friendly solo transit</li>
+                            <li>Most affordable option</li>
+                            <li>Quick and pocket-friendly</li>
+                        </ul>
+                    </section>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
+            <div class="container">
+                <div class="section-header reveal">
+                    <span class="section-tag">Easy Booking</span>
+                    <h2 class="section-title" id="how-it-works-heading">Book Your Ride in Just Four Simple Steps</h2>
+                    <p class="section-copy">From choosing your pickup location to reaching your destination, Go Ride makes every journey simple, fast, and hassle-free.</p>
+                </div>
+
+                <ol class="how-it-works-grid">
+                    <li class="step-card reveal">
+                        <article>
+                            <span class="step-number">01</span>
+                            <div class="step-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+                                </svg>
+                            </div>
+                            <h3>Search Ride</h3>
+                            <p>Enter your pickup and destination to instantly check nearby rides.</p>
+                        </article>
+                    </li>
+
+                    <li class="step-card reveal">
+                        <article>
+                            <span class="step-number">02</span>
+                            <div class="step-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M5 15h14l-1-5a2 2 0 0 0-2-1H8a2 2 0 0 0-2 1l-1 5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                    <circle cx="8" cy="17" r="1.5" stroke="currentColor" stroke-width="1.8"/>
+                                    <circle cx="16" cy="17" r="1.5" stroke="currentColor" stroke-width="1.8"/>
+                                </svg>
+                            </div>
+                            <h3>Choose Vehicle</h3>
+                            <p>Select the vehicle class that best fits your travel needs and budget.</p>
+                        </article>
+                    </li>
+
+                    <li class="step-card reveal">
+                        <article>
+                            <span class="step-number">03</span>
+                            <div class="step-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+                                    <path d="M8.5 12.5L11 15l4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <h3>Confirm Booking</h3>
+                            <p>Review fares and confirm your ride request with a single tap.</p>
+                        </article>
+                    </li>
+
+                    <li class="step-card reveal">
+                        <article>
+                            <span class="step-number">04</span>
+                            <div class="step-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M7 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" stroke-width="1.8"/>
+                                    <path d="M17 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" stroke-width="1.8"/>
+                                    <path d="M9 16c4-1 6-5 6-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3 3"/>
+                                </svg>
+                            </div>
+                            <h3>Enjoy Ride</h3>
+                            <p>Track your driver real-time and enjoy a safe, comfortable transit.</p>
+                        </article>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section class="page-section" aria-labelledby="pricing-heading">
+            <div class="container">
+                <div class="section-header reveal">
+                    <span class="section-tag">Pricing</span>
+                    <h2 id="pricing-heading" class="section-title">Transparent &amp; Honest Fares</h2>
+                    <p class="section-copy">No hidden surprises. Check the estimates for different ride categories before you initiate a booking.</p>
+                </div>
+
+                <div class="pricing-grid skeleton-onload">
+                    <section class="pricing-card reveal" aria-labelledby="price-eco-heading">
+                        <div>
+                            <span class="price-starts">Starts From</span>
+                            <div class="price-value">₹99</div>
+                            <h3 id="price-eco-heading">Economy</h3>
+                            <ul class="pricing-features-list">
+                                <li><span class="feature-label">Base Fare</span><span class="feature-val">₹99</span></li>
+                                <li><span class="feature-label">Rate</span><span class="feature-val">₹12/km</span></li>
+                                <li><span class="feature-label">Waiting</span><span class="feature-val">₹2/min</span></li>
+                                <li><span class="feature-label">Night Charge</span><span class="feature-val">Included</span></li>
+                            </ul>
+                        </div>
+                        <a href="booking.html" class="primary-btn">Book Now</a>
+                    </section>
+
+                    <section class="pricing-card featured reveal" aria-labelledby="price-prem-heading">
+                        <span class="pricing-badge">Popular</span>
+                        <div>
+                            <span class="price-starts">Starts From</span>
+                            <div class="price-value">₹199</div>
+                            <h3 id="price-prem-heading">Premium</h3>
+                            <ul class="pricing-features-list">
+                                <li><span class="feature-label">Base Fare</span><span class="feature-val">₹199</span></li>
+                                <li><span class="feature-label">Rate</span><span class="feature-val">₹18/km</span></li>
+                                <li><span class="feature-label">Waiting</span><span class="feature-val">₹3/min</span></li>
+                                <li><span class="feature-label">Night Charge</span><span class="feature-val">Included</span></li>
+                            </ul>
+                        </div>
+                        <a href="booking.html" class="primary-btn">Book Now</a>
+                    </section>
+
+                    <section class="pricing-card reveal" aria-labelledby="price-suv-heading">
+                        <div>
+                            <span class="price-starts">Starts From</span>
+                            <div class="price-value">₹299</div>
+                            <h3 id="price-suv-heading">SUV</h3>
+                            <ul class="pricing-features-list">
+                                <li><span class="feature-label">Base Fare</span><span class="feature-val">₹299</span></li>
+                                <li><span class="feature-label">Rate</span><span class="feature-val">₹22/km</span></li>
+                                <li><span class="feature-label">Waiting</span><span class="feature-val">₹4/min</span></li>
+                                <li><span class="feature-label">Night Charge</span><span class="feature-val">Included</span></li>
+                            </ul>
+                        </div>
+                        <a href="booking.html" class="primary-btn">Book Now</a>
+                    </section>
+                </div>
+                <p class="pricing-note"><strong>*Estimated fares only. Final pricing may vary based on distance, travel time, traffic, tolls, taxes, and demand.</strong></p>
+            </div>
+        </section>
+
+        <!-- Why Choose Go Ride Section -->
+        <section class="why-choose-section" id="why-choose" aria-labelledby="why-choose-heading">
+            <div class="container">
+                <div class="section-header reveal">
+                    <span class="section-tag">Value Proposition</span>
+                    <h2 class="section-title" id="why-choose-heading">Why Choose Go Ride</h2>
+                    <p class="section-copy">Experience smarter, safer, and more affordable rides designed around your daily travel needs.</p>
+                </div>
+
+                <ul class="why-choose-grid">
+                    <li class="why-choose-card reveal">
+                        <article>
+                            <div class="why-choose-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M12 4a4 4 0 0 1 4 4c0 2.2-1.8 4-4 4s-4-1.8-4-4a4 4 0 0 1 4-4Z" stroke="currentColor" stroke-width="1.8"/>
+                                    <path d="M6 18a6 6 0 0 1 12 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <h3>Verified Drivers</h3>
+                            <p>Every driver undergoes detailed background and security checks for complete peace of mind.</p>
+                        </article>
+                    </li>
+
+                    <li class="why-choose-card reveal">
+                        <article>
+                            <div class="why-choose-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M5 7h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                    <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="1.8"/>
+                                    <path d="M7 7h10l-1 10a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2L7 7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                    <path d="M9.5 11h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <h3>24/7 Support</h3>
+                            <p>Need support during a ride or trip? Our dedicated support team is always available to help.</p>
+                        </article>
+                    </li>
+
+                    <li class="why-choose-card reveal">
+                        <article>
+                            <div class="why-choose-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M12 5a7 7 0 0 1 7 7c0 4.5-4.2 8.6-4.9 9.4a.9.9 0 0 1-1.4 0C9.2 20.6 5 16.5 5 12a7 7 0 0 1 7-7Z" stroke="currentColor" stroke-width="1.8"/>
+                                    <circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+                                </svg>
+                            </div>
+                            <h3>GPS Tracking</h3>
+                            <p>Share your live trip status and coordinates with friends or family members for safety.</p>
+                        </article>
+                    </li>
+
+                    <li class="why-choose-card reveal">
+                        <article>
+                            <div class="why-choose-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M12 4l7 4v8l-7 4-7-4V8l7-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                    <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <h3>Secure Payment</h3>
+                            <p>Multiple secure, encrypted payment options including credit cards, wallets, and UPI payments.</p>
+                        </article>
+                    </li>
+
+                    <li class="why-choose-card reveal">
+                        <article>
+                            <div class="why-choose-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                    <path d="M8 8l-3 4 3 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M16 8l3 4-3 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <h3>Quick Pickup</h3>
+                            <p>Highly optimized dispatch matching system connects you with nearest drivers for zero wait.</p>
+                        </article>
+                    </li>
+
+                    <li class="why-choose-card reveal">
+                        <article>
+                            <div class="why-choose-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M4 7h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                    <path d="M7 7v10a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                    <path d="M10 11h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <h3>Affordable Pricing</h3>
+                            <p>Honest, straightforward pricing structure with no hidden fees or surprising surges.</p>
+                        </article>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Safety First Section -->
+        <section class="page-section" aria-labelledby="safety-heading">
+            <div class="container">
+                <div class="section-header reveal">
+                    <span class="section-tag">Safety Commitments</span>
+                    <h2 id="safety-heading" class="section-title">Your Safety is Our Top Priority</h2>
+                    <p class="section-copy">We implement advanced safety features and strict security measures to help you travel with confidence.</p>
+                </div>
+
+                <div class="safety-grid-custom">
+                    <div class="safety-text-content reveal">
+                        <p>Whether you're riding late at night or taking a daily trip to the office, we have implemented measures to verify drivers and monitor trips for secure experiences.</p>
+                        <a href="contact.html" class="primary-btn">Safety Help Center</a>
+                    </div>
+                    <div class="safety-image-container reveal">
+                        <img src="assets/svg/safety-illustration.svg" alt="Safety shield and secure location vector illustration" loading="lazy" decoding="async">
+                    </div>
+                    <ul class="safety-checklist-custom reveal">
+                        <li class="safety-item-custom"><span class="safety-icon-check-custom" aria-hidden="true">✔</span> Driver Verification</li>
+                        <li class="safety-item-custom"><span class="safety-icon-check-custom" aria-hidden="true">✔</span> Live Ride Tracking</li>
+                        <li class="safety-item-custom"><span class="safety-icon-check-custom" aria-hidden="true">✔</span> Emergency Support</li>
+                        <li class="safety-item-custom"><span class="safety-icon-check-custom" aria-hidden="true">✔</span> Regular Vehicle Inspection</li>
+                        <li class="safety-item-custom"><span class="safety-icon-check-custom" aria-hidden="true">✔</span> Secure Payments</li>
+                        <li class="safety-item-custom"><span class="safety-icon-check-custom" aria-hidden="true">✔</span> Trusted Community</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq" id="faq" aria-labelledby="faq-list-heading">
+            <div class="container faq-container">
+                <div class="section-header reveal">
+                    <span class="section-tag">FAQ</span>
+                    <h2 class="section-title" id="faq-list-heading">Frequently Asked Questions</h2>
+                    <p class="section-copy">Quick answers to typical questions about our ride categories, cancellation terms, airport transit, and pricing.</p>
+                </div>
+
+                <div class="faq-list">
+                    <article class="faq-item reveal">
+                        <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-1" id="faq-button-1">
+                            <span>How do I book a ride?</span>
+                            <span class="faq-icon" aria-hidden="true">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-button-1">
+                            <p>Enter your pickup and destination in the app or website, choose your preferred vehicle class, and tap 'Book Now' to connect with a nearby driver.</p>
+                        </div>
+                    </article>
+
+                    <article class="faq-item reveal">
+                        <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-2" id="faq-button-2">
+                            <span>Can I cancel my booking?</span>
+                            <span class="faq-icon" aria-hidden="true">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer" id="faq-answer-2" role="region" aria-labelledby="faq-button-2">
+                            <p>Yes, you can cancel your ride at any time. Cancellation fees may apply if the driver has already arrived or is close to your pickup location.</p>
+                        </div>
+                    </article>
+
+                    <article class="faq-item reveal">
+                        <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-3" id="faq-button-3">
+                            <span>What payment methods are available?</span>
+                            <span class="faq-icon" aria-hidden="true">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-button-3">
+                            <p>We accept secure payments via UPI, Credit/Debit cards, mobile wallets, corporate billing, and cash.</p>
+                        </div>
+                    </article>
+
+                    <article class="faq-item reveal">
+                        <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-4" id="faq-button-4">
+                            <span>Is airport pickup available?</span>
+                            <span class="faq-icon" aria-hidden="true">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer" id="faq-answer-4" role="region" aria-labelledby="faq-button-4">
+                            <p>Yes, you can book reliable airport transfers in advance or on-demand. Drivers will meet you at designated terminal pick-up points.</p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="page-section" aria-labelledby="cta-heading">
+            <div class="container cta-section-premium reveal">
+                <h2 id="cta-heading">Ready to Ride?</h2>
+                <p>Book your next journey with Go Ride today and experience safer, smarter travel.</p>
+                <div class="hero-buttons">
+                    <a href="booking.html" class="primary-btn">Book Ride</a>
+                    <a href="contact.html" class="secondary-btn">Contact Us</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <a class="brand" href="index.html">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                        <span>Go Ride</span>
+                    </a>
+                    <p>Ride smarter, ride better with dependable travel for every journey.</p>
+                </div>
+                <div>
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="booking.html">Book Ride</a></li>
+                        <li><a href="terms.html">Terms &amp; Conditions</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="login.html">Login</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Follow Us</h3>
+                    <ul>
+                        <li><a href="https://instagram.com/goride" aria-label="Follow Go Ride on Instagram">Instagram</a></li>
+                        <li><a href="https://x.com/goride" aria-label="Follow Go Ride on Twitter">Twitter</a></li>
+                        <li><a href="https://linkedin.com/company/goride" aria-label="Follow Go Ride on LinkedIn">LinkedIn</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">© 2026 Go Ride Technologies. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Back to top button -->
+    <button id="backToTop" class="scroll-to-top" aria-label="Back to top">↑</button>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <script src="js/main.js"></script>
+    <script src="js/animations.js"></script>
+</body>
+</html>
