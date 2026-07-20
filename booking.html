@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <title>Book a Ride | Go Ride</title>
+    <meta name="description" content="Book safe, fast, and affordable rides with Go Ride. Calculate fares, select vehicle options, and track your driver.">
+    <meta name="keywords" content="Book Ride, Go Ride, Taxi, Cab booking, Bike taxi, Smart ride">
+    <meta name="author" content="Go Ride">
+    <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/booking.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <!-- Page Loader -->
+    <div id="page-loader" aria-hidden="true"></div>
+
+    <!-- Reusable Navbar -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar" aria-label="Primary navigation">
+                <a class="brand" href="index.html">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo">
+                    <span>Go Ride</span>
+                </a>
+
+                <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
+
+                <ul class="nav-links">
+                    <li><a class="nav-link" href="index.html#home">Home</a></li>
+                    <li><a class="nav-link" href="services.html">Services</a></li>
+                    <li><a class="nav-link" href="index.html#why-choose">Why Choose</a></li>
+                    <li><a class="nav-link" href="index.html#how-it-works">How It Works</a></li>
+                    <li><a class="nav-link" href="index.html#safety">Safety</a></li>
+                    <li><a class="nav-link" href="index.html#download-app">Download App</a></li>
+                    <li><a class="nav-link" href="about.html">About</a></li>
+                    <li><a class="nav-link" href="contact.html">Contact</a></li>
+                </ul>
+
+                <div class="nav-buttons">
+                    <a href="login.html" class="login-btn">
+                        Login
+                    </a>
+                    <a href="booking.html" class="book-btn">
+                        Book Ride
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Booking Hero Section -->
+    <section class="booking-hero">
+        <div class="container">
+            <div class="hero-content reveal">
+                <span class="hero-badge">🚖 Real-time Booking Portal</span>
+                <h1>Book Your <span>Smart Ride</span></h1>
+                <p>Enter your pickup & drop-off locations, choose your preferred ride, and experience safe, reliable travel.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Form Section -->
+    <section class="booking-section">
+        <div class="container">
+            <div class="booking-grid">
+                <!-- Left side: Booking Form & Inputs -->
+                <div class="booking-card reveal">
+                    <div class="card-header">
+                        <h2>Plan Your Journey</h2>
+                        <p>Fill in details to calculate fare and find nearby drivers</p>
+                    </div>
+
+                    <form id="booking-form" class="booking-form-element" novalidate>
+                        <!-- Pickup Location Group -->
+                        <div class="input-group">
+                            <label for="pickup-input">Pickup Location</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">📍</span>
+                                <input type="text" id="pickup-input" name="pickup" placeholder="Enter pickup address..." required autocomplete="off">
+                                <button type="button" class="current-location-btn" aria-label="Use current location">🎯</button>
+                            </div>
+                            <!-- Suggestions Dropdown -->
+                            <ul id="pickup-suggestions" class="suggestions-list" aria-live="polite"></ul>
+                        </div>
+
+                        <!-- Dropoff Location Group -->
+                        <div class="input-group">
+                            <label for="dropoff-input">Drop-off Location</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🏁</span>
+                                <input type="text" id="dropoff-input" name="dropoff" placeholder="Enter destination address..." required autocomplete="off">
+                            </div>
+                            <!-- Suggestions Dropdown -->
+                            <ul id="dropoff-suggestions" class="suggestions-list" aria-live="polite"></ul>
+                        </div>
+
+                        <!-- Schedule/Time Option -->
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="booking-date">Date</label>
+                                <input type="date" id="booking-date" name="date" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="booking-time">Time</label>
+                                <input type="time" id="booking-time" name="time" required>
+                            </div>
+                        </div>
+
+                        <!-- Toggle Booking Type (Ride Now vs Schedule) -->
+                        <div class="booking-toggle-row">
+                            <button type="button" class="toggle-btn active" data-type="now">Ride Now</button>
+                            <button type="button" class="toggle-btn" data-type="schedule">Schedule Later</button>
+                        </div>
+
+                        <!-- Vehicle Selection Section -->
+                        <div class="vehicle-selection-container">
+                            <h3 class="subsection-title">Select Ride Type</h3>
+                            <div class="vehicles-list">
+                                <!-- Vehicle Item: Bike -->
+                                <div class="vehicle-item active" data-type="bike" data-base-fare="20" data-per-km="8">
+                                    <div class="vehicle-info">
+                                        <span class="vehicle-icon">🛵</span>
+                                        <div>
+                                            <h4>Bike</h4>
+                                            <p class="eta">Nearby • 2 min away</p>
+                                        </div>
+                                    </div>
+                                    <div class="vehicle-price">
+                                        <span class="price">₹45 - ₹60</span>
+                                        <span class="capacity">👤 1</span>
+                                    </div>
+                                </div>
+
+                                <!-- Vehicle Item: Auto -->
+                                <div class="vehicle-item" data-type="auto" data-base-fare="40" data-per-km="12">
+                                    <div class="vehicle-info">
+                                        <span class="vehicle-icon">🛺</span>
+                                        <div>
+                                            <h4>Auto</h4>
+                                            <p class="eta">Nearby • 3 min away</p>
+                                        </div>
+                                    </div>
+                                    <div class="vehicle-price">
+                                        <span class="price">₹75 - ₹95</span>
+                                        <span class="capacity">👤 3</span>
+                                    </div>
+                                </div>
+
+                                <!-- Vehicle Item: Mini -->
+                                <div class="vehicle-item" data-type="mini" data-base-fare="60" data-per-km="15">
+                                    <div class="vehicle-info">
+                                        <span class="vehicle-icon">🚗</span>
+                                        <div>
+                                            <h4>Mini</h4>
+                                            <p class="eta">Nearby • 4 min away</p>
+                                        </div>
+                                    </div>
+                                    <div class="vehicle-price">
+                                        <span class="price">₹110 - ₹140</span>
+                                        <span class="capacity">👤 4</span>
+                                    </div>
+                                </div>
+
+                                <!-- Vehicle Item: Sedan -->
+                                <div class="vehicle-item" data-type="sedan" data-base-fare="80" data-per-km="18">
+                                    <div class="vehicle-info">
+                                        <span class="vehicle-icon">🚘</span>
+                                        <div>
+                                            <h4>Sedan</h4>
+                                            <p class="eta">Nearby • 5 min away</p>
+                                        </div>
+                                    </div>
+                                    <div class="vehicle-price">
+                                        <span class="price">₹140 - ₹180</span>
+                                        <span class="capacity">👤 4</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fare Summary Section -->
+                        <div class="fare-summary-container">
+                            <h3 class="subsection-title">Fare Breakdown</h3>
+                            <div class="fare-card">
+                                <div class="fare-row-detail">
+                                    <span>Base Fare</span>
+                                    <span id="base-fare-val">₹20.00</span>
+                                </div>
+                                <div class="fare-row-detail">
+                                    <span>Distance Fare</span>
+                                    <span id="distance-fare-val">₹0.00</span>
+                                </div>
+                                <div class="fare-row-detail">
+                                    <span>Taxes &amp; Fees</span>
+                                    <span id="taxes-val">₹5.00</span>
+                                </div>
+                                <div class="fare-row-detail total">
+                                    <span>Estimated Total</span>
+                                    <span id="total-fare-val">₹25.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Confirm Booking Button -->
+                        <button type="submit" id="confirm-booking-btn" class="primary-btn confirm-btn" disabled>
+                            Confirm Booking
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Right side: Map/Visualization Placeholder -->
+                <div class="booking-map-card reveal">
+                    <div class="map-container">
+                        <div class="map-placeholder">
+                            <div class="map-marker pickup-marker">📍</div>
+                            <div class="map-marker dropoff-marker">🏁</div>
+                            <div class="map-route-line"></div>
+                            <p>Interactive Route Map</p>
+                            <small>Enter pickup & drop-off to view route</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Back to top button -->
+    <button id="backToTop" class="scroll-to-top" aria-label="Back to top">↑</button>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="js/main.js"></script>
+    <script src="js/animations.js"></script>
+</body>
+</html>
