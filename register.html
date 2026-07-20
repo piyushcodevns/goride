@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <title>Create Account | Go Ride</title>
+    <meta name="description" content="Sign up for Go Ride to book safe, fast and affordable rides within seconds.">
+    <meta name="keywords" content="Sign Up, Register, Go Ride, Create Ride Account">
+    <meta name="author" content="Go Ride">
+    <meta name="theme-color" content="#2563EB">
+    <link rel="canonical" href="https://goride.com/register.html">
+
+    <!-- OpenGraph Tags -->
+    <meta property="og:title" content="Create Account | Go Ride">
+    <meta property="og:description" content="Sign up for Go Ride to book safe, fast and affordable rides within seconds.">
+    <meta property="og:image" content="https://goride.com/assets/images/og-cover.jpg">
+    <meta property="og:url" content="https://goride.com/register.html">
+    <meta property="og:type" content="website">
+
+    <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <!-- Page Loader -->
+    <div id="page-loader" aria-hidden="true"></div>
+
+    <!-- Reusable Navbar -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar" aria-label="Primary navigation">
+                <a class="brand" href="index.html">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                    <span>Go Ride</span>
+                </a>
+
+                <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
+
+                <ul class="nav-links">
+                    <li><a class="nav-link" href="index.html#home">Home</a></li>
+                    <li><a class="nav-link" href="services.html">Services</a></li>
+                    <li><a class="nav-link" href="index.html#why-choose">Why Choose</a></li>
+                    <li><a class="nav-link" href="index.html#how-it-works">How It Works</a></li>
+                    <li><a class="nav-link" href="index.html#safety">Safety</a></li>
+                    <li><a class="nav-link" href="index.html#download-app">Download App</a></li>
+                    <li><a class="nav-link" href="about.html">About</a></li>
+                    <li><a class="nav-link" href="contact.html">Contact</a></li>
+                </ul>
+
+                <div class="nav-buttons">
+                    <a href="login.html" class="login-btn">
+                        Login
+                    </a>
+                    <a href="booking.html" class="book-btn">
+                        Book Ride
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Auth Layout Section -->
+    <main class="auth-section">
+        <div class="container">
+            <div class="auth-wrapper reveal">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" class="auth-logo" loading="lazy" decoding="async">
+                        <h2>Create Account</h2>
+                        <p>Sign up to start booking safe and affordable rides</p>
+                    </div>
+
+                    <form id="register-form" class="auth-form" novalidate>
+                        <!-- Name input -->
+                        <div class="input-group">
+                            <label for="reg-name">Full Name</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon" aria-hidden="true">👤</span>
+                                <input type="text" id="reg-name" name="name" placeholder="Enter your full name..." required autocomplete="name">
+                            </div>
+                        </div>
+
+                        <!-- Email input -->
+                        <div class="input-group">
+                            <label for="reg-email">Email Address</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon" aria-hidden="true">✉️</span>
+                                <input type="email" id="reg-email" name="email" placeholder="Enter your email..." required autocomplete="email">
+                            </div>
+                        </div>
+
+                        <!-- Phone input -->
+                        <div class="input-group">
+                            <label for="reg-phone">Phone Number</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon" aria-hidden="true">📞</span>
+                                <input type="tel" id="reg-phone" name="phone" placeholder="Enter phone number..." required autocomplete="tel">
+                            </div>
+                        </div>
+
+                        <!-- Password input -->
+                        <div class="input-group">
+                            <label for="reg-password">Password</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon" aria-hidden="true">🔒</span>
+                                <input type="password" id="reg-password" name="password" placeholder="Create a password..." required autocomplete="new-password">
+                                <button type="button" id="toggle-password" class="password-toggle-btn" aria-label="Show password">👁️</button>
+                            </div>
+                            
+                            <!-- Password Strength Indicator -->
+                            <div class="password-strength-meter">
+                                <div class="strength-bar-container">
+                                    <div class="strength-bar-fill"></div>
+                                </div>
+                                <span id="strength-text" class="strength-label">Password Strength: <strong>Too Short</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions Checkbox -->
+                        <div class="auth-row">
+                            <label class="remember-checkbox">
+                                <input type="checkbox" id="agree-terms" name="agree" required>
+                                <span class="checkbox-box"></span>
+                                <span class="checkbox-text">I agree to the <a href="terms.html" target="_blank">Terms &amp; Conditions</a></span>
+                            </label>
+                        </div>
+
+                        <!-- Submit button -->
+                        <button type="submit" id="register-submit-btn" class="primary-btn auth-submit-btn">
+                            Sign Up
+                        </button>
+                    </form>
+
+                    <div class="auth-footer">
+                        <p>Already have an account? <a href="login.html">Sign In</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Reusable Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <a class="brand" href="index.html">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                        <span>Go Ride</span>
+                    </a>
+                    <p>Ride smarter, ride better with dependable travel for every journey.</p>
+                </div>
+                <div>
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="booking.html">Book Ride</a></li>
+                        <li><a href="terms.html">Terms &amp; Conditions</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="login.html">Login</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Follow Us</h3>
+                    <ul>
+                        <li><a href="https://instagram.com/goride" aria-label="Follow Go Ride on Instagram">Instagram</a></li>
+                        <li><a href="https://x.com/goride" aria-label="Follow Go Ride on Twitter">Twitter</a></li>
+                        <li><a href="https://linkedin.com/company/goride" aria-label="Follow Go Ride on LinkedIn">LinkedIn</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">© 2026 Go Ride Technologies. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Back to top button -->
+    <button id="backToTop" class="scroll-to-top" aria-label="Back to top">↑</button>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="js/main.js" defer></script>
+    <script src="js/animations.js" defer></script>
+    <script src="js/register.js" defer></script>
+</body>
+</html>

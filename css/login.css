@@ -1,0 +1,321 @@
+/* ==========================================================================
+   GO RIDE - AUTHENTICATION STYLES (V1)
+   ========================================================================== */
+
+/* Auth Layout Section */
+.auth-section {
+  padding: 5rem 0;
+  min-height: calc(100vh - 80px - 320px); /* Adjust based on navbar & footer */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-wrapper {
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.auth-card {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 3rem 2.5rem;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  transition: border-color var(--transition);
+}
+
+.auth-card:hover {
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-logo {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 1rem;
+}
+
+.auth-header h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.35rem;
+}
+
+.auth-header p {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+/* Auth Form details */
+.auth-form {
+  display: grid;
+  gap: 1.4rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.input-group label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper .input-icon {
+  position: absolute;
+  left: 1.1rem;
+  font-size: 1.1rem;
+  color: var(--muted);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 0.95rem 1rem 0.95rem 2.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--background);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+/* Input password padding adjustment for reveal button */
+.input-wrapper input[type="password"],
+.input-wrapper input[type="text"]#reg-password,
+.input-wrapper input[type="text"]#login-password {
+  padding-right: 2.8rem;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.9rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.15rem;
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  padding: 0.25rem;
+  border-radius: 50%;
+  transition: color var(--transition), background var(--transition);
+  z-index: 5;
+}
+
+.password-toggle-btn:hover {
+  color: var(--primary);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+/* Remember Me Checkbox */
+.auth-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.remember-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+.remember-checkbox input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkbox-box {
+  height: 18px;
+  width: 18px;
+  background-color: var(--background);
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.remember-checkbox:hover input ~ .checkbox-box {
+  border-color: var(--primary);
+}
+
+.remember-checkbox input:checked ~ .checkbox-box {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.checkbox-box::after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.remember-checkbox input:checked ~ .checkbox-box::after {
+  display: block;
+}
+
+.checkbox-text {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.checkbox-text a {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.checkbox-text a:hover {
+  text-decoration: underline;
+}
+
+.forgot-link {
+  color: var(--primary);
+  font-weight: 600;
+  transition: color var(--transition);
+}
+
+.forgot-link:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Submit Action Button */
+.auth-submit-btn {
+  width: 100%;
+  padding: 1rem !important;
+  font-size: 1.05rem;
+  border: none;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+/* Auth Card Footer link */
+.auth-footer {
+  text-align: center;
+  margin-top: 1.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.auth-footer a {
+  color: var(--primary);
+  font-weight: 700;
+  transition: color var(--transition);
+}
+
+.auth-footer a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Password Strength Indicator Styles */
+.password-strength-meter {
+  margin-top: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.strength-bar-container {
+  height: 5px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+}
+
+.strength-bar-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: 99px;
+  transition: width var(--transition), background-color var(--transition);
+}
+
+.strength-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.strength-label strong {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Strength Colors & Widths */
+.strength-weak {
+  width: 33.3%;
+  background-color: #DC2626; /* Red */
+}
+
+.strength-medium {
+  width: 66.6%;
+  background-color: #EAB308; /* Yellow */
+}
+
+.strength-strong {
+  width: 100%;
+  background-color: var(--accent); /* Green */
+}
+
+/* Keyboard Outline focus state overrides */
+.remember-checkbox input:focus-visible ~ .checkbox-box {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   RESPONSIVE MEDIA QUERIES
+   ========================================================================== */
+@media (max-width: 576px) {
+  .auth-card {
+    padding: 2.25rem 1.5rem;
+  }
+  .auth-header h2 {
+    font-size: 1.5rem;
+  }
+}
