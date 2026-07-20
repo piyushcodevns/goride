@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Go Ride | Safe, Smart & Affordable Ride Booking</title>
+    <meta name="robots" content="index, follow">
+    <title>About Go Ride | Safe & Smart Transportation</title>
     <meta name="description" content="Learn about Go Ride, our mission, values, journey, and commitment to safe, reliable transportation for everyday travel.">
     <meta name="keywords" content="About Go Ride, ride booking, smart transportation, safe rides, affordable mobility">
     <meta name="author" content="Go Ride">
     <meta name="theme-color" content="#2563EB">
     <!-- <link rel="canonical" href="https://goride.com/about.html"> -->
-    <meta property="og:title" content="About Go Ride | Safe, Smart & Affordable Ride Booking">
+    <meta property="og:title" content="About Go Ride | Safe & Smart Transportation">
     <meta property="og:description" content="Learn about Go Ride, our mission, values, journey, and commitment to safe, reliable transportation for everyday travel.">
-    <!-- <meta property="og:image" content="https://goride.com/assets/svg/logo.svg"> -->
-    <!-- TODO: Replace with PNG/JPG cover image later (e.g. assets/images/cover.jpg or 1200x630 png) -->
+    <!-- <meta property="og:image" content="https://goride.com/assets/images/og-cover.jpg"> -->
+    <!-- TODO: Replace with PNG/JPG cover image later (e.g. assets/images/og-cover.jpg or 1200x630 png) -->
     <!-- <meta property="og:url" content="https://goride.com/about.html"> -->
     <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="About Go Ride | Safe, Smart & Affordable Ride Booking">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="About Go Ride | Safe & Smart Transportation">
     <meta name="twitter:description" content="Learn about Go Ride, our mission, values, journey, and commitment to safe, reliable transportation for everyday travel.">
-    <!-- <meta name="twitter:image" content="https://goride.com/assets/svg/logo.svg"> -->
+    <!-- <meta name="twitter:image" content="https://goride.com/assets/images/og-cover.jpg"> -->
     <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,8 +29,46 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/animations.css">
+
+    <!-- JSON-LD Breadcrumb Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://goride.com/index.html"
+      }, {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "About Us",
+        "item": "https://goride.com/about.html"
+      }]
+    }
+    </script>
+
+    <!-- JSON-LD Organization Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Go Ride Technologies",
+      "url": "https://goride.com",
+      "logo": "https://goride.com/assets/svg/logo.svg",
+      "sameAs": [
+        "https://instagram.com/goride",
+        "https://x.com/goride",
+        "https://linkedin.com/company/goride"
+      ]
+    }
+    </script>
 </head>
 <body>
+    <!-- Page Loader -->
+    <div id="page-loader" aria-hidden="true"></div>
+
     <header class="header">
         <div class="container">
             <nav class="navbar" aria-label="Primary navigation">
@@ -42,7 +81,7 @@
 
                 <ul id="primary-menu" class="nav-links">
                     <li><a class="nav-link" href="index.html#home">Home</a></li>
-                    <li><a class="nav-link" href="index.html#services">Services</a></li>
+                    <li><a class="nav-link" href="services.html">Services</a></li>
                     <li><a class="nav-link" href="index.html#why-choose">Why Choose</a></li>
                     <li><a class="nav-link" href="index.html#how-it-works">How It Works</a></li>
                     <li><a class="nav-link" href="index.html#safety">Safety</a></li>
@@ -60,6 +99,7 @@
     </header>
 
     <main>
+        <!-- Hero Section -->
         <section class="about-page-hero">
             <div class="container about-page-hero-grid">
                 <div class="reveal">
@@ -70,172 +110,232 @@
                         </ol>
                     </nav>
                     <span class="hero-badge">About Go Ride</span>
-                    <h1>Ride Smarter. Travel Better.</h1>
-                    <p>Go Ride is building a safer, smarter, and more affordable way to move through the city with dependable rides powered by technology and trust.</p>
+                    <h1>Moving People, Connecting Places</h1>
+                    <p>Go Ride is building a safer, smarter, and more affordable way to travel through cities. We connect riders and drivers with reliable transport options powered by modern technology and trust.</p>
                     <div class="hero-buttons">
-                        <a href="contact.html" class="primary-btn">Contact Us</a>
-                        <a href="booking.html" class="secondary-btn">Book a Ride</a>
+                        <a href="booking.html" class="primary-btn">Book Ride</a>
+                        <a href="contact.html" class="secondary-btn">Contact Us</a>
                     </div>
                 </div>
 
-                <section class="about-hero-card reveal" aria-labelledby="mobility-heading">
-                    <div class="about-hero-card-inner">
-                        <h2 id="mobility-heading">Built for Everyday Mobility</h2>
-                        <p>From quick city trips to planned travel, Go Ride makes booking simple, transparent, and secure.</p>
-                        <ul>
-                            <li>Fast ride booking</li>
-                            <li>Verified drivers</li>
-                            <li>Real-time tracking</li>
-                        </ul>
-                    </div>
-                </section>
+                <div class="about-hero-image-container reveal">
+                    <img src="assets/svg/about-hero.svg" alt="Go Ride team and transportation fleet illustration" class="hero-image" fetchpriority="high">
+                </div>
             </div>
         </section>
 
-        <section class="page-section our-story" aria-labelledby="our-story-heading">
+        <!-- Our Story Section -->
+        <section class="page-section" aria-labelledby="story-heading">
             <div class="container about-story-grid">
                 <div class="reveal">
-                    <span class="section-tag">Our Story</span>
-                    <h2 id="our-story-heading" class="section-title">We started with a simple mission: make travel easier for everyone.</h2>
-                    <p class="section-copy">Go Ride was created to solve a common problem in modern cities: getting from one place to another without stress, uncertainty, or long waits. We believe transportation should be simple, accessible, and built around the people who use it most.</p>
-                    <p class="section-copy">Today, our platform brings together technology, safety standards, and customer-focused support to create a ride experience that feels dependable from start to finish.</p>
+                    <span class="section-tag">Our History</span>
+                    <h2 id="story-heading" class="section-title">Our Story</h2>
+                    <p class="section-copy">Go Ride started with a simple vision: to eliminate urban transit problems. Daily commutes, long waits, and price surges motivated us to build a better alternative. We designed a platform that makes rides simple, reliable, and accessible for everyone.</p>
+                    <p class="section-copy">Today, our app connects thousands of riders with verified drivers daily, establishing high safety standards, fair billing, and excellent support.</p>
                 </div>
-                <figure class="about-illustration reveal" aria-label="Go Ride city travel illustration">
-                    <img src="assets/svg/hero-illustration.svg" alt="Illustration representing smart ride booking and travel">
-                </figure>
+                <div class="reveal">
+                    <ul class="about-story-highlights">
+                        <li>
+                            <span class="about-story-highlights-icon" aria-hidden="true">&check;</span>
+                            <div>
+                                <h4>Customer First</h4>
+                                <p>We build our support, apps, and features around rider comfort and safety.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="about-story-highlights-icon" aria-hidden="true">&check;</span>
+                            <div>
+                                <h4>Technology Driven</h4>
+                                <p>Smart dispatch, route planning, and fare calculators ensure zero delays.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="about-story-highlights-icon" aria-hidden="true">&check;</span>
+                            <div>
+                                <h4>Safety Focused</h4>
+                                <p>Comprehensive checks, live tracking, and support lines keep you secure.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </section>
 
-        <section class="page-section mission-vision" aria-labelledby="mission-vision-heading">
+        <!-- Mission & Vision Section -->
+        <section class="page-section" aria-labelledby="mission-heading">
             <div class="container">
                 <div class="section-header reveal">
-                    <span class="section-tag">Mission & Vision</span>
-                    <h2 id="mission-vision-heading" class="section-title">Purpose-driven by people, powered by technology</h2>
+                    <span class="section-tag">Directives</span>
+                    <h2 id="mission-heading" class="section-title">Our Mission &amp; Vision</h2>
+                    <p class="section-copy">How we strive to change everyday transit solutions for cities worldwide.</p>
                 </div>
 
-                <div class="mission-vision-grid">
-                    <article class="info-card reveal">
-                        <h3>Mission</h3>
-                        <p>To make urban mobility safe, affordable, and convenient through a modern ride booking experience.</p>
+                <div class="mission-vision-container">
+                    <article class="mission-vision-card reveal">
+                        <h3>Our Mission</h3>
+                        <p>To make urban transportation safe, highly affordable, and extremely convenient through clean tech systems and responsive driver networks.</p>
                     </article>
-                    <article class="info-card reveal">
-                        <h3>Vision</h3>
-                        <p>To become the go-to mobility platform for everyday travel by combining trust, innovation, and seamless service.</p>
+                    <article class="mission-vision-card vision-card reveal">
+                        <h3>Our Vision</h3>
+                        <p>To become a trusted mobility network by expanding green transit and setting new standards for everyday transportation.</p>
                     </article>
                 </div>
             </div>
         </section>
 
-        <section class="page-section core-values" aria-labelledby="core-values-heading">
+        <!-- Stats Section -->
+        <section class="about-stats-section" aria-labelledby="stats-heading">
             <div class="container">
-                <div class="section-header reveal">
-                    <span class="section-tag">Core Values</span>
-                    <h2 id="core-values-heading" class="section-title">What guides everything we do</h2>
-                </div>
-
-                <div class="values-grid">
-                    <article class="value-card reveal"><h3>Safety</h3><p>Every ride is designed around secure travel and verified support.</p></article>
-                    <article class="value-card reveal"><h3>Reliability</h3><p>Consistent service that riders can depend on every day.</p></article>
-                    <article class="value-card reveal"><h3>Transparency</h3><p>Clear pricing, real-time updates, and honest communication.</p></article>
-                    <article class="value-card reveal"><h3>Innovation</h3><p>We continue to improve the experience with smarter tools and better systems.</p></article>
-                    <article class="value-card reveal"><h3>Customer First</h3><p>Every journey is shaped around comfort, convenience, and responsiveness.</p></article>
-                    <article class="value-card reveal"><h3>Accessibility</h3><p>We aim to make mobility easy to access for a broader range of riders.</p></article>
+                <h2 id="stats-heading" class="sr-only">Go Ride Statistics</h2>
+                <div class="about-stats-grid skeleton-onload">
+                    <div class="about-stat-card reveal">
+                        <div class="about-stat-number">Growing</div>
+                        <div class="about-stat-label">Happy Customers</div>
+                        <div class="about-stat-desc">Riding securely with us daily</div>
+                    </div>
+                    <div class="about-stat-card reveal">
+                        <div class="about-stat-number">Thousands</div>
+                        <div class="about-stat-label">Completed Rides</div>
+                        <div class="about-stat-desc">Safe journeys across our regions</div>
+                    </div>
+                    <div class="about-stat-card reveal">
+                        <div class="about-stat-number">Verified</div>
+                        <div class="about-stat-label">Driver Network</div>
+                        <div class="about-stat-desc">Trained and background-checked</div>
+                    </div>
+                    <div class="about-stat-card reveal">
+                        <div class="about-stat-number">Expanding</div>
+                        <div class="about-stat-label">Active Cities</div>
+                        <div class="about-stat-desc">Our network is growing daily</div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="page-section why-choose-section" aria-labelledby="about-why-heading">
+        <!-- Why Choose Go Ride -->
+        <section class="page-section" aria-labelledby="why-choose-heading">
             <div class="container">
                 <div class="section-header reveal">
-                    <span class="section-tag">Why Choose Go Ride</span>
-                    <h2 id="about-why-heading" class="section-title">A smarter way to travel, backed by trust</h2>
+                    <span class="section-tag">Value Proposal</span>
+                    <h2 id="why-choose-heading" class="section-title">A Smarter Way to Move</h2>
+                    <p class="section-copy">Enterprise-level trust, transparency, and reliability integrated into one clean platform.</p>
                 </div>
 
-                <div class="why-choose-grid">
-                    <article class="why-choose-card reveal">
+                <div class="values-container">
+                    <article class="value-box reveal">
+                        <div class="value-box-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <h3>Safety First</h3>
+                        <p>Background-checked drivers, SOS alerts, and live location sharing on every ride.</p>
+                    </article>
+
+                    <article class="value-box reveal">
+                        <div class="value-box-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
                         <h3>Fast Booking</h3>
-                        <p>Reserve a ride in seconds without unnecessary friction.</p>
+                        <p>One-tap vehicle search matching you with the closest cab in under 10 seconds.</p>
                     </article>
-                    <article class="why-choose-card reveal">
-                        <h3>Real-Time Tracking</h3>
-                        <p>Stay informed with live location updates throughout your trip.</p>
-                    </article>
-                    <article class="why-choose-card reveal">
-                        <h3>Secure Payments</h3>
-                        <p>Flexible and secure payment options for every ride.</p>
-                    </article>
-                    <article class="why-choose-card reveal">
-                        <h3>Verified Drivers</h3>
-                        <p>Trustworthy drivers who meet platform standards and expectations.</p>
-                    </article>
-                </div>
-            </div>
-        </section>
 
-        <section class="page-section timeline-section" aria-labelledby="timeline-heading">
-            <div class="container">
-                <div class="section-header reveal">
-                    <span class="section-tag">Journey Timeline</span>
-                    <h2 id="timeline-heading" class="section-title">From idea to future-ready mobility</h2>
-                </div>
-
-                <div class="timeline reveal">
-                    <div class="timeline-item">
-                        <span class="timeline-year">2026</span>
-                        <h3>Idea</h3>
-                        <p>We identified the need for a simpler and safer ride booking experience.</p>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="timeline-year">2026</span>
-                        <h3>Prototype</h3>
-                        <p>We built the early experience around convenience, real-time routing, and design clarity.</p>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="timeline-year">2026</span>
-                        <h3>Version 1</h3>
-                        <p>Our first public experience launched with a focus on everyday city travel.</p>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="timeline-year">Future</span>
-                        <h3>Expansion</h3>
-                        <p>We are preparing broader services, enhanced features, and stronger coverage.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="page-section safety-section" aria-labelledby="safety-commitment-heading">
-            <div class="container">
-                <div class="section-header reveal">
-                    <span class="section-tag">Safety Commitment</span>
-                    <h2 id="safety-commitment-heading" class="section-title">Safety is part of our promise</h2>
-                </div>
-
-                <div class="safety-cards-grid">
-                    <article class="safety-card reveal">
-                        <h3>Verified Drivers</h3>
-                        <p>All drivers are reviewed and verified before joining the platform.</p>
+                    <article class="value-box reveal">
+                        <div class="value-box-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        </div>
+                        <h3>Affordable Pricing</h3>
+                        <p>Clear, fixed upfront fares. No surprise surge charges or hidden pricing variables.</p>
                     </article>
-                    <article class="safety-card reveal">
-                        <h3>Live Tracking</h3>
-                        <p>Riders can follow their trip progress in real time for added confidence.</p>
-                    </article>
-                    <article class="safety-card reveal">
-                        <h3>Secure Payments</h3>
-                        <p>Payments are protected with trusted and transparent systems.</p>
-                    </article>
-                    <article class="safety-card reveal">
+
+                    <article class="value-box reveal">
+                        <div class="value-box-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        </div>
                         <h3>24/7 Support</h3>
-                        <p>Help is always available whenever riders need assistance.</p>
+                        <p>Our passenger support lines remain open 24/7 to resolve inquiries instantly.</p>
                     </article>
                 </div>
             </div>
         </section>
 
-        <section class="page-section cta-section" aria-labelledby="about-cta-heading">
-            <div class="container cta-box reveal">
-                <h2 id="about-cta-heading">Ready to ride?</h2>
-                <p>Experience fast, safe, and reliable travel with Go Ride today.</p>
+        <!-- How We Work Section -->
+        <section class="page-section" aria-labelledby="work-heading">
+            <div class="container">
+                <div class="section-header reveal">
+                    <span class="section-tag">Operations</span>
+                    <h2 id="work-heading" class="section-title">How We Work</h2>
+                    <p class="section-copy">Four pillars that keep Go Ride operational, secure, and highly reliable.</p>
+                </div>
+
+                <div class="how-we-work-grid">
+                    <article class="how-we-work-card reveal">
+                        <span class="how-we-work-number" aria-hidden="true">01</span>
+                        <h3>Technology</h3>
+                        <p>Real-time location, routing matrix API, and dynamic matching systems ensure ride accuracy.</p>
+                    </article>
+
+                    <article class="how-we-work-card reveal">
+                        <span class="how-we-work-number" aria-hidden="true">02</span>
+                        <h3>Driver Network</h3>
+                        <p>Fair revenue distribution, professional trainings, and screening checks support our partners.</p>
+                    </article>
+
+                    <article class="how-we-work-card reveal">
+                        <span class="how-we-work-number" aria-hidden="true">03</span>
+                        <h3>Safety System</h3>
+                        <p>Trip monitoring, passenger support feedback loops, and alert systems guarantee travel security.</p>
+                    </article>
+
+                    <article class="how-we-work-card reveal">
+                        <span class="how-we-work-number" aria-hidden="true">04</span>
+                        <h3>Customer Experience</h3>
+                        <p>Providing seamless, high-quality, and cost-effective transits to riders everywhere.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Section -->
+        <section class="page-section" aria-labelledby="team-heading">
+            <div class="container">
+                <div class="section-header reveal">
+                    <span class="section-tag">Our Team</span>
+                    <h2 id="team-heading" class="section-title">Who We Are</h2>
+                    <p class="section-copy">We are a passionate team building the future of mobility.</p>
+                </div>
+
+                <div class="team-grid">
+                    <article class="team-card reveal">
+                        <div class="value-box-icon" aria-hidden="true" style="margin: 0 auto 1.25rem;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <h3>Developers &amp; Designers</h3>
+                        <p class="team-desc">Building and refining our dispatch engines, routing maps, and mobile interfaces daily.</p>
+                    </article>
+
+                    <article class="team-card reveal">
+                        <div class="value-box-icon" aria-hidden="true" style="margin: 0 auto 1.25rem;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <h3>Operations &amp; Support</h3>
+                        <p class="team-desc">Coordinating with driver networks and ensuring passenger queries get answered 24/7.</p>
+                    </article>
+
+                    <article class="team-card reveal">
+                        <div class="value-box-icon" aria-hidden="true" style="margin: 0 auto 1.25rem;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </div>
+                        <h3>Safety &amp; Compliance</h3>
+                        <p class="team-desc">Screening drivers and auditing vehicles to uphold platform safety standards.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="page-section" aria-labelledby="cta-heading">
+            <div class="container cta-section-premium reveal">
+                <h2 id="cta-heading">Ready to Ride With Us?</h2>
+                <p>Book your next journey with Go Ride today and experience safer, smarter travel.</p>
                 <div class="hero-buttons">
                     <a href="booking.html" class="primary-btn">Book Ride</a>
                     <a href="contact.html" class="secondary-btn">Contact Us</a>
@@ -249,7 +349,7 @@
             <div class="footer-grid">
                 <div>
                     <a class="brand" href="index.html">
-                        <img src="assets/svg/logo.svg" alt="Go Ride logo">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
                         <span>Go Ride</span>
                     </a>
                     <p>Ride smarter, ride better with dependable travel for every journey.</p>
@@ -258,30 +358,38 @@
                     <h3>Company</h3>
                     <ul>
                         <li><a href="about.html">About</a></li>
-                        <li><a href="index.html#services">Services</a></li>
-                        <li><a href="index.html#safety">Safety</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="booking.html">Book Ride</a></li>
+                        <li><a href="terms.html">Terms &amp; Conditions</a></li>
                     </ul>
                 </div>
                 <div>
                     <h3>Support</h3>
                     <ul>
                         <li><a href="contact.html">Help Center</a></li>
-                        <li><a href="contact.html">Contact</a></li>
-                        <li><a href="index.html#faq">FAQs</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="login.html">Login</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h3>Follow</h3>
+                    <h3>Follow Us</h3>
                     <ul>
-                        <li><a href="#">Instagram</a></li>
-                        <li><a href="#">Twitter</a></li>
-                        <li><a href="#">LinkedIn</a></li>
+                        <li><a href="https://instagram.com/goride" aria-label="Follow Go Ride on Instagram">Instagram</a></li>
+                        <li><a href="https://x.com/goride" aria-label="Follow Go Ride on Twitter">Twitter</a></li>
+                        <li><a href="https://linkedin.com/company/goride" aria-label="Follow Go Ride on LinkedIn">LinkedIn</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="footer-bottom">© 2026 Go Ride. All rights reserved.</div>
+            <div class="footer-bottom">© 2026 Go Ride Technologies. All rights reserved.</div>
         </div>
     </footer>
+
+    <!-- Back to top button -->
+    <button id="backToTop" class="scroll-to-top" aria-label="Back to top">↑</button>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
     <script src="js/main.js"></script>
     <script src="js/animations.js"></script>
