@@ -300,10 +300,10 @@
                         performLiveValidation();
                     },
                     (error) => {
-                        // Fallback Delhi NCR
-                        pickupInput.value = "Connaught Place, New Delhi";
-                        pickupInput.dataset.lat = 28.6304;
-                        pickupInput.dataset.lng = 77.2177;
+                        // Fallback Varanasi
+                        pickupInput.value = "Varanasi Junction, Varanasi";
+                        pickupInput.dataset.lat = 25.3263;
+                        pickupInput.dataset.lng = 82.9866;
 
                         currentLocationBtn.classList.remove('loading');
                         window.showToast("Permission denied. Fallback address loaded.", "info");
@@ -313,9 +313,9 @@
                     }
                 );
             } else {
-                pickupInput.value = "Connaught Place, New Delhi";
-                pickupInput.dataset.lat = 28.6304;
-                pickupInput.dataset.lng = 77.2177;
+                pickupInput.value = "Varanasi Junction, Varanasi";
+                pickupInput.dataset.lat = 25.3263;
+                pickupInput.dataset.lng = 82.9866;
 
                 currentLocationBtn.classList.remove('loading');
                 window.showToast("Geolocation not supported.", "error");

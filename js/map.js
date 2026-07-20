@@ -5,14 +5,16 @@
     // MAP CONFIGURATION CONSTANTS
     // ----------------------------------------------------
     const CONFIG = {
-        DEFAULT_CENTER: [28.6139, 77.2090], // Delhi NCR
-        DEFAULT_ZOOM: 12,
+        DEFAULT_CENTER: [25.3176, 82.9739], // Varanasi, Uttar Pradesh
+        DEFAULT_ZOOM: 13,
         NOMINATIM_URL: "https://nominatim.openstreetmap.org/search",
         OSRM_URL: "https://router.project-osrm.org/route/v1/driving",
         MAX_SUGGESTIONS: 5,
         DEBOUNCE_DELAY: 500,
         MIN_CHARS: 3,
-        MIN_REQUEST_INTERVAL: 1000 // Rate-limit: max 1 request per second
+        MIN_REQUEST_INTERVAL: 1000, // Rate-limit: max 1 request per second
+        VIEWBOX: "82.90,25.38,83.05,25.25", // Bounding box for Varanasi (West, North, East, South)
+        BOUNDED: 1
     };
 
     // ----------------------------------------------------
@@ -142,7 +144,7 @@
             listEl.innerHTML = '<li class="info-item" aria-live="polite">Searching locations...</li>';
             listEl.style.display = 'block';
 
-            const url = `${CONFIG.NOMINATIM_URL}?format=json&q=${encodeURIComponent(cleanedQuery)}&limit=${CONFIG.MAX_SUGGESTIONS}&countrycodes=in`;
+            const url = `${CONFIG.NOMINATIM_URL}?format=json&q=${encodeURIComponent(cleanedQuery)}&limit=${CONFIG.MAX_SUGGESTIONS}&countrycodes=in&viewbox=${CONFIG.VIEWBOX}&bounded=${CONFIG.BOUNDED}`;
 
             fetch(url, { signal: autocompleteAbortController.signal })
                 .then(response => {
