@@ -2,17 +2,6 @@
 
 (function() {
     // ----------------------------------------------------
-    // FARE CONFIGURATION CONSTANTS
-    // ----------------------------------------------------
-    const FARE_MATRIX = {
-        bike: { base: 40, perKm: 8 },
-        auto: { base: 50, perKm: 10 },
-        mini: { base: 70, perKm: 12 },
-        sedan: { base: 100, perKm: 16 },
-        suv: { base: 150, perKm: 20 }
-    };
-
-    // ----------------------------------------------------
     // DOM SELECTORS
     // ----------------------------------------------------
     const bookingForm = document.getElementById('booking-form');
@@ -55,10 +44,6 @@
     let appliedDiscount = 0; // in rupees
     let selectedVehicleType = 'bike'; // default
 
-    // Debounce timer stores
-    let pickupDebounce = null;
-    let dropoffDebounce = null;
-
     // ----------------------------------------------------
     // SINGLE RESPONSIBILITY HELPER FUNCTIONS
     // ----------------------------------------------------
@@ -86,9 +71,10 @@
         timeInput.value = `${hours}:${minutes}`;
     }
 
-    // Calculate dynamic fare based on matrix rules
+    // Calculate dynamic fare based on matrix rules in config.js
     window.calculateFare = function(distance, rideType) {
-        const config = FARE_MATRIX[rideType] || FARE_MATRIX.bike;
+        const fareConfig = window.APP_CONFIG.FARE;
+        const config = fareConfig[rideType] || fareConfig.bike;
         const base = config.base;
         const distFare = distance * config.perKm;
         const tax = Math.round((base + distFare) * 0.08); // 8% tax
@@ -178,7 +164,15 @@
             date: dateInput.value,
             time: timeInput.value,
             passengers: passengerInput.value,
-            rideType: selectedVehicleType
+            rideType: selectedVehicleType,
+            pickupCoords: (pickupInput.dataset.lat && pickupInput.dataset.lng) ? {
+                lat: parseFloat(pickupInput.dataset.lat),
+                lng: parseFloat(pickupInput.dataset.lng)
+            } : null,
+            dropCoords: (dropoffInput.dataset.lat && dropoffInput.dataset.lng) ? {
+                lat: parseFloat(dropoffInput.dataset.lat),
+                lng: parseFloat(dropoffInput.dataset.lng)
+            } : null
         };
 
         const result = window.validateBooking(data);
@@ -202,8 +196,13 @@
         // Clear dataset coordinates
         delete pickupInput.dataset.lat;
         delete pickupInput.dataset.lng;
+        delete pickupInput.dataset.placeId;
+        delete pickupInput.dataset.address;
+        
         delete dropoffInput.dataset.lat;
         delete dropoffInput.dataset.lng;
+        delete dropoffInput.dataset.placeId;
+        delete dropoffInput.dataset.address;
 
         // Reset vehicles classes
         vehicleItems.forEach((v, index) => {
@@ -226,7 +225,7 @@
         }
     };
 
-    // Trigger OSRM driving calculations if both coordinates exist
+    // Trigger Directions calculations if both coordinates exist
     function checkAndTriggerRoute() {
         const plat = pickupInput.dataset.lat;
         const plng = pickupInput.dataset.lng;
@@ -236,7 +235,7 @@
         if (plat && plng && dlat && dlng) {
             const pickupCoords = { lat: parseFloat(plat), lng: parseFloat(plng) };
             const dropCoords = { lat: parseFloat(dlat), lng: parseFloat(dlng) };
-            window.MapProvider.getRoute(pickupCoords, dropCoords);
+            window.MapProvider.drawRoute(pickupCoords, dropCoords);
         } else {
             // Clear route if either is missing coordinates
             window.MapProvider.clearRoute();
@@ -279,7 +278,7 @@
         });
     }
 
-    // Geolocation Emulator
+    // Geolocation Emulator (Centering Varanasi)
     if (currentLocationBtn) {
         currentLocationBtn.addEventListener('click', () => {
             currentLocationBtn.classList.add('loading');
@@ -289,9 +288,11 @@
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         
-                        pickupInput.value = "My Current Location (New Delhi)";
+                        pickupInput.value = "My Current Location (Varanasi)";
                         pickupInput.dataset.lat = lat;
                         pickupInput.dataset.lng = lng;
+                        pickupInput.dataset.address = "My Current Location, Varanasi, Uttar Pradesh";
+                        pickupInput.dataset.placeId = "geolocation-pickup-id";
 
                         currentLocationBtn.classList.remove('loading');
                         window.showToast("Current location detected!", "success");
@@ -300,10 +301,12 @@
                         performLiveValidation();
                     },
                     (error) => {
-                        // Fallback Varanasi
+                        // Fallback Varanasi Junction
                         pickupInput.value = "Varanasi Junction, Varanasi";
                         pickupInput.dataset.lat = 25.3263;
                         pickupInput.dataset.lng = 82.9866;
+                        pickupInput.dataset.address = "Varanasi Junction, Cantt, Varanasi, Uttar Pradesh";
+                        pickupInput.dataset.placeId = "fallback-cantt-id";
 
                         currentLocationBtn.classList.remove('loading');
                         window.showToast("Permission denied. Fallback address loaded.", "info");
@@ -316,6 +319,8 @@
                 pickupInput.value = "Varanasi Junction, Varanasi";
                 pickupInput.dataset.lat = 25.3263;
                 pickupInput.dataset.lng = 82.9866;
+                pickupInput.dataset.address = "Varanasi Junction, Cantt, Varanasi, Uttar Pradesh";
+                pickupInput.dataset.placeId = "fallback-cantt-id";
 
                 currentLocationBtn.classList.remove('loading');
                 window.showToast("Geolocation not supported.", "error");
@@ -326,42 +331,54 @@
         });
     }
 
-    // Debounced Autocomplete inputs searches
+    // Debounced Autocomplete inputs searches (500ms delay from config)
     const triggerPickupSearch = debounce(() => {
         const query = pickupInput.value;
         if (query.trim().length === 0) {
             delete pickupInput.dataset.lat;
             delete pickupInput.dataset.lng;
+            delete pickupInput.dataset.placeId;
+            delete pickupInput.dataset.address;
             pickupSuggestions.style.display = 'none';
             checkAndTriggerRoute();
             performLiveValidation();
             return;
         }
-        window.MapProvider.searchLocation(query, pickupInput, pickupSuggestions, (coords) => {
-            pickupInput.dataset.lat = coords.lat;
-            pickupInput.dataset.lng = coords.lng;
+        window.MapProvider.search(query, pickupInput, pickupSuggestions, (details) => {
+            pickupInput.dataset.lat = details.lat;
+            pickupInput.dataset.lng = details.lng;
+            pickupInput.dataset.placeId = details.placeId;
+            pickupInput.dataset.address = details.address;
+            pickupInput.value = details.name;
+
             checkAndTriggerRoute();
             performLiveValidation();
         });
-    }, 500);
+    }, window.APP_CONFIG.API.DEBOUNCE_DELAY);
 
     const triggerDropoffSearch = debounce(() => {
         const query = dropoffInput.value;
         if (query.trim().length === 0) {
             delete dropoffInput.dataset.lat;
             delete dropoffInput.dataset.lng;
+            delete dropoffInput.dataset.placeId;
+            delete dropoffInput.dataset.address;
             dropoffSuggestions.style.display = 'none';
             checkAndTriggerRoute();
             performLiveValidation();
             return;
         }
-        window.MapProvider.searchLocation(query, dropoffInput, dropoffSuggestions, (coords) => {
-            dropoffInput.dataset.lat = coords.lat;
-            dropoffInput.dataset.lng = coords.lng;
+        window.MapProvider.search(query, dropoffInput, dropoffSuggestions, (details) => {
+            dropoffInput.dataset.lat = details.lat;
+            dropoffInput.dataset.lng = details.lng;
+            dropoffInput.dataset.placeId = details.placeId;
+            dropoffInput.dataset.address = details.address;
+            dropoffInput.value = details.name;
+
             checkAndTriggerRoute();
             performLiveValidation();
         });
-    }, 500);
+    }, window.APP_CONFIG.API.DEBOUNCE_DELAY);
 
     // Typing Listeners
     pickupInput.addEventListener('input', triggerPickupSearch);
@@ -500,13 +517,25 @@
         pickupInput.value = sanitizedPickup;
         dropoffInput.value = sanitizedDrop;
 
+        const pickupCoords = (pickupInput.dataset.lat && pickupInput.dataset.lng) ? {
+            lat: parseFloat(pickupInput.dataset.lat),
+            lng: parseFloat(pickupInput.dataset.lng)
+        } : null;
+        
+        const dropCoords = (dropoffInput.dataset.lat && dropoffInput.dataset.lng) ? {
+            lat: parseFloat(dropoffInput.dataset.lat),
+            lng: parseFloat(dropoffInput.dataset.lng)
+        } : null;
+
         const data = {
             pickup: sanitizedPickup,
             drop: sanitizedDrop,
             date: dateInput.value,
             time: timeInput.value,
             passengers: passengerInput.value,
-            rideType: selectedVehicleType
+            rideType: selectedVehicleType,
+            pickupCoords: pickupCoords,
+            dropCoords: dropCoords
         };
 
         // 2. Validate booking inputs
@@ -523,10 +552,6 @@
             return;
         }
 
-        // TODO: Replace Nominatim with Google Places API
-        // TODO: Replace OSRM with Google Directions API
-        // TODO: Payment Gateway - trigger pre-authorization check
-
         // 3. Trigger Loader Overlay
         window.toggleLoading(true);
         progressFill.style.width = '0%';
@@ -539,14 +564,44 @@
             if (progress >= 100) {
                 clearInterval(interval);
 
-                // TODO: Booking API - submit final ride details to DB in V2
-                
                 // Hide Loader
                 window.toggleLoading(false);
 
                 // Populate success modal
                 const bookingId = window.generateBookingID();
                 bookingIdVal.innerText = bookingId;
+
+                // Assemble the consolidated structured booking object (V6)
+                const fareCalculation = window.calculateFare(currentDistance, selectedVehicleType);
+                const bookingObject = {
+                    pickup: {
+                        placeId: pickupInput.dataset.placeId || "mock-pickup-id",
+                        name: pickupInput.value,
+                        address: pickupInput.dataset.address || pickupInput.value,
+                        lat: pickupCoords.lat,
+                        lng: pickupCoords.lng
+                    },
+                    drop: {
+                        placeId: dropoffInput.dataset.placeId || "mock-dropoff-id",
+                        name: dropoffInput.value,
+                        address: dropoffInput.dataset.address || dropoffInput.value,
+                        lat: dropCoords.lat,
+                        lng: dropCoords.lng
+                    },
+                    route: {
+                        distanceKm: currentDistance,
+                        durationMinutes: currentDuration,
+                        encodedPolyline: "" // populated dynamically in production from Directions response
+                    },
+                    fare: {
+                        vehicle: selectedVehicleType,
+                        amount: fareCalculation.total
+                    }
+                };
+
+                // Output ready-to-use backend object in console logs
+                console.log("Go Ride Booking Object Ready for Backend API Insertion:", bookingObject);
+                // TODO: Booking API - submit final ride details (bookingObject) to DB in V2
 
                 successModal.classList.add('active');
                 successModal.setAttribute('aria-hidden', 'false');
