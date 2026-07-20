@@ -86,23 +86,23 @@
                         <div class="input-group">
                             <label for="pickup-input">Pickup Location</label>
                             <div class="input-wrapper">
-                                <span class="input-icon">📍</span>
-                                <input type="text" id="pickup-input" name="pickup" placeholder="Enter pickup address..." required autocomplete="off">
+                                <span class="input-icon" aria-hidden="true">📍</span>
+                                <input type="text" id="pickup-input" name="pickup" placeholder="Enter pickup address..." required autocomplete="off" aria-autocomplete="list" aria-controls="pickup-suggestions">
                                 <button type="button" class="current-location-btn" aria-label="Use current location">🎯</button>
                             </div>
                             <!-- Suggestions Dropdown -->
-                            <ul id="pickup-suggestions" class="suggestions-list" aria-live="polite"></ul>
+                            <ul id="pickup-suggestions" class="suggestions-list" role="listbox" aria-label="Pickup location suggestions" aria-live="polite"></ul>
                         </div>
 
                         <!-- Dropoff Location Group -->
                         <div class="input-group">
                             <label for="dropoff-input">Drop-off Location</label>
                             <div class="input-wrapper">
-                                <span class="input-icon">🏁</span>
-                                <input type="text" id="dropoff-input" name="dropoff" placeholder="Enter destination address..." required autocomplete="off">
+                                <span class="input-icon" aria-hidden="true">🏁</span>
+                                <input type="text" id="dropoff-input" name="dropoff" placeholder="Enter destination address..." required autocomplete="off" aria-autocomplete="list" aria-controls="dropoff-suggestions">
                             </div>
                             <!-- Suggestions Dropdown -->
-                            <ul id="dropoff-suggestions" class="suggestions-list" aria-live="polite"></ul>
+                            <ul id="dropoff-suggestions" class="suggestions-list" role="listbox" aria-label="Drop-off location suggestions" aria-live="polite"></ul>
                         </div>
 
                         <!-- Schedule/Time Option -->
@@ -118,19 +118,19 @@
                         </div>
 
                         <!-- Toggle Booking Type (Ride Now vs Schedule) -->
-                        <div class="booking-toggle-row">
-                            <button type="button" class="toggle-btn active" data-type="now">Ride Now</button>
-                            <button type="button" class="toggle-btn" data-type="schedule">Schedule Later</button>
+                        <div class="booking-toggle-row" role="tablist" aria-label="Booking Mode">
+                            <button type="button" class="toggle-btn active" role="tab" aria-selected="true" data-type="now">Ride Now</button>
+                            <button type="button" class="toggle-btn" role="tab" aria-selected="false" data-type="schedule">Schedule Later</button>
                         </div>
 
                         <!-- Vehicle Selection Section -->
                         <div class="vehicle-selection-container">
                             <h3 class="subsection-title">Select Ride Type</h3>
-                            <div class="vehicles-list">
+                            <div class="vehicles-list" role="radiogroup" aria-label="Select ride type">
                                 <!-- Vehicle Item: Bike -->
-                                <div class="vehicle-item active" data-type="bike" data-base-fare="20" data-per-km="8">
+                                <div class="vehicle-item active" role="radio" aria-checked="true" tabindex="0" data-type="bike" data-base-fare="20" data-per-km="8">
                                     <div class="vehicle-info">
-                                        <span class="vehicle-icon">🛵</span>
+                                        <span class="vehicle-icon" aria-hidden="true">🛵</span>
                                         <div>
                                             <h4>Bike</h4>
                                             <p class="eta">Nearby • 2 min away</p>
@@ -138,14 +138,14 @@
                                     </div>
                                     <div class="vehicle-price">
                                         <span class="price">₹45 - ₹60</span>
-                                        <span class="capacity">👤 1</span>
+                                        <span class="capacity" aria-label="Capacity: 1 seat">👤 1</span>
                                     </div>
                                 </div>
 
                                 <!-- Vehicle Item: Auto -->
-                                <div class="vehicle-item" data-type="auto" data-base-fare="40" data-per-km="12">
+                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="auto" data-base-fare="40" data-per-km="12">
                                     <div class="vehicle-info">
-                                        <span class="vehicle-icon">🛺</span>
+                                        <span class="vehicle-icon" aria-hidden="true">🛺</span>
                                         <div>
                                             <h4>Auto</h4>
                                             <p class="eta">Nearby • 3 min away</p>
@@ -153,14 +153,14 @@
                                     </div>
                                     <div class="vehicle-price">
                                         <span class="price">₹75 - ₹95</span>
-                                        <span class="capacity">👤 3</span>
+                                        <span class="capacity" aria-label="Capacity: 3 seats">👤 3</span>
                                     </div>
                                 </div>
 
                                 <!-- Vehicle Item: Mini -->
-                                <div class="vehicle-item" data-type="mini" data-base-fare="60" data-per-km="15">
+                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="mini" data-base-fare="60" data-per-km="15">
                                     <div class="vehicle-info">
-                                        <span class="vehicle-icon">🚗</span>
+                                        <span class="vehicle-icon" aria-hidden="true">🚗</span>
                                         <div>
                                             <h4>Mini</h4>
                                             <p class="eta">Nearby • 4 min away</p>
@@ -168,14 +168,14 @@
                                     </div>
                                     <div class="vehicle-price">
                                         <span class="price">₹110 - ₹140</span>
-                                        <span class="capacity">👤 4</span>
+                                        <span class="capacity" aria-label="Capacity: 4 seats">👤 4</span>
                                     </div>
                                 </div>
 
                                 <!-- Vehicle Item: Sedan -->
-                                <div class="vehicle-item" data-type="sedan" data-base-fare="80" data-per-km="18">
+                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="sedan" data-base-fare="80" data-per-km="18">
                                     <div class="vehicle-info">
-                                        <span class="vehicle-icon">🚘</span>
+                                        <span class="vehicle-icon" aria-hidden="true">🚘</span>
                                         <div>
                                             <h4>Sedan</h4>
                                             <p class="eta">Nearby • 5 min away</p>
@@ -183,7 +183,7 @@
                                     </div>
                                     <div class="vehicle-price">
                                         <span class="price">₹140 - ₹180</span>
-                                        <span class="capacity">👤 4</span>
+                                        <span class="capacity" aria-label="Capacity: 4 seats">👤 4</span>
                                     </div>
                                 </div>
                             </div>
@@ -192,7 +192,7 @@
                         <!-- Fare Summary Section -->
                         <div class="fare-summary-container">
                             <h3 class="subsection-title">Fare Breakdown</h3>
-                            <div class="fare-card">
+                            <div class="fare-card" role="region" aria-label="Fare summary detail">
                                 <div class="fare-row-detail">
                                     <span>Base Fare</span>
                                     <span id="base-fare-val">₹20.00</span>
@@ -220,12 +220,12 @@
                 </div>
 
                 <!-- Right side: Map/Visualization Placeholder -->
-                <div class="booking-map-card reveal">
+                <div class="booking-map-card reveal" role="region" aria-label="Route map preview">
                     <div class="map-container">
                         <div class="map-placeholder">
-                            <div class="map-marker pickup-marker">📍</div>
-                            <div class="map-marker dropoff-marker">🏁</div>
-                            <div class="map-route-line"></div>
+                            <div class="map-marker pickup-marker" aria-hidden="true">📍</div>
+                            <div class="map-marker dropoff-marker" aria-hidden="true">🏁</div>
+                            <div class="map-route-line" aria-hidden="true"></div>
                             <p>Interactive Route Map</p>
                             <small>Enter pickup & drop-off to view route</small>
                         </div>
