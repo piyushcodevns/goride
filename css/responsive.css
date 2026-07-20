@@ -199,3 +199,113 @@
   }
 }
 
+/* ==========================================
+   ULTRA-MOBILE RESPONSIVE FIXES (320px, 375px, 425px)
+   ========================================== */
+
+/* Breakpoint: 425px (Large Mobile) */
+@media (max-width: 425px) {
+  .hero h1 {
+    font-size: 2.1rem;
+  }
+  
+  .section-title {
+    font-size: 1.8rem !important;
+  }
+  
+  .navbar {
+    padding: 0.75rem 1rem;
+  }
+
+  .brand img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .brand span {
+    font-size: 1rem;
+  }
+}
+
+/* Breakpoint: 375px (Medium Mobile) */
+@media (max-width: 375px) {
+  .hero h1 {
+    font-size: 1.95rem;
+  }
+
+  .section-title {
+    font-size: 1.65rem !important;
+  }
+
+  .hero-buttons {
+    gap: 0.75rem;
+  }
+
+  .hero-buttons a,
+  .primary-btn,
+  .secondary-btn {
+    padding: 0.75rem 1.1rem;
+    font-size: 0.9rem;
+  }
+
+  .stats {
+    gap: 1rem;
+  }
+
+  .stat {
+    padding: 0.75rem;
+  }
+
+  .stat-icon {
+    font-size: 1.25rem;
+  }
+
+  .footer-bottom {
+    font-size: 0.8rem;
+  }
+}
+
+/* Breakpoint: 320px (Small Mobile - e.g. iPhone SE) */
+@media (max-width: 320px) {
+  .hero h1 {
+    font-size: 1.75rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem !important;
+  }
+
+  .hero-badge {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .brand span {
+    font-size: 0.95rem;
+  }
+
+  .container {
+    width: min(100% - 1rem, 1160px) !important;
+  }
+
+  .why-choose-card,
+  .service-card,
+  .testimonial-card,
+  .about-stat-card {
+    padding: 1.25rem 1rem !important;
+  }
+
+  .download-app-actions {
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .download-app-actions .store-btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+}
+

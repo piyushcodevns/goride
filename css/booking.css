@@ -529,3 +529,49 @@
     transform: translateY(-12px);
   }
 }
+
+/* Mobile Overrides for Booking Card & Vehicles */
+@media (max-width: 425px) {
+  .booking-card {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .vehicle-item {
+    padding: 0.8rem 1rem;
+  }
+  .vehicle-icon {
+    font-size: 1.5rem;
+  }
+  .vehicle-info h4 {
+    font-size: 0.9rem;
+  }
+  .vehicle-price .price {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .booking-card {
+    padding: 1rem;
+  }
+  .input-wrapper input {
+    padding-left: 2.5rem;
+  }
+  .input-wrapper .input-icon {
+    left: 0.8rem;
+  }
+  .vehicle-item {
+    padding: 0.65rem 0.8rem;
+  }
+  .vehicle-icon {
+    font-size: 1.3rem;
+  }
+  .vehicle-info h4 {
+    font-size: 0.85rem;
+  }
+  .vehicle-info .eta {
+    font-size: 0.75rem;
+  }
+}
