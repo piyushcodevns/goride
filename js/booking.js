@@ -338,6 +338,59 @@
         });
     }
 
+    // Debounced Autocomplete inputs searches (300ms delay)
+    const triggerPickupSearch = debounce(() => {
+        const query = pickupInput.value;
+        if (query.trim().length === 0) {
+            delete pickupInput.dataset.lat;
+            delete pickupInput.dataset.lng;
+            delete pickupInput.dataset.placeId;
+            delete pickupInput.dataset.address;
+            pickupSuggestions.style.display = 'none';
+            checkAndTriggerRoute();
+            performLiveValidation();
+            return;
+        }
+        window.MapProvider.search(query, pickupInput, pickupSuggestions, (details) => {
+            pickupInput.dataset.lat = details.lat;
+            pickupInput.dataset.lng = details.lng;
+            pickupInput.dataset.placeId = details.placeId;
+            pickupInput.dataset.address = details.address;
+            pickupInput.value = details.name;
+
+            checkAndTriggerRoute();
+            performLiveValidation();
+        });
+    }, 300);
+
+    const triggerDropoffSearch = debounce(() => {
+        const query = dropoffInput.value;
+        if (query.trim().length === 0) {
+            delete dropoffInput.dataset.lat;
+            delete dropoffInput.dataset.lng;
+            delete dropoffInput.dataset.placeId;
+            delete dropoffInput.dataset.address;
+            dropoffSuggestions.style.display = 'none';
+            checkAndTriggerRoute();
+            performLiveValidation();
+            return;
+        }
+        window.MapProvider.search(query, dropoffInput, dropoffSuggestions, (details) => {
+            dropoffInput.dataset.lat = details.lat;
+            dropoffInput.dataset.lng = details.lng;
+            dropoffInput.dataset.placeId = details.placeId;
+            dropoffInput.dataset.address = details.address;
+            dropoffInput.value = details.name;
+
+            checkAndTriggerRoute();
+            performLiveValidation();
+        });
+    }, 300);
+
+    // Typing Listeners
+    pickupInput.addEventListener('input', triggerPickupSearch);
+    dropoffInput.addEventListener('input', triggerDropoffSearch);
+
     // Coordinate state changes
     pickupInput.addEventListener('change', () => {
         checkAndTriggerRoute();
@@ -346,29 +399,6 @@
     dropoffInput.addEventListener('change', () => {
         checkAndTriggerRoute();
         performLiveValidation();
-    });
-
-    // Reset coordinates if inputs are wiped clean
-    pickupInput.addEventListener('input', () => {
-        if (pickupInput.value.trim() === '') {
-            delete pickupInput.dataset.lat;
-            delete pickupInput.dataset.lng;
-            delete pickupInput.dataset.placeId;
-            delete pickupInput.dataset.address;
-            checkAndTriggerRoute();
-            performLiveValidation();
-        }
-    });
-
-    dropoffInput.addEventListener('input', () => {
-        if (dropoffInput.value.trim() === '') {
-            delete dropoffInput.dataset.lat;
-            delete dropoffInput.dataset.lng;
-            delete dropoffInput.dataset.placeId;
-            delete dropoffInput.dataset.address;
-            checkAndTriggerRoute();
-            performLiveValidation();
-        }
     });
 
     // Hide suggestions list when clicking outside
@@ -563,15 +593,15 @@
                         placeId: pickupInput.dataset.placeId || "mock-pickup-id",
                         name: pickupInput.value,
                         address: pickupInput.dataset.address || pickupInput.value,
-                        lat: pickupCoords ? pickupCoords.lat : null,
-                        lng: pickupCoords ? pickupCoords.lng : null
+                        lat: pickupCoords?.lat ?? null,
+                        lng: pickupCoords?.lng ?? null
                     },
                     drop: {
                         placeId: dropoffInput.dataset.placeId || "mock-dropoff-id",
                         name: dropoffInput.value,
                         address: dropoffInput.dataset.address || dropoffInput.value,
-                        lat: dropCoords ? dropCoords.lat : null,
-                        lng: dropCoords ? dropCoords.lng : null
+                        lat: dropCoords?.lat ?? null,
+                        lng: dropCoords?.lng ?? null
                     },
                     route: {
                         distanceKm: currentDistance,
