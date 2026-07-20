@@ -586,3 +586,332 @@
     font-size: 0.75rem;
   }
 }
+
+/* Visually Hidden Utility for Accessible native inputs */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Payment Method Styles */
+.payment-method-container {
+  margin-top: 0.5rem;
+}
+
+.payment-options {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.payment-option {
+  flex: 1;
+  cursor: pointer;
+}
+
+.payment-option .option-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.8rem 0.5rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+}
+
+.payment-option:hover .option-card {
+  background: var(--surface);
+  border-color: rgba(37, 99, 235, 0.25);
+}
+
+.payment-option input:checked + .option-card {
+  background: rgba(37, 99, 235, 0.04);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.payment-option input:focus-visible + .option-card {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.payment-icon {
+  font-size: 1.4rem;
+}
+
+.payment-text {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Coupon Styles */
+.coupon-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.coupon-container label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.coupon-wrapper {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.coupon-wrapper input {
+  flex: 1;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: var(--text);
+  background: var(--background);
+  transition: border-color var(--transition);
+}
+
+.coupon-wrapper input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.coupon-wrapper .apply-btn {
+  padding: 0.85rem 1.4rem !important;
+  font-size: 0.92rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.coupon-msg {
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: block;
+  min-height: 1.2rem;
+}
+
+.coupon-msg.success {
+  color: var(--accent);
+}
+
+.coupon-msg.error {
+  color: #DC2626;
+}
+
+/* Modals & Overlays Styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Success Modal Card */
+.modal-card {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  max-width: 440px;
+  width: min(100% - 2rem, 440px);
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+  transform: translateY(30px);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-overlay.active .modal-card {
+  transform: translateY(0);
+}
+
+.modal-icon {
+  font-size: 3.2rem;
+  margin-bottom: 1.25rem;
+  animation: floaty 4s ease-in-out infinite;
+}
+
+.modal-card h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+
+.modal-card p {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+/* Driver Matching Details inside Modal */
+.driver-match-details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.driver-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.driver-avatar-icon {
+  font-size: 2.2rem;
+  width: 3.2rem;
+  height: 3.2rem;
+  background: rgba(37, 99, 235, 0.08);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.driver-profile div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.driver-profile strong {
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.driver-profile span {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.vehicle-plate-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  padding-top: 0.85rem;
+  font-size: 0.9rem;
+}
+
+.vehicle-plate-info span {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.vehicle-plate-info strong {
+  background: #FEF08A;
+  color: #713F12;
+  padding: 0.25rem 0.65rem;
+  border-radius: 4px;
+  border: 1px solid #EAB308;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.modal-btn {
+  width: 100%;
+  padding: 0.95rem !important;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+}
+
+/* Finding Driver Loader Overlay */
+.loader-card {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  max-width: 380px;
+  width: min(100% - 2rem, 380px);
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.loader-spinner {
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin-loader 0.8s linear infinite;
+}
+
+.loader-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.loader-card p {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.loader-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.loader-progress-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: 99px;
+  transition: width 0.1s linear;
+}
+
+/* Responsive adjustments for payment */
+@media (max-width: 375px) {
+  .payment-options {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .payment-option .option-card {
+    flex-direction: row;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+}

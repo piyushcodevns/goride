@@ -208,6 +208,44 @@
                             </div>
                         </div>
 
+                        <!-- Payment Method Section -->
+                        <div class="payment-method-container">
+                            <h3 class="subsection-title">Payment Method</h3>
+                            <div class="payment-options">
+                                <label class="payment-option active">
+                                    <input type="radio" name="payment" value="upi" checked class="visually-hidden">
+                                    <span class="option-card">
+                                        <span class="payment-icon" aria-hidden="true">📱</span>
+                                        <span class="payment-text">UPI / GPay</span>
+                                    </span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="card" class="visually-hidden">
+                                    <span class="option-card">
+                                        <span class="payment-icon" aria-hidden="true">💳</span>
+                                        <span class="payment-text">Card</span>
+                                    </span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="cash" class="visually-hidden">
+                                    <span class="option-card">
+                                        <span class="payment-icon" aria-hidden="true">💵</span>
+                                        <span class="payment-text">Cash</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Coupon / Promo Code -->
+                        <div class="coupon-container">
+                            <label for="coupon-input">Promo Code</label>
+                            <div class="coupon-wrapper">
+                                <input type="text" id="coupon-input" placeholder="Enter coupon (e.g. GORIDE20)" autocomplete="off">
+                                <button type="button" id="apply-coupon-btn" class="secondary-btn apply-btn">Apply</button>
+                            </div>
+                            <small id="coupon-message" class="coupon-msg" aria-live="polite"></small>
+                        </div>
+
                         <!-- Fare Summary Section -->
                         <div class="fare-summary-container">
                             <h3 class="subsection-title">Fare Breakdown</h3>
@@ -260,8 +298,44 @@
     <!-- Toast container -->
     <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
+        <div class="modal-card">
+            <div class="modal-icon" aria-hidden="true">🎉</div>
+            <h2 id="modal-title">Ride Confirmed!</h2>
+            <p>Your ride has been successfully booked. A professional driver is on their way to your pickup location.</p>
+            <div class="driver-match-details">
+                <div class="driver-profile">
+                    <span class="driver-avatar-icon" aria-hidden="true">👨‍✈️</span>
+                    <div>
+                        <strong id="matched-driver-name">Vikram Singh</strong>
+                        <span id="matched-driver-rating">⭐ 4.9 (120+ rides)</span>
+                    </div>
+                </div>
+                <div class="vehicle-plate-info">
+                    <span id="matched-vehicle-type">Mini (Maruti Swift)</span>
+                    <strong id="matched-vehicle-plate">DL 3C AB 1234</strong>
+                </div>
+            </div>
+            <button type="button" id="close-modal-btn" class="primary-btn modal-btn">Track Ride</button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="modal-overlay" aria-hidden="true">
+        <div class="loader-card">
+            <div class="loader-spinner" aria-hidden="true"></div>
+            <h3>Finding Nearby Drivers...</h3>
+            <p>Matching you with the best driver for your route</p>
+            <div class="loader-progress-bar">
+                <div class="loader-progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="js/main.js" defer></script>
     <script src="js/animations.js" defer></script>
+    <script src="js/booking.js" defer></script>
 </body>
 </html>
