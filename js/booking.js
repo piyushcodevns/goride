@@ -335,88 +335,38 @@
         });
     }
 
-    // Debounced Autocomplete inputs searches (500ms delay from config)
-    const triggerPickupSearch = debounce(() => {
-        const query = pickupInput.value;
-        if (query.trim().length === 0) {
+    // Coordinate state changes
+    pickupInput.addEventListener('change', () => {
+        checkAndTriggerRoute();
+        performLiveValidation();
+    });
+    dropoffInput.addEventListener('change', () => {
+        checkAndTriggerRoute();
+        performLiveValidation();
+    });
+
+    // Reset coordinates if inputs are wiped clean
+    pickupInput.addEventListener('input', () => {
+        if (pickupInput.value.trim() === '') {
             delete pickupInput.dataset.lat;
             delete pickupInput.dataset.lng;
             delete pickupInput.dataset.placeId;
             delete pickupInput.dataset.address;
-            pickupSuggestions.style.display = 'none';
             checkAndTriggerRoute();
             performLiveValidation();
-            return;
         }
-        window.MapProvider.search(query, pickupInput, pickupSuggestions, (details) => {
-            pickupInput.dataset.lat = details.lat;
-            pickupInput.dataset.lng = details.lng;
-            pickupInput.dataset.placeId = details.placeId;
-            pickupInput.dataset.address = details.address;
-            pickupInput.value = details.name;
+    });
 
-            checkAndTriggerRoute();
-            performLiveValidation();
-        });
-    }, window.APP_CONFIG.API.DEBOUNCE_DELAY);
-
-    const triggerDropoffSearch = debounce(() => {
-        const query = dropoffInput.value;
-        if (query.trim().length === 0) {
+    dropoffInput.addEventListener('input', () => {
+        if (dropoffInput.value.trim() === '') {
             delete dropoffInput.dataset.lat;
             delete dropoffInput.dataset.lng;
             delete dropoffInput.dataset.placeId;
             delete dropoffInput.dataset.address;
-            dropoffSuggestions.style.display = 'none';
             checkAndTriggerRoute();
             performLiveValidation();
-            return;
         }
-        window.MapProvider.search(query, dropoffInput, dropoffSuggestions, (details) => {
-            dropoffInput.dataset.lat = details.lat;
-            dropoffInput.dataset.lng = details.lng;
-            dropoffInput.dataset.placeId = details.placeId;
-            dropoffInput.dataset.address = details.address;
-            dropoffInput.value = details.name;
-
-            checkAndTriggerRoute();
-            performLiveValidation();
-        });
-    }, window.APP_CONFIG.API.DEBOUNCE_DELAY);
-
-    // Typing Listeners
-    pickupInput.addEventListener('input', triggerPickupSearch);
-    dropoffInput.addEventListener('input', triggerDropoffSearch);
-
-    // Coordinate state changes
-    pickupInput.addEventListener('change', checkAndTriggerRoute);
-    dropoffInput.addEventListener('change', checkAndTriggerRoute);
-
-    // Auto-select match on blur to prevent pricing remaining empty (₹ --)
-    function handleInputBlur(inputEl, suggestionsEl) {
-        setTimeout(() => {
-            suggestionsEl.style.display = 'none';
-            if (!inputEl.dataset.lat || !inputEl.dataset.lng) {
-                const query = sanitizeInput(inputEl.value);
-                if (query.length >= window.APP_CONFIG.API.MIN_CHARS && window.MapProvider && window.MapProvider.resolveFirstMatch) {
-                    const match = window.MapProvider.resolveFirstMatch(query);
-                    if (match) {
-                        inputEl.dataset.lat = match.lat;
-                        inputEl.dataset.lng = match.lng;
-                        inputEl.dataset.placeId = match.placeId;
-                        inputEl.dataset.address = match.address;
-                        inputEl.value = match.name;
-                        
-                        checkAndTriggerRoute();
-                        performLiveValidation();
-                    }
-                }
-            }
-        }, 250);
-    }
-
-    pickupInput.addEventListener('blur', () => handleInputBlur(pickupInput, pickupSuggestions));
-    dropoffInput.addEventListener('blur', () => handleInputBlur(dropoffInput, dropoffSuggestions));
+    });
 
     // Pickers Validation trigger
     dateInput.addEventListener('input', performLiveValidation);

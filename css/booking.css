@@ -1086,25 +1086,47 @@
   border-radius: var(--radius-sm);
 }
 
-/* Leaflet override to match clean design */
-.leaflet-control-zoom {
+/* Google Maps Autocomplete Dropdown Styling */
+.pac-container {
+  border-radius: var(--radius-sm) !important;
   border: 1px solid var(--border) !important;
-  box-shadow: var(--shadow-sm) !important;
+  box-shadow: var(--shadow) !important;
+  font-family: 'Poppins', sans-serif !important;
+  background-color: var(--background) !important;
+  margin-top: 4px !important;
+  z-index: 99999 !important;
 }
 
-.leaflet-control-zoom-in,
-.leaflet-control-zoom-out {
-  background-color: var(--background) !important;
+.pac-item {
+  padding: 8px 12px !important;
+  cursor: pointer !important;
+  border-top: 1px solid var(--border) !important;
+  display: flex !important;
+  align-items: center !important;
   color: var(--text) !important;
-  border-bottom: 1px solid var(--border) !important;
   transition: background var(--transition) !important;
 }
 
-.leaflet-control-zoom-in:hover,
-.leaflet-control-zoom-out:hover {
+.pac-item:hover,
+.pac-item-selected {
   background-color: var(--surface) !important;
 }
 
-.leaflet-bar {
-  border-radius: var(--radius-sm) !important;
+.pac-icon {
+  margin-right: 10px !important;
+}
+
+.pac-item-query {
+  font-size: 0.9rem !important;
+  color: var(--text) !important;
+}
+
+.pac-matched {
+  font-weight: 700 !important;
+  color: var(--primary) !important;
+}
+
+.pac-secondary-text {
+  font-size: 0.75rem !important;
+  color: var(--muted) !important;
 }
