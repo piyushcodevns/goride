@@ -116,4 +116,43 @@ if (skeletonLoaders.length > 0) {
   });
 }
 
+// Contact Form Validation
+const contactForm = document.getElementById('contact-form');
+if (contactForm) {
+  contactForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const name = document.getElementById('contact-name').value.trim();
+    const email = document.getElementById('contact-email').value.trim();
+    const phone = document.getElementById('contact-phone').value.trim();
+    const subject = document.getElementById('contact-subject').value.trim();
+    const inquiry = document.getElementById('contact-inquiry').value;
+    const message = document.getElementById('contact-message').value.trim();
+    
+    // Check empty fields
+    if (!name || !email || !phone || !subject || !inquiry || !message) {
+      window.showToast("Please fill in all required fields.", "info");
+      return;
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      window.showToast("Please enter a valid email address.", "info");
+      return;
+    }
+    
+    // Phone validation
+    const phoneRegex = /^[0-9]{10,12}$/;
+    if (!phoneRegex.test(phone.replace(/[\s\-+()]/g, ''))) {
+      window.showToast("Please enter a valid phone number.", "info");
+      return;
+    }
+    
+    // Success submission
+    window.showToast("Message sent successfully! Our team will contact you soon.", "success");
+    contactForm.reset();
+  });
+}
+
 

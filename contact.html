@@ -4,22 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="index, follow">
-    <title>Contact Go Ride | Support, Help & Ride Assistance</title>
+    <title>Contact Go Ride | Support, Help &amp; Ride Assistance</title>
     <meta name="description" content="Get in touch with Go Ride for support, ride assistance, safety help, and general inquiries.">
     <meta name="keywords" content="Contact Go Ride, support, ride assistance, customer care, help center">
     <meta name="author" content="Go Ride">
     <meta name="theme-color" content="#2563EB">
     <!-- <link rel="canonical" href="https://goride.com/contact.html"> -->
-    <meta property="og:title" content="Contact Go Ride | Support, Help & Ride Assistance">
+    <meta property="og:title" content="Contact Go Ride | Support, Help &amp; Ride Assistance">
     <meta property="og:description" content="Get in touch with Go Ride for support, ride assistance, safety help, and general inquiries.">
-    <!-- <meta property="og:image" content="https://goride.com/assets/svg/logo.svg"> -->
+    <!-- <meta property="og:image" content="https://goride.com/assets/images/og-cover.jpg"> -->
     <!-- TODO: Replace with PNG/JPG cover image later (e.g. assets/images/cover.jpg or 1200x630 png) -->
     <!-- <meta property="og:url" content="https://goride.com/contact.html"> -->
     <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Contact Go Ride | Support, Help & Ride Assistance">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Contact Go Ride | Support, Help &amp; Ride Assistance">
     <meta name="twitter:description" content="Get in touch with Go Ride for support, ride assistance, safety help, and general inquiries.">
-    <!-- <meta name="twitter:image" content="https://goride.com/assets/svg/logo.svg"> -->
+    <!-- <meta name="twitter:image" content="https://goride.com/assets/images/og-cover.jpg"> -->
     <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,6 +29,48 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/animations.css">
+
+    <!-- JSON-LD Breadcrumb Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://goride.com/index.html"
+      }, {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Contact",
+        "item": "https://goride.com/contact.html"
+      }]
+    }
+    </script>
+
+    <!-- JSON-LD Organization & ContactPoint Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Go Ride Technologies",
+      "url": "https://goride.com",
+      "logo": "https://goride.com/assets/svg/logo.svg",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+919876543210",
+        "contactType": "customer service",
+        "areaServed": "IN",
+        "availableLanguage": ["en", "hi"]
+      },
+      "sameAs": [
+        "https://instagram.com/goride",
+        "https://x.com/goride",
+        "https://linkedin.com/company/goride"
+      ]
+    }
+    </script>
 </head>
 <body>
     <!-- Page Loader -->
@@ -64,7 +106,8 @@
     </header>
 
     <main>
-        <section class="about-page-hero contact-page-hero">
+        <!-- Hero Section -->
+        <section class="about-page-hero">
             <div class="container about-page-hero-grid">
                 <div class="reveal">
                     <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -73,124 +116,281 @@
                             <li aria-current="page">Contact</li>
                         </ol>
                     </nav>
-                    <span class="hero-badge">Contact Us</span>
-                    <h1>We’re here to help.</h1>
-                    <p>Whether you need support with a ride, want to ask about our services, or need safety assistance, we’re ready to help you anytime.</p>
+                    <span class="hero-badge">Contact Go Ride</span>
+                    <h1>Need Help? We're Here for You</h1>
+                    <p>Questions, ride issues, business inquiries, or feedback—our team is ready to assist you. Find options below to connect with us instantly.</p>
                     <div class="hero-buttons">
-                        <a href="#contact-form" class="primary-btn">Send a Message</a>
-                        <a href="booking.html" class="secondary-btn">Book a Ride</a>
+                        <a href="booking.html" class="primary-btn">Book Ride</a>
+                        <a href="#contact-cards" class="secondary-btn">Get In Touch</a>
                     </div>
                 </div>
 
-                <section class="about-hero-card reveal" aria-labelledby="help-heading">
-                    <div class="about-hero-card-inner">
-                        <h2 id="help-heading">Need help fast?</h2>
-                        <p>Reach our support team through any of the options below.</p>
-                        <ul>
-                            <li>Email: support@goride.com</li>
-                            <li>Phone: +91 98765 43210</li>
-                            <li>Business Hours: 24/7 support</li>
-                        </ul>
-                    </div>
-                </section>
-            </div>
-        </section>
-
-        <section class="page-section contact-details-section" aria-labelledby="contact-details-heading">
-            <div class="container contact-grid">
-                <div class="contact-card reveal">
-                    <span class="section-tag">Contact Information</span>
-                    <h2 id="contact-details-heading" class="section-title">We’re available whenever you need us</h2>
-                    <ul class="info-list">
-                        <li><strong>Email</strong><span><a href="mailto:support@goride.com">support@goride.com</a></span></li>
-                        <li><strong>Phone</strong><span><a href="tel:+919876543210">+91 98765 43210</a></span></li>
-                        <li><strong>Office Address</strong><address>12, Smart Mobility Avenue, Bengaluru, India</address></li>
-                        <li><strong>Business Hours</strong><span>24/7 Customer Support</span></li>
-                    </ul>
-                </div>
-
-                <div class="contact-card reveal" id="contact-form">
-                    <span class="section-tag">Contact Form</span>
-                    <h2 class="section-title">Send us a message</h2>
-                    <form class="contact-form" method="post" action="#" novalidate>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="full-name">Full Name *</label>
-                                <input id="full-name" name="fullName" type="text" autocomplete="name" required aria-required="true">
-                            </div>
-                            <div class="form-group">
-                                <label for="email">Email Address *</label>
-                                <input id="email" name="email" type="email" autocomplete="email" required aria-required="true">
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="phone">Phone Number</label>
-                                <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="15">
-                            </div>
-                            <div class="form-group">
-                                <label for="subject">Subject *</label>
-                                <input id="subject" name="subject" type="text" autocomplete="off" required aria-required="true">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="message">Message *</label>
-                            <textarea id="message" name="message" rows="6" autocomplete="off" required aria-required="true"></textarea>
-                        </div>
-
-                        <button type="submit" class="primary-btn">Submit</button>
-                    </form>
+                <div class="services-hero-graphic reveal">
+                    <img src="assets/svg/contact-hero.svg" alt="Illustration representing smart support and messaging channels" class="hero-image" fetchpriority="high">
                 </div>
             </div>
         </section>
 
-        <section class="page-section quick-help-section" aria-labelledby="quick-help-heading">
-            <div class="container quick-help-grid">
-                <article class="info-card reveal">
-                    <span class="section-tag">Quick Help</span>
-                    <h2 id="quick-help-heading" class="section-title">We’ve got your back</h2>
-                    <ul class="info-list compact-list">
-                        <li><strong>FAQs</strong><span>Visit our help resources for common questions.</span></li>
-                        <li><strong>Emergency Support</strong><span>Reach our support desk for urgent travel assistance.</span></li>
-                        <li><strong>Safety</strong><span>Report incidents and access safety guidance anytime.</span></li>
-                    </ul>
-                </article>
+        <!-- Contact Cards Section -->
+        <section class="page-section" id="contact-cards" aria-labelledby="cards-heading">
+            <div class="container">
+                <h2 id="cards-heading" class="sr-only">Contact Details</h2>
+                <div class="contact-cards-grid skeleton-onload">
+                    <article class="contact-info-card reveal">
+                        <div class="contact-info-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        </div>
+                        <h3>Phone</h3>
+                        <p>24/7 Helpline Support</p>
+                        <p><a href="tel:+919876543210">+91 98765 43210</a></p>
+                    </article>
 
-                <article class="info-card reveal">
-                    <span class="section-tag">Office Location</span>
-                    <h2 class="section-title">Visit our support hub</h2>
-                    <div class="map-placeholder" role="region" aria-label="Google Map placeholder">
-                        <p>Map preview coming soon</p>
-                    </div>
-                </article>
+                    <article class="contact-info-card reveal">
+                        <div class="contact-info-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        </div>
+                        <h3>Email</h3>
+                        <p>Email Customer Support</p>
+                        <p><a href="mailto:support@goride.com">support@goride.com</a></p>
+                    </article>
+
+                    <article class="contact-info-card reveal">
+                        <div class="contact-info-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        </div>
+                        <h3>Office</h3>
+                        <p>Varanasi, Uttar Pradesh</p>
+                        <p>India</p>
+                    </article>
+
+                    <article class="contact-info-card reveal">
+                        <div class="contact-info-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <h3>Working Hours</h3>
+                        <p>Monday - Sunday</p>
+                        <p>24/7 Customer Support</p>
+                    </article>
+                </div>
             </div>
         </section>
 
-        <section class="page-section social-section" aria-labelledby="social-heading">
+        <!-- Form and Map Section -->
+        <section class="page-section" aria-labelledby="form-heading">
             <div class="container">
                 <div class="section-header reveal">
-                    <span class="section-tag">Connect With Us</span>
-                    <h2 id="social-heading" class="section-title">Follow Go Ride on social media</h2>
+                    <span class="section-tag">Write to Us</span>
+                    <h2 id="form-heading" class="section-title">Send a Message</h2>
+                    <p class="section-copy">Fill in the fields below, and our support team will respond within a few hours.</p>
                 </div>
 
-                <div class="social-links reveal">
-                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
-                    <a href="https://x.com" target="_blank" rel="noopener noreferrer">X (Twitter)</a>
-                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">Facebook</a>
+                <div class="contact-section-grid">
+                    <!-- Form Container -->
+                    <div class="contact-form-container reveal">
+                        <form id="contact-form" class="contact-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="contact-name">Full Name <span aria-hidden="true">*</span></label>
+                                    <input type="text" id="contact-name" name="name" required aria-required="true" autocomplete="name" minlength="3" maxlength="50" pattern="[A-Za-z\s]+" placeholder="John Doe">
+                                </div>
+                                <div class="form-group">
+                                    <label for="contact-email">Email <span aria-hidden="true">*</span></label>
+                                    <input type="email" id="contact-email" name="email" required aria-required="true" autocomplete="email" placeholder="john@goride.com">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="contact-phone">Phone <span aria-hidden="true">*</span></label>
+                                    <input type="tel" id="contact-phone" name="phone" required aria-required="true" autocomplete="tel" pattern="[0-9]{10}" maxlength="10" minlength="10" placeholder="9876543210">
+                                </div>
+                                <div class="form-group">
+                                    <label for="contact-subject">Subject <span aria-hidden="true">*</span></label>
+                                    <input type="text" id="contact-subject" name="subject" required aria-required="true" maxlength="100" placeholder="Issue Topic">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-inquiry">Select Inquiry <span aria-hidden="true">*</span></label>
+                                <select id="contact-inquiry" name="inquiry" required aria-required="true" class="form-select-custom">
+                                    <option value="" disabled selected>Choose Inquiry Category</option>
+                                    <option value="ride-issue">Ride Issue</option>
+                                    <option value="booking-help">Booking Help</option>
+                                    <option value="lost-item">Lost Item</option>
+                                    <option value="business">Business Partnership</option>
+                                    <option value="driver">Driver Support</option>
+                                    <option value="general">General Question</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-message">Message <span aria-hidden="true">*</span></label>
+                                <textarea id="contact-message" name="message" rows="5" required aria-required="true" minlength="10" maxlength="500" placeholder="Describe your query in detail..."></textarea>
+                            </div>
+                            <button type="submit" class="primary-btn">Send Message</button>
+                        </form>
+                    </div>
+
+                    <!-- Map Placeholder Container -->
+                    <div class="office-map-container reveal">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d115408.2393278912!2d82.9087063!3d25.3176452!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x398e2db76c555555%3A0x83e203ebd530bc8!2sVaranasi%2C%20Uttar%20Pradesh!5e0!3m2!1sen!2sin!4v1690000000000!5m2!1sen!2sin" width="100%" height="280" style="border:0; border-radius: 1rem;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Go Ride Office Map Location"></iframe>
+                        <div class="map-details">
+                            <h3>Our Office</h3>
+                            <p><strong>Address:</strong> Varanasi, Uttar Pradesh, India</p>
+                            <p><strong>Working Hours:</strong> Monday - Sunday, 24/7 Available</p>
+                            <a href="https://www.google.com/maps/dir/?api=1&destination=25.3176,82.9739" target="_blank" rel="noopener noreferrer" class="primary-btn map-directions-btn">Get Directions</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="page-section cta-section" aria-labelledby="contact-cta-heading">
-            <div class="container cta-box reveal">
-                <h2 id="contact-cta-heading">Ready to ride?</h2>
-                <p>Book a safe, reliable ride with Go Ride and experience travel made simple.</p>
+        <!-- FAQ Section -->
+        <section class="faq" id="faq" aria-labelledby="faq-list-heading">
+            <div class="container faq-container">
+                <div class="section-header reveal">
+                    <span class="section-tag">FAQ</span>
+                    <h2 class="section-title" id="faq-list-heading">Frequently Asked Questions</h2>
+                    <p class="section-copy">Find answers to the most common questions regarding booking, safety, cancellations, and driver applications.</p>
+                </div>
+
+                <div class="faq-list">
+                    <article class="faq-item reveal">
+                        <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-1" id="faq-button-1">
+                            <span>How can I book a ride?</span>
+                            <span class="faq-icon" aria-hidden="true">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-button-1">
+                            <p>Enter your pickup and destination in our app or website booking portal, choose a vehicle category, and click 'Book Now' to pair with the nearest driver.</p>
+                        </div>
+                    </article>
+
+                    <article class="faq-item reveal">
+                        <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-2" id="faq-button-2">
+                            <span>How do refunds work?</span>
+                            <span class="faq-icon" aria-hidden="true">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer" id="faq-answer-2" role="region" aria-labelledby="faq-button-2">
+                            <p>If a booking is cancelled and you are charged incorrectly, the refund is initiated automatically and credited back to your original payment mode within 5-7 business days.</p>
+                        </div>
+                    </article>
+
+                    <article class="faq-item reveal">
+                        <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-3" id="faq-button-3">
+                            <span>How can I become a driver?</span>
+                            <span class="faq-icon" aria-hidden="true">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-button-3">
+                            <p>Register on our portal with your driving license, vehicle registration papers, and address proof. Once audited, you can join the network.</p>
+                        </div>
+                    </article>
+
+                    <article class="faq-item reveal">
+                        <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-4" id="faq-button-4">
+                            <span>How do I contact emergency support?</span>
+                            <span class="faq-icon" aria-hidden="true">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer" id="faq-answer-4" role="region" aria-labelledby="faq-button-4">
+                            <p>During an active ride, press the in-app SOS button or dial our dedicated emergency support lines instantly to connect with a response squad.</p>
+                        </div>
+                    </article>
+
+                    <article class="faq-item reveal">
+                        <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-5" id="faq-button-5">
+                            <span>Can I schedule rides?</span>
+                            <span class="faq-icon" aria-hidden="true">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer" id="faq-answer-5" role="region" aria-labelledby="faq-button-5">
+                            <p>Yes, choose 'Schedule Ride' option during booking, select dates and timings, and confirm the request. Our dispatch system matches drivers just before pickup.</p>
+                        </div>
+                    </article>
+
+                    <article class="faq-item reveal">
+                        <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-6" id="faq-button-6">
+                            <span>How do I cancel a booking?</span>
+                            <span class="faq-icon" aria-hidden="true">
+                                <svg class="faq-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer" id="faq-answer-6" role="region" aria-labelledby="faq-button-6">
+                            <p>Tap on your active ride status card in the app, select 'Cancel Booking', choose a reason, and confirm. Note that cancellation fees might apply after matching.</p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Emergency Support Banner -->
+        <section class="container reveal" aria-labelledby="emergency-heading">
+            <div class="emergency-banner-custom">
+                <h2 id="emergency-heading">Emergency? Call Support Immediately</h2>
+                <p>If you are facing a safety hazard, route deviation, or immediate risk, trigger our emergency line for rapid assistance.</p>
+                <a href="tel:+919876543210" class="emergency-phone-btn">
+                    <span aria-hidden="true">🚨</span> SOS (Call Emergency Help Desk)
+                </a>
+            </div>
+        </section>
+
+        <!-- Social Media Links Section -->
+        <section class="page-section" aria-labelledby="social-heading">
+            <div class="container">
+                <div class="section-header reveal">
+                    <span class="section-tag">Follow Us</span>
+                    <h2 id="social-heading" class="section-title">Connect with Us on Social Media</h2>
+                    <p class="section-copy">Stay updated with our latest offers, features, and expansion updates across regions.</p>
+                </div>
+
+                <div class="social-cards-grid">
+                    <a href="https://instagram.com/goride" class="social-media-card reveal" aria-label="Follow Go Ride on Instagram" target="_blank" rel="noopener noreferrer">
+                        <div class="social-media-card-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                        </div>
+                        <h3>Instagram</h3>
+                        <p>@goride</p>
+                    </a>
+
+                    <a href="https://x.com/goride" class="social-media-card reveal" aria-label="Follow Go Ride on X" target="_blank" rel="noopener noreferrer">
+                        <div class="social-media-card-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false" aria-hidden="true"><path d="M4 4l11.733 16h4.267l-11.733 -16z M4 20l6.768 -6.768 M20 4l-6.768 6.768"/></svg>
+                        </div>
+                        <h3>X (Twitter)</h3>
+                        <p>@goride</p>
+                    </a>
+
+                    <a href="https://linkedin.com/company/goride" class="social-media-card reveal" aria-label="Follow Go Ride on LinkedIn" target="_blank" rel="noopener noreferrer">
+                        <div class="social-media-card-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+                        </div>
+                        <h3>LinkedIn</h3>
+                        <p>Go Ride Technologies</p>
+                    </a>
+
+                    <a href="https://facebook.com/goride" class="social-media-card reveal" aria-label="Follow Go Ride on Facebook" target="_blank" rel="noopener noreferrer">
+                        <div class="social-media-card-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                        </div>
+                        <h3>Facebook</h3>
+                        <p>@goride</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="page-section" aria-labelledby="cta-heading">
+            <div class="container cta-section-premium reveal">
+                <h2 id="cta-heading">Ready for Your Next Ride?</h2>
+                <p>Book your next journey with Go Ride today and experience safer, smarter travel.</p>
                 <div class="hero-buttons">
                     <a href="booking.html" class="primary-btn">Book Ride</a>
-                    <a href="about.html" class="secondary-btn">Learn More</a>
+                    <a href="index.html#download-app" class="secondary-btn">Download App</a>
                 </div>
             </div>
         </section>
@@ -201,7 +401,7 @@
             <div class="footer-grid">
                 <div>
                     <a class="brand" href="index.html">
-                        <img src="assets/svg/logo.svg" alt="Go Ride logo">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
                         <span>Go Ride</span>
                     </a>
                     <p>Ride smarter, ride better with dependable travel for every journey.</p>
