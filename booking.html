@@ -53,6 +53,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
     <!-- CSS Stylesheets -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/booking.css">
@@ -334,12 +337,24 @@
                 <!-- Right side: Map/Visualization Placeholder -->
                 <div class="booking-map-card reveal" role="region" aria-label="Route map preview">
                     <div class="map-container">
-                        <div class="map-placeholder">
-                            <div class="map-marker pickup-marker" aria-hidden="true">📍</div>
-                            <div class="map-marker dropoff-marker" aria-hidden="true">🏁</div>
-                            <div class="map-route-line" aria-hidden="true"></div>
-                            <p>Interactive Route Map</p>
-                            <small>Enter pickup & drop-off to view route</small>
+                        <!-- Interactive Leaflet Map div -->
+                        <div id="map" style="width: 100%; height: 100%; background: var(--surface);"></div>
+
+                        <!-- Map Loader Overlay -->
+                        <div id="map-loader" class="map-overlay-wrapper map-loader-wrapper" aria-hidden="true">
+                            <div class="map-spinner"></div>
+                            <span>Calculating Route...</span>
+                        </div>
+
+                        <!-- Map Retry Overlay -->
+                        <div id="map-retry" class="map-overlay-wrapper map-retry-wrapper" aria-hidden="true">
+                            <p>Unable to calculate route.</p>
+                            <button type="button" id="map-retry-btn" class="secondary-btn apply-btn" style="padding: 0.6rem 1.2rem !important; font-size: 0.85rem;">Retry</button>
+                        </div>
+
+                        <!-- Map Offline Overlay -->
+                        <div id="map-offline" class="map-overlay-wrapper map-offline-wrapper" aria-hidden="true">
+                            <p>You're offline. Route preview unavailable.</p>
                         </div>
                     </div>
                 </div>
@@ -386,10 +401,12 @@
     </div>
 
     <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="js/main.js" defer></script>
     <script src="js/animations.js" defer></script>
     <script src="js/toast.js" defer></script>
     <script src="js/validation.js" defer></script>
+    <script src="js/map.js" defer></script>
     <script src="js/booking.js" defer></script>
 </body>
 </html>

@@ -18,6 +18,8 @@
     const bookingForm = document.getElementById('booking-form');
     const pickupInput = document.getElementById('pickup-input');
     const dropoffInput = document.getElementById('dropoff-input');
+    const pickupSuggestions = document.getElementById('pickup-suggestions');
+    const dropoffSuggestions = document.getElementById('dropoff-suggestions');
     const dateInput = document.getElementById('booking-date');
     const timeInput = document.getElementById('booking-time');
     const passengerInput = document.getElementById('passenger-count');
@@ -49,8 +51,13 @@
 
     // State Variables
     let currentDistance = 0; // in km
+    let currentDuration = 0; // in mins
     let appliedDiscount = 0; // in rupees
     let selectedVehicleType = 'bike'; // default
+
+    // Debounce timer stores
+    let pickupDebounce = null;
+    let dropoffDebounce = null;
 
     // ----------------------------------------------------
     // SINGLE RESPONSIBILITY HELPER FUNCTIONS
@@ -95,7 +102,7 @@
         };
     };
 
-    // Calculate dynamic ETA based on distance (assuming avg speed 40km/h + 2 min default delay)
+    // Calculate dynamic ETA based on distance
     window.calculateETA = function(distance) {
         if (distance === 0) return 0;
         return Math.round((distance / 40) * 60 + 2);
@@ -134,8 +141,7 @@
     // Render numbers in dynamic estimated breakdown card
     window.updateFareCard = function() {
         const fare = window.calculateFare(currentDistance, selectedVehicleType);
-        const eta = window.calculateETA(currentDistance);
-
+        
         // Update list placeholders as well
         vehicleItems.forEach(item => {
             const type = item.dataset.type;
@@ -152,7 +158,7 @@
 
         // Update main breakdown card
         distanceVal.innerText = `${currentDistance.toFixed(1)} KM`;
-        etaVal.innerText = `${eta} Mins`;
+        etaVal.innerText = `${currentDuration} Mins`;
         baseFareVal.innerText = `₹${fare.base.toFixed(2)}`;
         distanceFareVal.innerText = `₹${fare.distanceFare.toFixed(2)}`;
         taxesVal.innerText = `₹${fare.taxes.toFixed(2)}`;
@@ -190,7 +196,14 @@
         couponMessage.innerText = "";
         appliedDiscount = 0;
         currentDistance = 0;
+        currentDuration = 0;
         selectedVehicleType = 'bike';
+
+        // Clear dataset coordinates
+        delete pickupInput.dataset.lat;
+        delete pickupInput.dataset.lng;
+        delete dropoffInput.dataset.lat;
+        delete dropoffInput.dataset.lng;
 
         // Reset vehicles classes
         vehicleItems.forEach((v, index) => {
@@ -206,20 +219,41 @@
         initDateLimits();
         updateFareCard();
         performLiveValidation();
+
+        // Clear Map Route
+        if (window.MapProvider) {
+            window.MapProvider.clearRoute();
+        }
     };
 
-    // Calculate distance based on pickup and drop length hashes (Demo estimate)
-    function refreshDistance() {
-        const pLen = sanitizeInput(pickupInput.value).length;
-        const dLen = sanitizeInput(dropoffInput.value).length;
-        
-        if (pLen > 3 && dLen > 3) {
-            // Generate a hash-like deterministic mock distance between 3.5 and 28.5 km
-            currentDistance = parseFloat((((pLen + dLen) * 7) % 25 + 3.5).toFixed(1));
+    // Trigger OSRM driving calculations if both coordinates exist
+    function checkAndTriggerRoute() {
+        const plat = pickupInput.dataset.lat;
+        const plng = pickupInput.dataset.lng;
+        const dlat = dropoffInput.dataset.lat;
+        const dlng = dropoffInput.dataset.lng;
+
+        if (plat && plng && dlat && dlng) {
+            const pickupCoords = { lat: parseFloat(plat), lng: parseFloat(plng) };
+            const dropCoords = { lat: parseFloat(dlat), lng: parseFloat(dlng) };
+            window.MapProvider.getRoute(pickupCoords, dropCoords);
         } else {
-            currentDistance = 0;
+            // Clear route if either is missing coordinates
+            window.MapProvider.clearRoute();
         }
-        updateFareCard();
+    }
+
+    // Debounce wrapper helper
+    function debounce(callback, delay) {
+        let timeout;
+        return function() {
+            const context = this;
+            const args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                callback.apply(context, args);
+            }, delay);
+        };
     }
 
     // ----------------------------------------------------
@@ -228,6 +262,23 @@
     initDateLimits();
     updateFareCard();
 
+    // Register map callbacks
+    if (window.MapProvider) {
+        window.MapProvider.registerRouteCalculated((distance, duration) => {
+            currentDistance = distance;
+            currentDuration = duration;
+            updateFareCard();
+            performLiveValidation();
+        });
+
+        window.MapProvider.registerRouteCleared(() => {
+            currentDistance = 0;
+            currentDuration = 0;
+            updateFareCard();
+            performLiveValidation();
+        });
+    }
+
     // Geolocation Emulator
     if (currentLocationBtn) {
         currentLocationBtn.addEventListener('click', () => {
@@ -235,39 +286,102 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
                         pickupInput.value = "My Current Location (New Delhi)";
+                        pickupInput.dataset.lat = lat;
+                        pickupInput.dataset.lng = lng;
+
                         currentLocationBtn.classList.remove('loading');
                         window.showToast("Current location detected!", "success");
-                        refreshDistance();
+                        
+                        checkAndTriggerRoute();
                         performLiveValidation();
                     },
                     (error) => {
+                        // Fallback Delhi NCR
                         pickupInput.value = "Connaught Place, New Delhi";
+                        pickupInput.dataset.lat = 28.6304;
+                        pickupInput.dataset.lng = 77.2177;
+
                         currentLocationBtn.classList.remove('loading');
-                        window.showToast("Permission denied. Falling back to default address.", "info");
-                        refreshDistance();
+                        window.showToast("Permission denied. Fallback address loaded.", "info");
+
+                        checkAndTriggerRoute();
                         performLiveValidation();
                     }
                 );
             } else {
                 pickupInput.value = "Connaught Place, New Delhi";
+                pickupInput.dataset.lat = 28.6304;
+                pickupInput.dataset.lng = 77.2177;
+
                 currentLocationBtn.classList.remove('loading');
                 window.showToast("Geolocation not supported.", "error");
-                refreshDistance();
+
+                checkAndTriggerRoute();
                 performLiveValidation();
             }
         });
     }
 
-    // Live validation and distance updates
-    pickupInput.addEventListener('input', () => {
-        refreshDistance();
-        performLiveValidation();
+    // Debounced Autocomplete inputs searches
+    const triggerPickupSearch = debounce(() => {
+        const query = pickupInput.value;
+        if (query.trim().length === 0) {
+            delete pickupInput.dataset.lat;
+            delete pickupInput.dataset.lng;
+            pickupSuggestions.style.display = 'none';
+            checkAndTriggerRoute();
+            performLiveValidation();
+            return;
+        }
+        window.MapProvider.searchLocation(query, pickupInput, pickupSuggestions, (coords) => {
+            pickupInput.dataset.lat = coords.lat;
+            pickupInput.dataset.lng = coords.lng;
+            checkAndTriggerRoute();
+            performLiveValidation();
+        });
+    }, 500);
+
+    const triggerDropoffSearch = debounce(() => {
+        const query = dropoffInput.value;
+        if (query.trim().length === 0) {
+            delete dropoffInput.dataset.lat;
+            delete dropoffInput.dataset.lng;
+            dropoffSuggestions.style.display = 'none';
+            checkAndTriggerRoute();
+            performLiveValidation();
+            return;
+        }
+        window.MapProvider.searchLocation(query, dropoffInput, dropoffSuggestions, (coords) => {
+            dropoffInput.dataset.lat = coords.lat;
+            dropoffInput.dataset.lng = coords.lng;
+            checkAndTriggerRoute();
+            performLiveValidation();
+        });
+    }, 500);
+
+    // Typing Listeners
+    pickupInput.addEventListener('input', triggerPickupSearch);
+    dropoffInput.addEventListener('input', triggerDropoffSearch);
+
+    // Coordinate state changes
+    pickupInput.addEventListener('change', checkAndTriggerRoute);
+    dropoffInput.addEventListener('change', checkAndTriggerRoute);
+
+    // Hide suggestions list when clicking outside
+    document.addEventListener('click', (e) => {
+        if (e.target !== pickupInput) {
+            pickupSuggestions.style.display = 'none';
+        }
+        if (e.target !== dropoffInput) {
+            dropoffSuggestions.style.display = 'none';
+        }
     });
-    dropoffInput.addEventListener('input', () => {
-        refreshDistance();
-        performLiveValidation();
-    });
+
+    // Pickers Validation trigger
     dateInput.addEventListener('input', performLiveValidation);
     timeInput.addEventListener('input', performLiveValidation);
 
@@ -409,8 +523,8 @@
             return;
         }
 
-        // TODO: Google Places API - resolve pickup/dropoff coordinates
-        // TODO: Distance Matrix API - fetch actual route distance/duration
+        // TODO: Replace Nominatim with Google Places API
+        // TODO: Replace OSRM with Google Directions API
         // TODO: Payment Gateway - trigger pre-authorization check
 
         // 3. Trigger Loader Overlay

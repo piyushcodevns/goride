@@ -1012,3 +1012,99 @@
   cursor: not-allowed !important;
   opacity: 0.8;
 }
+
+/* Interactive Leaflet Map styling */
+.map-container {
+  position: relative;
+  height: 100%;
+  min-height: 420px;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Map Overlay Wrapper for Loader/Retry/Offline states */
+.map-overlay-wrapper {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition), visibility var(--transition);
+}
+
+.map-overlay-wrapper.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.map-overlay-wrapper span, 
+.map-overlay-wrapper p {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  text-align: center;
+}
+
+/* Map Spinner loading animation */
+.map-spinner {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 3.5px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin-loader 0.8s linear infinite;
+}
+
+/* Keyboard suggestions selection focus states */
+.suggestion-item.focused {
+  background: rgba(37, 99, 235, 0.08) !important;
+  color: var(--primary) !important;
+  outline: none;
+}
+
+/* Suggestions Autocomplete z-index adjustment */
+.suggestions-list {
+  z-index: 999;
+  max-height: 220px;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+  border-radius: var(--radius-sm);
+}
+
+/* Leaflet override to match clean design */
+.leaflet-control-zoom {
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  background-color: var(--background) !important;
+  color: var(--text) !important;
+  border-bottom: 1px solid var(--border) !important;
+  transition: background var(--transition) !important;
+}
+
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover {
+  background-color: var(--surface) !important;
+}
+
+.leaflet-bar {
+  border-radius: var(--radius-sm) !important;
+}
