@@ -125,9 +125,11 @@
                             <label for="pickup-input">Pickup Location</label>
                             <div class="input-wrapper">
                                 <span class="input-icon" aria-hidden="true">📍</span>
-                                <input type="text" id="pickup-input" name="pickup" placeholder="Enter pickup address..." required autocomplete="off" inputmode="search" spellcheck="false" aria-autocomplete="list">
+                                <input type="text" id="pickup-input" name="pickup" placeholder="Enter pickup address..." required autocomplete="off" inputmode="search" spellcheck="false" aria-autocomplete="list" aria-controls="pickup-suggestions">
                                 <button type="button" class="current-location-btn" aria-label="Use current location">🎯</button>
                             </div>
+                            <!-- Suggestions Dropdown -->
+                            <ul id="pickup-suggestions" class="suggestions-list" role="listbox" aria-label="Pickup location suggestions" aria-live="polite"></ul>
                         </div>
 
                         <!-- Dropoff Location Group -->
@@ -135,8 +137,10 @@
                             <label for="dropoff-input">Drop-off Location</label>
                             <div class="input-wrapper">
                                 <span class="input-icon" aria-hidden="true">🏁</span>
-                                <input type="text" id="dropoff-input" name="dropoff" placeholder="Enter destination address..." required autocomplete="off" inputmode="search" spellcheck="false" aria-autocomplete="list">
+                                <input type="text" id="dropoff-input" name="dropoff" placeholder="Enter destination address..." required autocomplete="off" inputmode="search" spellcheck="false" aria-autocomplete="list" aria-controls="dropoff-suggestions">
                             </div>
+                            <!-- Suggestions Dropdown -->
+                            <ul id="dropoff-suggestions" class="suggestions-list" role="listbox" aria-label="Drop-off location suggestions" aria-live="polite"></ul>
                         </div>
 
                         <!-- Schedule/Time Option -->

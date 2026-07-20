@@ -368,6 +368,32 @@
         }
     });
 
+    // Auto-select match on blur to prevent pricing remaining empty (₹ --)
+    function handleInputBlur(inputEl, suggestionsEl) {
+        setTimeout(() => {
+            suggestionsEl.style.display = 'none';
+            if (!inputEl.dataset.lat || !inputEl.dataset.lng) {
+                const query = sanitizeInput(inputEl.value);
+                if (query.length >= window.APP_CONFIG.API.MIN_CHARS && window.MapProvider && window.MapProvider.resolveFirstMatch) {
+                    const match = window.MapProvider.resolveFirstMatch(query);
+                    if (match) {
+                        inputEl.dataset.lat = match.lat;
+                        inputEl.dataset.lng = match.lng;
+                        inputEl.dataset.placeId = match.placeId;
+                        inputEl.dataset.address = match.address;
+                        inputEl.value = match.name;
+                        
+                        checkAndTriggerRoute();
+                        performLiveValidation();
+                    }
+                }
+            }
+        }, 250);
+    }
+
+    pickupInput.addEventListener('blur', () => handleInputBlur(pickupInput, pickupSuggestions));
+    dropoffInput.addEventListener('blur', () => handleInputBlur(dropoffInput, dropoffSuggestions));
+
     // Pickers Validation trigger
     dateInput.addEventListener('input', performLiveValidation);
     timeInput.addEventListener('input', performLiveValidation);
