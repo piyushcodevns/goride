@@ -81,6 +81,23 @@
     // MAP PROVIDER IMPLEMENTATION (GOOGLE MAPS)
     // ----------------------------------------------------
     window.MapProvider = {
+        resolveFirstMatch: function(query) {
+            const cleaned = query.trim().toLowerCase();
+            const match = VARANASI_MOCK_DB.find(place => 
+                place.name.toLowerCase().includes(cleaned) ||
+                place.address.toLowerCase().includes(cleaned)
+            );
+            if (match) {
+                return {
+                    placeId: `mock-id-${match.name.replace(/\s+/g, '-')}`,
+                    name: match.name,
+                    address: match.address,
+                    lat: match.lat,
+                    lng: match.lng
+                };
+            }
+            return null;
+        },
         // Initialize Google Maps SDK and Render Viewport
         init: function() {
             const mapContainer = document.getElementById('map');
@@ -543,28 +560,37 @@
 
         // Render an elegant vector grid dashboard to represent Varanasi Cantt Service area
         mapContainer.innerHTML = `
-            <div class="demo-map-panel" style="width:100%;height:100%;background:#F8FAFC;border:1px dashed var(--border);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;color:var(--text);padding:1rem;box-sizing:border-box;">
-                <div style="font-size:2.5rem;margin-bottom:0.5rem;animation:bounce 1.5s infinite;">🗺️</div>
-                <h4 style="margin:0 0 0.25rem 0;font-size:1rem;color:var(--primary);">Varanasi Service Area Map Preview</h4>
-                <p style="margin:0 0 1rem 0;font-size:0.75rem;color:var(--muted);text-align:center;">Google Maps running in Demo Mode. Configuring an API key in js/config.js connects live mapping.</p>
-                <div class="demo-canvas-grid" style="width:90%;height:180px;border:1px solid var(--border);background:#FFF;border-radius:var(--radius-sm);position:relative;overflow:hidden;box-shadow:inset 0 0 10px rgba(0,0,0,0.05);">
-                    <!-- Varanasi grid layout vectors -->
-                    <div style="position:absolute;inset:0;background-size:20px 20px;background-image:linear-gradient(to right, #F1F5F9 1px, transparent 1px), linear-gradient(to bottom, #F1F5F9 1px, transparent 1px);"></div>
-                    <div style="position:absolute;left:20%;top:30%;font-size:0.6rem;font-weight:600;color:var(--muted);">📍 Cantt</div>
-                    <div style="position:absolute;left:70%;top:20%;font-size:0.6rem;font-weight:600;color:var(--muted);">📍 Pandeypur</div>
-                    <div style="position:absolute;left:40%;top:70%;font-size:0.6rem;font-weight:600;color:var(--muted);">📍 Sigra</div>
-                    <div style="position:absolute;left:50%;top:45%;font-size:0.6rem;font-weight:600;color:var(--muted);">📍 Lahartara</div>
-                    
-                    <!-- SVG Overlay for drawing route paths -->
-                    <svg id="demo-svg-path" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
-                        <path id="demo-path-line" d="" fill="none" stroke="#2563EB" stroke-width="4" stroke-linecap="round" stroke-dasharray="1000" stroke-dashoffset="1000" style="transition: stroke-dashoffset 1s ease-in-out;"></path>
-                    </svg>
+            <div class="demo-map-panel" style="width:100%;height:100%;background:#F8FAFC;position:relative;overflow:hidden;box-sizing:border-box;">
+                <!-- Varanasi grid layout vectors -->
+                <div style="position:absolute;inset:0;background-size:24px 24px;background-image:linear-gradient(to right, #E2E8F0 1px, transparent 1px), linear-gradient(to bottom, #E2E8F0 1px, transparent 1px);"></div>
+                
+                <!-- Floating landmarks across full map -->
+                <div style="position:absolute;left:20%;top:30%;font-size:0.7rem;font-weight:600;color:var(--muted);background:rgba(255,255,255,0.85);padding:2px 6px;border-radius:4px;border:1px solid var(--border);">📍 Cantt</div>
+                <div style="position:absolute;left:75%;top:20%;font-size:0.7rem;font-weight:600;color:var(--muted);background:rgba(255,255,255,0.85);padding:2px 6px;border-radius:4px;border:1px solid var(--border);">📍 Pandeypur</div>
+                <div style="position:absolute;left:45%;top:65%;font-size:0.7rem;font-weight:600;color:var(--muted);background:rgba(255,255,255,0.85);padding:2px 6px;border-radius:4px;border:1px solid var(--border);">📍 Sigra</div>
+                <div style="position:absolute;left:55%;top:40%;font-size:0.7rem;font-weight:600;color:var(--muted);background:rgba(255,255,255,0.85);padding:2px 6px;border-radius:4px;border:1px solid var(--border);">📍 Lahartara</div>
+                <div style="position:absolute;left:30%;top:80%;font-size:0.7rem;font-weight:600;color:var(--muted);background:rgba(255,255,255,0.85);padding:2px 6px;border-radius:4px;border:1px solid var(--border);">📍 Lanka</div>
+                <div style="position:absolute;left:80%;top:75%;font-size:0.7rem;font-weight:600;color:var(--muted);background:rgba(255,255,255,0.85);padding:2px 6px;border-radius:4px;border:1px solid var(--border);">📍 Sarnath</div>
 
-                    <!-- Custom Marker Pins overlays -->
-                    <div id="demo-pickup-pin" style="position:absolute;display:none;width:10px;height:10px;background:#22C55E;border:2px solid #FFF;border-radius:50%;box-shadow:0 0 5px rgba(0,0,0,0.2);transform:translate(-50%, -50%);"></div>
-                    <div id="demo-drop-pin" style="position:absolute;display:none;width:10px;height:10px;background:#EF4444;border:2px solid #FFF;border-radius:50%;box-shadow:0 0 5px rgba(0,0,0,0.2);transform:translate(-50%, -50%);"></div>
+                <!-- SVG Overlay for drawing route paths -->
+                <svg id="demo-svg-path" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;">
+                    <path id="demo-path-line" d="" fill="none" stroke="#2563EB" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1000" stroke-dashoffset="1000" style="transition: stroke-dashoffset 1s ease-in-out;"></path>
+                </svg>
+
+                <!-- Custom Marker Pins overlays -->
+                <div id="demo-pickup-pin" style="position:absolute;display:none;width:14px;height:14px;background:#22C55E;border:3px solid #FFF;border-radius:50%;box-shadow:0 0 8px rgba(0,0,0,0.3);transform:translate(-50%, -50%);z-index:3;"></div>
+                <div id="demo-drop-pin" style="position:absolute;display:none;width:14px;height:14px;background:#EF4444;border:3px solid #FFF;border-radius:50%;box-shadow:0 0 8px rgba(0,0,0,0.3);transform:translate(-50%, -50%);z-index:3;"></div>
+
+                <!-- Header overlay message for API status -->
+                <div style="position:absolute;top:12px;left:12px;right:12px;background:rgba(255,255,255,0.92);backdrop-filter:blur(2px);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.6rem 0.8rem;z-index:4;font-size:0.8rem;box-shadow:var(--shadow-sm);">
+                    <div style="font-weight:bold;color:var(--primary);margin-bottom:2px;">Varanasi Service Area Map (Demo Mode)</div>
+                    <div style="color:var(--muted);font-size:0.72rem;line-height:1.25;">Enter an API key in <code>js/config.js</code> to connect Google Maps API. Geofences active.</div>
                 </div>
-                <div style="font-size:0.7rem;color:var(--muted);margin-top:0.75rem;">Status: <span style="color:#22C55E;font-weight:bold;">● Dynamic Geofence Geocoding Ready</span></div>
+
+                <!-- Footer Status -->
+                <div style="position:absolute;bottom:12px;left:12px;background:rgba(255,255,255,0.9);padding:4px 8px;border-radius:4px;font-size:0.65rem;font-weight:600;color:#22C55E;border:1px solid var(--border);z-index:4;">
+                    ● Dynamic Geocoding Active
+                </div>
             </div>
         `;
 
@@ -599,9 +625,10 @@
         demoDropIcon.style.top = `${dPercent.y}%`;
         demoDropIcon.style.display = 'block';
 
-        // Draw line curve path inside SVG canvas
-        const w = 300; // estimated width
-        const h = 180; // estimated height
+        // Draw line curve path inside SVG canvas - reading actual dimensions dynamically
+        const svgEl = document.getElementById('demo-svg-path');
+        const w = svgEl ? (svgEl.clientWidth || svgEl.getBoundingClientRect().width || 380) : 380;
+        const h = svgEl ? (svgEl.clientHeight || svgEl.getBoundingClientRect().height || 420) : 420;
         
         const px = (pPercent.x / 100) * w;
         const py = (pPercent.y / 100) * h;
