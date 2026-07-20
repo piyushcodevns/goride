@@ -97,6 +97,14 @@
             return { valid: false, field: 'rideType', message: "Please select a ride type." };
         }
 
+        // 7. Varanasi Service Area Bounds Validation (Radius check)
+        if (data.pickupCoords && window.MapProvider && !window.MapProvider.validateServiceArea(data.pickupCoords)) {
+            return { valid: false, field: 'pickup', message: "Currently we only operate inside Varanasi." };
+        }
+        if (data.dropCoords && window.MapProvider && !window.MapProvider.validateServiceArea(data.dropCoords)) {
+            return { valid: false, field: 'drop', message: "Currently we only operate inside Varanasi." };
+        }
+
         return { valid: true };
     };
 })();
