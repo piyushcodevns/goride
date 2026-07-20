@@ -43,3 +43,77 @@ faqItems.forEach((item) => {
     }
   });
 });
+
+// ==========================================
+// PORTFOLIO UX ENHANCEMENTS
+// ==========================================
+
+// Page Loader Fade Out
+window.addEventListener('load', () => {
+  const loader = document.getElementById('page-loader');
+  if (loader) {
+    setTimeout(() => {
+      loader.classList.add('fade-out');
+    }, 150);
+  }
+});
+
+// Reusable Toast System
+window.showToast = (message, type = 'info') => {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.classList.add('toast', `toast-${type}`);
+  toast.innerText = message;
+  container.appendChild(toast);
+
+  // Trigger reflow
+  toast.offsetHeight;
+  toast.classList.add('is-visible');
+
+  setTimeout(() => {
+    toast.classList.remove('is-visible');
+    toast.addEventListener('transitionend', () => toast.remove());
+  }, 3000);
+};
+
+// Scroll to Top Button
+const scrollTopBtn = document.getElementById('backToTop');
+if (scrollTopBtn) {
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 400) {
+      scrollTopBtn.classList.add('is-visible');
+    } else {
+      scrollTopBtn.classList.remove('is-visible');
+    }
+  });
+
+  scrollTopBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+// Toast Handlers for booking redirects
+document.querySelectorAll('a[href="booking.html"]').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.showToast("Redirecting to booking portal...", "success");
+    setTimeout(() => {
+      window.location.href = btn.getAttribute('href');
+    }, 700);
+  });
+});
+
+// Simulated Skeleton Loading Trigger
+const skeletonLoaders = document.querySelectorAll('.skeleton-onload');
+if (skeletonLoaders.length > 0) {
+  skeletonLoaders.forEach(el => el.classList.add('skeleton'));
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      skeletonLoaders.forEach(el => el.classList.remove('skeleton'));
+    }, 750);
+  });
+}
+
+

@@ -1,19 +1,41 @@
-<svg width="720" height="560" viewBox="0 0 720 560" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="720" height="560" rx="36" fill="#F8FAFC"/>
-  <circle cx="200" cy="170" r="118" fill="#DBEAFE"/>
-  <circle cx="520" cy="420" r="120" fill="#DCFCE7"/>
-  <rect x="154" y="130" width="280" height="220" rx="24" fill="white" stroke="#E5E7EB" stroke-width="2"/>
-  <rect x="186" y="170" width="126" height="90" rx="16" fill="#2563EB"/>
-  <path d="M210 214L232 236L270 198" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="336" y="172" width="72" height="14" rx="7" fill="#DBEAFE"/>
-  <rect x="336" y="198" width="54" height="12" rx="6" fill="#E5E7EB"/>
-  <rect x="336" y="220" width="64" height="12" rx="6" fill="#E5E7EB"/>
-  <rect x="170" y="292" width="220" height="16" rx="8" fill="#E5E7EB"/>
-  <path d="M454 154C454 123 478 100 510 100C542 100 566 123 566 154C566 185 542 208 510 208C478 208 454 185 454 154Z" fill="#2563EB"/>
-  <path d="M456 320C456 286 482 260 516 260H526C560 260 586 286 586 320V340H456V320Z" fill="#22C55E"/>
-  <rect x="430" y="336" width="182" height="112" rx="22" fill="white" stroke="#E5E7EB" stroke-width="2"/>
-  <circle cx="510" cy="380" r="34" fill="#EFF6FF"/>
-  <path d="M494 377L506 389L532 363" stroke="#2563EB" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M170 396L280 396" stroke="#CBD5E1" stroke-width="10" stroke-linecap="round"/>
-  <path d="M170 426L246 426" stroke="#CBD5E1" stroke-width="10" stroke-linecap="round"/>
+<svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="safety-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#22C55E" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#22C55E" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="shield-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+    <linearGradient id="check-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#22C55E" />
+      <stop offset="100%" stop-color="#4ADE80" />
+    </linearGradient>
+  </defs>
+
+  <!-- Glowing background -->
+  <circle cx="200" cy="200" r="160" fill="url(#safety-glow)" />
+
+  <!-- Shield concentric circles -->
+  <circle cx="200" cy="200" r="130" stroke="#E5E7EB" stroke-width="2" stroke-dasharray="6 6" />
+  <circle cx="200" cy="200" r="110" stroke="#2563EB" stroke-width="1.5" opacity="0.3" />
+
+  <!-- Safe Location Pin -->
+  <g transform="translate(0, -10)">
+    <!-- Shield -->
+    <path d="M200 80c40 0 80-15 80-15v75c0 55-35 95-80 110-45-15-80-55-80-110V65s40 15 80 15z" fill="url(#shield-grad)" />
+    
+    <!-- White Checkmark Circle -->
+    <circle cx="200" cy="145" r="35" fill="#FFF" />
+    
+    <!-- Checkmark -->
+    <path d="M185 145l10 10 20-20" stroke="url(#check-grad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+
+  <!-- Surrounding safe stars/dots -->
+  <circle cx="90" cy="120" r="4" fill="#22C55E" />
+  <circle cx="310" cy="120" r="5" fill="#2563EB" opacity="0.6" />
+  <circle cx="100" cy="280" r="5" fill="#2563EB" />
+  <circle cx="300" cy="280" r="4" fill="#22C55E" opacity="0.7" />
 </svg>

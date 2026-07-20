@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
     <title>Privacy Policy | Go Ride</title>
     <meta name="description" content="Read Go Ride's privacy policy covering data collection, usage, security, cookies, your rights, and how we protect your information.">
     <meta name="keywords" content="privacy policy, Go Ride privacy, data protection, ride booking privacy">
@@ -30,6 +31,9 @@
     <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
+    <!-- Page Loader -->
+    <div id="page-loader" aria-hidden="true"></div>
+
     <header class="header">
         <div class="container">
             <nav class="navbar" aria-label="Primary navigation">
@@ -42,7 +46,7 @@
 
                 <ul id="primary-menu" class="nav-links">
                     <li><a class="nav-link" href="index.html#home">Home</a></li>
-                    <li><a class="nav-link" href="index.html#services">Services</a></li>
+                    <li><a class="nav-link" href="services.html">Services</a></li>
                     <li><a class="nav-link" href="index.html#why-choose">Why Choose</a></li>
                     <li><a class="nav-link" href="index.html#how-it-works">How It Works</a></li>
                     <li><a class="nav-link" href="index.html#safety">Safety</a></li>
@@ -304,30 +308,38 @@
                     <h3>Company</h3>
                     <ul>
                         <li><a href="about.html">About</a></li>
-                        <li><a href="index.html#services">Services</a></li>
-                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="booking.html">Book Ride</a></li>
+                        <li><a href="terms.html">Terms &amp; Conditions</a></li>
                     </ul>
                 </div>
                 <div>
                     <h3>Support</h3>
                     <ul>
                         <li><a href="contact.html">Help Center</a></li>
-                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
                         <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="login.html">Login</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h3>Follow</h3>
+                    <h3>Follow Us</h3>
                     <ul>
-                        <li><a href="#">Instagram</a></li>
-                        <li><a href="#">Twitter</a></li>
-                        <li><a href="#">LinkedIn</a></li>
+                        <li><a href="https://instagram.com/goride" aria-label="Follow Go Ride on Instagram">Instagram</a></li>
+                        <li><a href="https://x.com/goride" aria-label="Follow Go Ride on Twitter">Twitter</a></li>
+                        <li><a href="https://linkedin.com/company/goride" aria-label="Follow Go Ride on LinkedIn">LinkedIn</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="footer-bottom">© 2026 Go Ride. All rights reserved.</div>
+            <div class="footer-bottom">© 2026 Go Ride Technologies. All rights reserved.</div>
         </div>
     </footer>
+
+    <!-- Back to top button -->
+    <button id="backToTop" class="scroll-to-top" aria-label="Back to top">↑</button>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
     <script src="js/main.js"></script>
     <script src="js/animations.js"></script>

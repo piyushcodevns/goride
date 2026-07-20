@@ -134,3 +134,49 @@
     height: 3.4rem;
   }
 }
+
+@media (max-width: 900px) {
+  .services-page-grid,
+  .pricing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .categories-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .safety-grid-custom {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .services-page-grid,
+  .categories-grid,
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+  .pricing-card.featured {
+    transform: none;
+  }
+  .pricing-card.featured:hover {
+    transform: translateY(-8px);
+  }
+  .safety-checklist-custom {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 992px) {
+    .about-stats-grid {
+        /* Tablet par 2-2 cards ek line mein dikhenge */
+        grid-template-columns: repeat(2, 1fr); 
+    }
+}
+
+@media (max-width: 576px) {
+    .about-stats-grid {
+        /* Mobile par 1-1 card ek line mein dikhega taaki text clean rahe */
+        grid-template-columns: 1fr; 
+    }
+}
+

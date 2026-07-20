@@ -1,0 +1,56 @@
+<svg viewBox="0 0 500 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <style>
+        @keyframes floaty {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        @keyframes car-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        svg {
+            animation: floaty 6s ease-in-out infinite;
+        }
+        #car-group {
+            animation: car-bounce 2s ease-in-out infinite;
+            transform-origin: center;
+        }
+    </style>
+    <circle cx="250" cy="200" r="180" fill="url(#hero-glow)" opacity="0.6" />
+    <path d="M50 320h400v-50h-40v-40h-50v60h-60v-80h-50v50h-70v-30h-60v90H50z" fill="#E5E7EB" opacity="0.3" />
+    <path d="M50 320h400v20c-10 10-390 10-400 0v-20z" fill="url(#road-grad)" />
+    <path d="M70 330h80m40 0h80m40 0h80" stroke="#FFF" stroke-width="3" stroke-dasharray="8 8" opacity="0.8" />
+    
+    <g id="car-group">
+        <circle cx="170" cy="305" r="25" fill="#1F2937" />
+        <circle cx="170" cy="305" r="12" fill="#E5E7EB" />
+        <circle cx="330" cy="305" r="25" fill="#1F2937" />
+        <circle cx="330" cy="305" r="12" fill="#E5E7EB" />
+        <path d="M120 280c0-10 5-20 15-25l45-15h140c10 0 20 5 25 15l20 25h15c10 0 10 15 0 15H105c-10 0-10-15 0-15h15z" fill="url(#car-body-grad)" />
+        <path d="M185 245h65v30h-75l10-30z" fill="#FFF" opacity="0.6" />
+        <path d="M260 245h55l10 30h-65v-30z" fill="#FFF" opacity="0.6" />
+        <path d="M235 235h30v10h-30z" fill="#EAB308" />
+        <circle cx="360" cy="285" r="8" fill="#FFF" opacity="0.8" />
+        <path d="M365 285l40 10-40 10z" fill="url(#headlight-beam)" opacity="0.3" />
+    </g>
+
+    <defs>
+        <radialGradient id="hero-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#2563EB" stop-opacity="0.3" />
+            <stop offset="100%" stop-color="#2563EB" stop-opacity="0" />
+        </radialGradient>
+        <linearGradient id="road-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#4B5563" />
+            <stop offset="100%" stop-color="#1F2937" />
+        </linearGradient>
+        <linearGradient id="car-body-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#2563EB" />
+            <stop offset="50%" stop-color="#3B82F6" />
+            <stop offset="100%" stop-color="#22C55E" />
+        </linearGradient>
+        <linearGradient id="headlight-beam" x1="0" y1="0.5" x2="1" y2="0.5">
+            <stop offset="0%" stop-color="#FFF" stop-opacity="0.8" />
+            <stop offset="100%" stop-color="#FFF" stop-opacity="0" />
+        </linearGradient>
+    </defs>
+</svg>
