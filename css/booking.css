@@ -932,3 +932,83 @@
     padding: 0.75rem;
   }
 }
+
+/* Passengers Counter Styles */
+.passenger-counter-group {
+  margin-top: 0.25rem;
+}
+
+.passenger-counter-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 160px;
+}
+
+.counter-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--text);
+  font-size: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: background var(--transition), border-color var(--transition), transform var(--transition);
+}
+
+.counter-btn:hover {
+  background: var(--surface);
+  border-color: rgba(37, 99, 235, 0.25);
+  transform: scale(1.05);
+}
+
+.counter-btn:active {
+  transform: scale(0.95);
+}
+
+#passenger-count {
+  flex: 1;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  height: 2.5rem;
+  width: 50px;
+  color: var(--text);
+  padding: 0;
+  pointer-events: none; /* readonly style */
+}
+
+/* Spinner Animation Definition */
+@keyframes spin-loader {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Receipt Details */
+.booking-receipt-details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Confirm Button Loading Pointer Overrides */
+.confirm-btn:disabled,
+.confirm-btn.loading {
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.8;
+}
