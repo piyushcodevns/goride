@@ -26,6 +26,9 @@
 
     <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
 
+    <!-- Preloads -->
+    <link rel="preload" href="assets/svg/logo.svg" as="image" type="image/svg+xml">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,7 +49,7 @@
         <div class="container">
             <nav class="navbar" aria-label="Primary navigation">
                 <a class="brand" href="index.html">
-                    <img src="assets/svg/logo.svg" alt="Go Ride logo">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
                     <span>Go Ride</span>
                 </a>
 
@@ -258,7 +261,7 @@
     <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
     <!-- Scripts -->
-    <script src="js/main.js"></script>
-    <script src="js/animations.js"></script>
+    <script src="js/main.js" defer></script>
+    <script src="js/animations.js" defer></script>
 </body>
 </html>
