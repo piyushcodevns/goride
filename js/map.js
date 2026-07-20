@@ -2,39 +2,26 @@
 
 (function() {
     // ----------------------------------------------------
-    // MAP CONFIGURATION CONSTANTS
-    // ----------------------------------------------------
-    const CONFIG = {
-        DEFAULT_CENTER: [25.3176, 82.9739], // Varanasi, Uttar Pradesh
-        DEFAULT_ZOOM: 13,
-        NOMINATIM_URL: "https://nominatim.openstreetmap.org/search",
-        OSRM_URL: "https://router.project-osrm.org/route/v1/driving",
-        MAX_SUGGESTIONS: 5,
-        DEBOUNCE_DELAY: 500,
-        MIN_CHARS: 3,
-        MIN_REQUEST_INTERVAL: 1000, // Rate-limit: max 1 request per second
-        VIEWBOX: "82.90,25.38,83.05,25.25", // Bounding box for Varanasi (West, North, East, South)
-        BOUNDED: 1
-    };
-
-    // ----------------------------------------------------
     // INTERNAL STATE VARIABLES
     // ----------------------------------------------------
     let mapInstance = null;
     let pickupMarker = null;
     let dropoffMarker = null;
-    let routePolyline = null;
+    
+    // Google Maps Services references
+    let autocompleteService = null;
+    let placesService = null;
+    let directionsService = null;
+    let directionsRenderer = null;
 
     // Cache stores
-    const locationCache = {};
+    const searchCache = {};
     const routeCache = {};
 
-    // Abort Controllers for pending fetches
-    let autocompleteAbortController = null;
-    let routingAbortController = null;
-
-    // Throttling timestamp tracker
-    let lastRequestTime = 0;
+    // Abort Controllers for search cancellation
+    let currentSearchAbort = null;
+    let throttleTimeout = null;
+    let lastSearchTime = 0;
 
     // DOM Overlays
     const mapLoader = document.getElementById('map-loader');
@@ -49,12 +36,337 @@
     // Last routing parameters (used for retries)
     let lastRouteParams = null;
 
+    // Indicator for Google API Status
+    let isGoogleLoaded = false;
+    let isDemoMode = false;
+
     // ----------------------------------------------------
-    // ACCESSIBILITY & SUGGESTIONS ELEMENTS BINDING
+    // LOCAL MOCK GEODATABASE FOR VARANASI (DEMO MODE FALLBACK)
+    // ----------------------------------------------------
+    const VARANASI_MOCK_DB = [
+        { name: "Pandeypur", address: "Pandeypur, Varanasi, Uttar Pradesh", lat: 25.3421, lng: 82.9972 },
+        { name: "Lahartara", address: "Lahartara, Varanasi, Uttar Pradesh", lat: 25.3134, lng: 82.9691 },
+        { name: "Sigra", address: "Sigra, Varanasi, Uttar Pradesh", lat: 25.3195, lng: 82.9845 },
+        { name: "Lanka", address: "Lanka, Varanasi, Uttar Pradesh", lat: 25.2798, lng: 83.0016 },
+        { name: "Assi", address: "Assi, Varanasi, Uttar Pradesh", lat: 25.2891, lng: 83.0076 },
+        { name: "Banaras Hindu University", address: "Banaras Hindu University, Varanasi, Uttar Pradesh", lat: 25.2677, lng: 82.9913 },
+        { name: "BHU", address: "Banaras Hindu University, Varanasi, Uttar Pradesh", lat: 25.2677, lng: 82.9913 },
+        { name: "Varanasi Junction", address: "Varanasi Cantt, Varanasi, Uttar Pradesh", lat: 25.3263, lng: 82.9866 },
+        { name: "Cantt", address: "Varanasi Cantt, Varanasi, Uttar Pradesh", lat: 25.3263, lng: 82.9866 },
+        { name: "Orderly Bazar", address: "Orderly Bazar, Varanasi, Uttar Pradesh", lat: 25.3375, lng: 82.9782 },
+        { name: "Nadesar", address: "Nadesar, Varanasi, Uttar Pradesh", lat: 25.3301, lng: 82.9819 },
+        { name: "Shivpur", address: "Shivpur, Varanasi, Uttar Pradesh", lat: 25.3621, lng: 82.9654 },
+        { name: "Sarnath", address: "Sarnath, Varanasi, Uttar Pradesh", lat: 25.3762, lng: 83.0227 },
+        { name: "Ramnagar", address: "Ramnagar Fort, Varanasi, Uttar Pradesh", lat: 25.2684, lng: 83.0289 },
+        { name: "Mahmoorganj", address: "Mahmoorganj, Varanasi, Uttar Pradesh", lat: 25.3092, lng: 82.9765 },
+        { name: "Bhelupur", address: "Bhelupur, Varanasi, Uttar Pradesh", lat: 25.3005, lng: 82.9961 },
+        { name: "Maidagin", address: "Maidagin, Varanasi, Uttar Pradesh", lat: 25.3184, lng: 83.0112 },
+        { name: "Nai Basti", address: "Nai Basti, Varanasi, Uttar Pradesh", lat: 25.3248, lng: 83.0031 },
+        { name: "Chauk", address: "Chauk, Chowk, Varanasi, Uttar Pradesh", lat: 25.3116, lng: 83.0129 },
+        { name: "Godowlia", address: "Godowlia Crossing, Varanasi, Uttar Pradesh", lat: 25.3101, lng: 83.0089 },
+        { name: "Chetganj", address: "Chetganj, Varanasi, Uttar Pradesh", lat: 25.3168, lng: 82.9934 },
+        { name: "Luxa", address: "Luxa Road, Varanasi, Uttar Pradesh", lat: 25.3087, lng: 83.0012 },
+        { name: "Kabir Chaura", address: "Kabir Chaura, Varanasi, Uttar Pradesh", lat: 25.3198, lng: 83.0028 },
+        { name: "Bhojuveer", address: "Bhojuveer Crossing, Varanasi, Uttar Pradesh", lat: 25.3489, lng: 82.9745 },
+        { name: "Paharia", address: "Paharia, Varanasi, Uttar Pradesh", lat: 25.3578, lng: 83.0125 },
+        { name: "DLW", address: "Diesel Locomotive Works, Varanasi, Uttar Pradesh", lat: 25.2912, lng: 82.9641 },
+        { name: "Manduadih", address: "Manduadih, Varanasi, Uttar Pradesh", lat: 25.2991, lng: 82.9602 },
+        { name: "Lohta", address: "Lohta, Varanasi, Uttar Pradesh", lat: 25.3098, lng: 82.9152 },
+        { name: "Rohania", address: "Rohania, Varanasi, Uttar Pradesh", lat: 25.2758, lng: 82.9234 },
+        { name: "Ashapur", address: "Ashapur Crossing, Varanasi, Uttar Pradesh", lat: 25.3582, lng: 83.0319 },
+        { name: "Rajatalab", address: "Rajatalab, Varanasi, Uttar Pradesh", lat: 25.2711, lng: 82.8689 }
+    ];
+
+    // ----------------------------------------------------
+    // MAP PROVIDER IMPLEMENTATION (GOOGLE MAPS)
+    // ----------------------------------------------------
+    window.MapProvider = {
+        // Initialize Google Maps SDK and Render Viewport
+        init: function() {
+            const mapContainer = document.getElementById('map');
+            if (!mapContainer) return;
+
+            // Check if Offline
+            if (!navigator.onLine) {
+                toggleOverlay(mapOffline, true);
+                return;
+            }
+
+            // Check if API Key is placeholder -> run Demo Mode
+            const apiKey = window.APP_CONFIG.API.KEY;
+            if (apiKey === "YOUR_API_KEY" || apiKey.trim() === "") {
+                console.warn("Go Ride Warning: Google Maps API Key is the default placeholder. Running in interactive Demo Mode.");
+                isDemoMode = true;
+                initDemoMap();
+                return;
+            }
+
+            // Inject Google Script tag dynamically
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+            script.async = true;
+            script.defer = true;
+            script.onload = () => {
+                isGoogleLoaded = true;
+                initRealMap();
+            };
+            script.onerror = () => {
+                console.error("Failed to load Google Maps SDK. Falling back to Demo Mode.");
+                isDemoMode = true;
+                initDemoMap();
+            };
+            document.head.appendChild(script);
+        },
+
+        // Strict-biased Autocomplete search query handler
+        search: function(query, inputEl, listEl, onSelect) {
+            const cleanedQuery = query.trim();
+            if (cleanedQuery.length < window.APP_CONFIG.API.MIN_CHARS) {
+                listEl.innerHTML = '';
+                listEl.style.display = 'none';
+                return;
+            }
+
+            // Check Autocomplete searchCache first
+            if (searchCache[cleanedQuery]) {
+                renderSuggestionsList(searchCache[cleanedQuery], inputEl, listEl, onSelect);
+                return;
+            }
+
+            // Rate-limiting check
+            const now = Date.now();
+            if (now - lastSearchTime < window.APP_CONFIG.API.THROTTLE_INTERVAL) {
+                return; // skip execution
+            }
+            lastSearchTime = now;
+
+            // Loader inline indicator
+            listEl.innerHTML = '<li class="info-item" aria-live="polite">Searching locations...</li>';
+            listEl.style.display = 'block';
+
+            // ------------------ DEMO MODE AUTOTEXT ------------------
+            if (isDemoMode) {
+                setTimeout(() => {
+                    const matches = VARANASI_MOCK_DB.filter(place => 
+                        place.name.toLowerCase().includes(cleanedQuery.toLowerCase()) ||
+                        place.address.toLowerCase().includes(cleanedQuery.toLowerCase())
+                    ).slice(0, window.APP_CONFIG.API.MAX_SUGGESTIONS);
+
+                    const data = matches.map(match => ({
+                        description: match.address,
+                        place_id: `mock-id-${match.name.replace(/\s+/g, '-')}`,
+                        structured_formatting: {
+                            main_text: match.name,
+                            secondary_text: "Varanasi, Uttar Pradesh"
+                        }
+                    }));
+
+                    searchCache[cleanedQuery] = data;
+                    renderSuggestionsList(data, inputEl, listEl, onSelect);
+                }, 300);
+                return;
+            }
+
+            // ------------------ REAL GOOGLE PLACES ------------------
+            if (autocompleteService) {
+                const varanasiBounds = new google.maps.LatLngBounds(
+                    new google.maps.LatLng(window.APP_CONFIG.MAP_BOUNDS.south, window.APP_CONFIG.MAP_BOUNDS.west),
+                    new google.maps.LatLng(window.APP_CONFIG.MAP_BOUNDS.north, window.APP_CONFIG.MAP_BOUNDS.east)
+                );
+
+                autocompleteService.getPlacePredictions({
+                    input: cleanedQuery,
+                    bounds: varanasiBounds,
+                    strictBounds: true, // Strict restriction to Varanasi boundaries!
+                    componentRestrictions: { country: window.APP_CONFIG.COUNTRY.toLowerCase() }
+                }, (predictions, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+                        searchCache[cleanedQuery] = predictions;
+                        renderSuggestionsList(predictions, inputEl, listEl, onSelect);
+                    } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+                        listEl.innerHTML = '<li class="info-item">No locations found.</li>';
+                    } else {
+                        console.error("Autocomplete failure state:", status);
+                        listEl.innerHTML = '<li class="error-item" aria-live="assertive">Unable to fetch locations. Please try again.</li>';
+                    }
+                });
+            }
+        },
+
+        // Resolve Place Details by Place ID
+        selectPlace: function(placeId, callback) {
+            // ------------------ DEMO MODE RESOLVER ------------------
+            if (isDemoMode) {
+                const name = placeId.replace('mock-id-', '').replace(/-/g, ' ');
+                const match = VARANASI_MOCK_DB.find(place => place.name.toLowerCase() === name.toLowerCase());
+                if (match) {
+                    callback({
+                        placeId: placeId,
+                        name: match.name,
+                        address: match.address,
+                        lat: match.lat,
+                        lng: match.lng
+                    });
+                } else {
+                    window.showToast("Failed to resolve location details.", "error");
+                }
+                return;
+            }
+
+            // ------------------ REAL GOOGLE DETAILS ------------------
+            if (placesService) {
+                placesService.getDetails({
+                    placeId: placeId,
+                    fields: ['geometry', 'formatted_address', 'name']
+                }, (place, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK && place && place.geometry) {
+                        callback({
+                            placeId: placeId,
+                            name: place.name,
+                            address: place.formatted_address,
+                            lat: place.geometry.location.lat(),
+                            lng: place.geometry.location.lng()
+                        });
+                    } else {
+                        console.error("Place details resolve failed:", status);
+                        window.showToast("Unable to geocode selected address.", "error");
+                    }
+                });
+            }
+        },
+
+        // Draw driving polyline route
+        drawRoute: function(pickupCoords, dropCoords) {
+            // Validate geofence boundaries (25km service area limit check)
+            const pickupValid = this.validateServiceArea(pickupCoords);
+            const dropValid = this.validateServiceArea(dropCoords);
+
+            if (!pickupValid || !dropValid) {
+                window.showToast("Currently we only operate inside Varanasi.", "error");
+                this.clearRoute();
+                return;
+            }
+
+            const cacheKey = `${pickupCoords.lat},${pickupCoords.lng}|${dropCoords.lat},${dropCoords.lng}`;
+            lastRouteParams = { pickupCoords, dropCoords };
+
+            // Check Route Cache
+            if (routeCache[cacheKey]) {
+                const cachedRoute = routeCache[cacheKey];
+                renderRoute(cachedRoute);
+                return;
+            }
+
+            toggleOverlay(mapLoader, true);
+            toggleOverlay(mapRetry, false);
+
+            // ------------------ DEMO MODE ROUTING ------------------
+            if (isDemoMode) {
+                setTimeout(() => {
+                    // Compute mock Haversine distance for path line rendering
+                    const distance = calculateHaversineDistance(pickupCoords, dropCoords);
+                    const duration = Math.round((distance / 35) * 60 + 2); // 35km/h avg speed + 2 min delay
+                    
+                    const mockRoute = {
+                        distanceKm: distance,
+                        durationMinutes: duration,
+                        encodedPolyline: null, // no polyline in demo fallback
+                        pickup: pickupCoords,
+                        drop: dropCoords
+                    };
+
+                    routeCache[cacheKey] = mockRoute;
+                    toggleOverlay(mapLoader, false);
+                    renderRoute(mockRoute);
+                }, 800);
+                return;
+            }
+
+            // ------------------ REAL GOOGLE DIRECTIONS ------------------
+            if (directionsService && directionsRenderer) {
+                // TODO: Replace with Real directions request
+                directionsService.route({
+                    origin: new google.maps.LatLng(pickupCoords.lat, pickupCoords.lng),
+                    destination: new google.maps.LatLng(dropCoords.lat, dropCoords.lng),
+                    travelMode: google.maps.TravelMode.DRIVING
+                }, (response, status) => {
+                    toggleOverlay(mapLoader, false);
+                    if (status === google.maps.DirectionsStatus.OK) {
+                        const leg = response.routes[0].legs[0];
+                        const routeData = {
+                            distanceKm: parseFloat((leg.distance.value / 1000).toFixed(1)),
+                            durationMinutes: Math.round(leg.duration.value / 60),
+                            encodedPolyline: response.routes[0].overview_polyline,
+                            pickup: pickupCoords,
+                            drop: dropCoords,
+                            directionsResult: response // full object
+                        };
+
+                        routeCache[cacheKey] = routeData;
+                        renderRoute(routeData);
+                    } else {
+                        console.error("Directions route failed:", status);
+                        toggleOverlay(mapRetry, true);
+                        window.showToast("Failed to fetch directions route.", "error");
+                    }
+                });
+            }
+        },
+
+        // Clear markers, polyline overlays
+        clearRoute: function() {
+            // Hide loaders/retry cards
+            toggleOverlay(mapLoader, false);
+            toggleOverlay(mapRetry, false);
+
+            if (isDemoMode) {
+                clearDemoRoute();
+                return;
+            }
+
+            if (directionsRenderer) {
+                directionsRenderer.setDirections({ routes: [] });
+            }
+            if (pickupMarker) {
+                pickupMarker.setMap(null);
+                pickupMarker = null;
+            }
+            if (dropoffMarker) {
+                dropoffMarker.setMap(null);
+                dropoffMarker = null;
+            }
+
+            if (mapInstance) {
+                mapInstance.setCenter(window.APP_CONFIG.MAP_CENTER);
+                mapInstance.setZoom(window.APP_CONFIG.DEFAULT_MAP_ZOOM);
+            }
+
+            if (onRouteClearedCallback) {
+                onRouteClearedCallback();
+            }
+        },
+
+        // Service Area coordinates check (Haversine formula validation)
+        validateServiceArea: function(coords) {
+            const distance = calculateHaversineDistance(window.APP_CONFIG.MAP_CENTER, coords);
+            // TODO: Replace radius validation with GeoJSON polygon service area in next sprint
+            return distance <= window.APP_CONFIG.SERVICE_RADIUS_KM;
+        },
+
+        registerRouteCalculated: function(callback) {
+            onRouteCalculatedCallback = callback;
+        },
+
+        registerRouteCleared: function(callback) {
+            onRouteClearedCallback = callback;
+        }
+    };
+
+    // ----------------------------------------------------
+    // KEYBOARD NAVIGATION AUTOCOMPLETE SETUP
     // ----------------------------------------------------
     function setupKeyboardAutocomplete(inputEl, listEl, onSelect) {
         let activeIndex = -1;
-
         const items = () => listEl.querySelectorAll('li[role="option"]');
 
         const setActive = (index) => {
@@ -101,7 +413,6 @@
             }
         });
 
-        // Reset index when input changes
         inputEl.addEventListener('input', () => {
             activeIndex = -1;
             inputEl.removeAttribute('aria-activedescendant');
@@ -109,193 +420,240 @@
     }
 
     // ----------------------------------------------------
-    // MAP PROVIDER IMPLEMENTATION (OSRM & LEAFLET)
+    // GEOLOCATION HAVERSINE DISTANCE MATHS
     // ----------------------------------------------------
-    window.MapProvider = {
-        // Search Location Autocomplete Interface
-        searchLocation: function(query, inputEl, listEl, onSelect) {
-            // Check character minimums
-            const cleanedQuery = query.trim();
-            if (cleanedQuery.length < CONFIG.MIN_CHARS) {
-                listEl.innerHTML = '';
-                listEl.style.display = 'none';
-                return;
+    function calculateHaversineDistance(coords1, coords2) {
+        const R = 6371; // Earth's radius in km
+        const dLat = (coords2.lat - coords1.lat) * Math.PI / 180;
+        const dLon = (coords2.lng - coords1.lng) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(coords1.lat * Math.PI / 180) * Math.cos(coords2.lat * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    // ----------------------------------------------------
+    // REAL GOOGLE MAP INITIALIZATION
+    // ----------------------------------------------------
+    function initRealMap() {
+        const mapContainer = document.getElementById('map');
+        if (!mapContainer || !google.maps) return;
+
+        mapInstance = new google.maps.Map(mapContainer, {
+            center: window.APP_CONFIG.MAP_CENTER,
+            zoom: window.APP_CONFIG.DEFAULT_MAP_ZOOM,
+            zoomControl: true,
+            zoomControlOptions: {
+                position: google.maps.ControlPosition.RIGHT_BOTTOM
+            },
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            styles: [
+                {
+                    featureType: "all",
+                    elementType: "geometry.fill",
+                    stylers: [{ weight: "2.00" }]
+                }
+            ]
+        });
+
+        // Initialize Services
+        autocompleteService = new google.maps.places.AutocompleteService();
+        placesService = new google.maps.places.PlacesService(mapInstance);
+        directionsService = new google.maps.DirectionsService();
+        directionsRenderer = new google.maps.DirectionsRenderer({
+            map: mapInstance,
+            suppressMarkers: true,
+            polylineOptions: {
+                strokeColor: '#2563EB', // Ola Blue
+                strokeWeight: 6,
+                strokeOpacity: 0.85,
+                strokeLineCap: 'round',
+                strokeLineJoin: 'round'
             }
+        });
+    }
 
-            // Check Cache first
-            if (locationCache[cleanedQuery]) {
-                renderSuggestions(locationCache[cleanedQuery], inputEl, listEl, onSelect);
-                return;
+    // Render Real / Demo route polyline geometries
+    function renderRoute(routeData) {
+        if (isDemoMode) {
+            // Draw a mock polyline path on leaflet canvas fallback
+            drawDemoPolyline(routeData.pickup, routeData.drop);
+            if (onRouteCalculatedCallback) {
+                onRouteCalculatedCallback(routeData.distanceKm, routeData.durationMinutes);
             }
-
-            // Rate Limit Guard: restrict network fetches to max 1 per second
-            const now = Date.now();
-            if (now - lastRequestTime < CONFIG.MIN_REQUEST_INTERVAL) {
-                return; // skip request to prevent spamming Nominatim
-            }
-
-            // Abort previous autocomplete fetches
-            if (autocompleteAbortController) {
-                autocompleteAbortController.abort();
-            }
-            autocompleteAbortController = new AbortController();
-
-            lastRequestTime = now;
-            listEl.innerHTML = '<li class="info-item" aria-live="polite">Searching locations...</li>';
-            listEl.style.display = 'block';
-
-            const url = `${CONFIG.NOMINATIM_URL}?format=json&q=${encodeURIComponent(cleanedQuery)}&limit=${CONFIG.MAX_SUGGESTIONS}&countrycodes=in&viewbox=${CONFIG.VIEWBOX}&bounded=${CONFIG.BOUNDED}`;
-
-            fetch(url, { signal: autocompleteAbortController.signal })
-                .then(response => {
-                    if (!response.ok) throw new Error("Network response not ok");
-                    return response.json();
-                })
-                .then(data => {
-                    // Cache the results
-                    locationCache[cleanedQuery] = data;
-                    renderSuggestions(data, inputEl, listEl, onSelect);
-                })
-                .catch(error => {
-                    if (error.name === 'AbortError') return;
-                    listEl.innerHTML = '<li class="error-item" aria-live="assertive">Unable to fetch locations. Please try again.</li>';
-                });
-        },
-
-        // Fetch Driving Route and Draw Line
-        getRoute: function(pickupCoords, dropCoords) {
-            // Check if Offline first
-            if (!navigator.onLine) {
-                toggleOverlay(mapOffline, true);
-                return;
-            }
-
-            // Create unique cache key for route
-            const cacheKey = `${pickupCoords.lat},${pickupCoords.lng}|${dropCoords.lat},${dropCoords.lng}`;
-            
-            lastRouteParams = { pickupCoords, dropCoords };
-
-            // Check route cache
-            if (routeCache[cacheKey]) {
-                renderRouteOnMap(routeCache[cacheKey]);
-                return;
-            }
-
-            // Abort previous routing fetches
-            if (routingAbortController) {
-                routingAbortController.abort();
-            }
-            routingAbortController = new AbortController();
-
-            toggleOverlay(mapLoader, true);
-            toggleOverlay(mapRetry, false);
-            toggleOverlay(mapOffline, false);
-
-            // TODO: Replace OSRM URL with Google Directions API endpoint
-            const url = `${CONFIG.OSRM_URL}/${pickupCoords.lng},${pickupCoords.lat};${dropCoords.lng},${dropCoords.lat}?overview=full&geometries=geojson`;
-
-            fetch(url, { signal: routingAbortController.signal })
-                .then(response => {
-                    if (!response.ok) throw new Error("OSRM router error");
-                    return response.json();
-                })
-                .then(data => {
-                    toggleOverlay(mapLoader, false);
-                    if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) {
-                        throw new Error("No route found");
-                    }
-
-                    const route = data.routes[0];
-                    // Cache driving route details
-                    routeCache[cacheKey] = route;
-                    renderRouteOnMap(route);
-                })
-                .catch(error => {
-                    if (error.name === 'AbortError') return;
-                    toggleOverlay(mapLoader, false);
-                    toggleOverlay(mapRetry, true);
-                    window.showToast("Failed to calculate driving route.", "error");
-                });
-        },
-
-        // Clear markers, polylines and center map
-        clearRoute: function() {
-            if (routePolyline) {
-                mapInstance.removeLayer(routePolyline);
-                routePolyline = null;
-            }
-            if (pickupMarker) {
-                mapInstance.removeLayer(pickupMarker);
-                pickupMarker = null;
-            }
-            if (dropoffMarker) {
-                mapInstance.removeLayer(dropoffMarker);
-                dropoffMarker = null;
-            }
-
-            // Hide overlays
-            toggleOverlay(mapLoader, false);
-            toggleOverlay(mapRetry, false);
-
-            // Reset back to default center
-            mapInstance.setView(CONFIG.DEFAULT_CENTER, CONFIG.DEFAULT_ZOOM);
-
-            if (onRouteClearedCallback) {
-                onRouteClearedCallback();
-            }
-        },
-
-        // Register callbacks
-        registerRouteCalculated: function(callback) {
-            onRouteCalculatedCallback = callback;
-        },
-
-        registerRouteCleared: function(callback) {
-            onRouteClearedCallback = callback;
+            return;
         }
-    };
 
-    // ----------------------------------------------------
-    // INTERNAL LEAFLET DRAWING HELPER FUNCTIONS
-    // ----------------------------------------------------
-    function toggleOverlay(el, show) {
-        if (!el) return;
-        if (show) {
-            el.classList.add('active');
-            el.setAttribute('aria-hidden', 'false');
-        } else {
-            el.classList.remove('active');
-            el.setAttribute('aria-hidden', 'true');
+        if (directionsRenderer && routeData.directionsResult) {
+            directionsRenderer.setDirections(routeData.directionsResult);
+            
+            // Set custom map marker SVGs
+            setGoogleMarkers(routeData.pickup, routeData.drop);
+
+            if (onRouteCalculatedCallback) {
+                onRouteCalculatedCallback(routeData.distanceKm, routeData.durationMinutes);
+            }
         }
     }
 
-    function renderSuggestions(data, inputEl, listEl, onSelect) {
+    function setGoogleMarkers(pickup, drop) {
+        if (pickupMarker) pickupMarker.setMap(null);
+        if (dropoffMarker) dropoffMarker.setMap(null);
+
+        pickupMarker = new google.maps.Marker({
+            position: new google.maps.LatLng(pickup.lat, pickup.lng),
+            map: mapInstance,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: '#22C55E', // Green circle
+                fillOpacity: 1,
+                strokeColor: '#FFFFFF',
+                strokeWeight: 3,
+                scale: 8
+            }
+        });
+
+        dropoffMarker = new google.maps.Marker({
+            position: new google.maps.LatLng(drop.lat, drop.lng),
+            map: mapInstance,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: '#EF4444', // Red circle
+                fillOpacity: 1,
+                strokeColor: '#FFFFFF',
+                strokeWeight: 3,
+                scale: 8
+            }
+        });
+    }
+
+    // ----------------------------------------------------
+    // GRACEFUL MOCK MAP INITIALIZATION (DEMO MODE ENGINE)
+    // ----------------------------------------------------
+    let demoSvgRoute = null;
+    let demoPickupIcon = null;
+    let demoDropIcon = null;
+
+    function initDemoMap() {
+        const mapContainer = document.getElementById('map');
+        if (!mapContainer) return;
+
+        // Render an elegant vector grid dashboard to represent Varanasi Cantt Service area
+        mapContainer.innerHTML = `
+            <div class="demo-map-panel" style="width:100%;height:100%;background:#F8FAFC;border:1px dashed var(--border);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;color:var(--text);padding:1rem;box-sizing:border-box;">
+                <div style="font-size:2.5rem;margin-bottom:0.5rem;animation:bounce 1.5s infinite;">🗺️</div>
+                <h4 style="margin:0 0 0.25rem 0;font-size:1rem;color:var(--primary);">Varanasi Service Area Map Preview</h4>
+                <p style="margin:0 0 1rem 0;font-size:0.75rem;color:var(--muted);text-align:center;">Google Maps running in Demo Mode. Configuring an API key in js/config.js connects live mapping.</p>
+                <div class="demo-canvas-grid" style="width:90%;height:180px;border:1px solid var(--border);background:#FFF;border-radius:var(--radius-sm);position:relative;overflow:hidden;box-shadow:inset 0 0 10px rgba(0,0,0,0.05);">
+                    <!-- Varanasi grid layout vectors -->
+                    <div style="position:absolute;inset:0;background-size:20px 20px;background-image:linear-gradient(to right, #F1F5F9 1px, transparent 1px), linear-gradient(to bottom, #F1F5F9 1px, transparent 1px);"></div>
+                    <div style="position:absolute;left:20%;top:30%;font-size:0.6rem;font-weight:600;color:var(--muted);">📍 Cantt</div>
+                    <div style="position:absolute;left:70%;top:20%;font-size:0.6rem;font-weight:600;color:var(--muted);">📍 Pandeypur</div>
+                    <div style="position:absolute;left:40%;top:70%;font-size:0.6rem;font-weight:600;color:var(--muted);">📍 Sigra</div>
+                    <div style="position:absolute;left:50%;top:45%;font-size:0.6rem;font-weight:600;color:var(--muted);">📍 Lahartara</div>
+                    
+                    <!-- SVG Overlay for drawing route paths -->
+                    <svg id="demo-svg-path" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
+                        <path id="demo-path-line" d="" fill="none" stroke="#2563EB" stroke-width="4" stroke-linecap="round" stroke-dasharray="1000" stroke-dashoffset="1000" style="transition: stroke-dashoffset 1s ease-in-out;"></path>
+                    </svg>
+
+                    <!-- Custom Marker Pins overlays -->
+                    <div id="demo-pickup-pin" style="position:absolute;display:none;width:10px;height:10px;background:#22C55E;border:2px solid #FFF;border-radius:50%;box-shadow:0 0 5px rgba(0,0,0,0.2);transform:translate(-50%, -50%);"></div>
+                    <div id="demo-drop-pin" style="position:absolute;display:none;width:10px;height:10px;background:#EF4444;border:2px solid #FFF;border-radius:50%;box-shadow:0 0 5px rgba(0,0,0,0.2);transform:translate(-50%, -50%);"></div>
+                </div>
+                <div style="font-size:0.7rem;color:var(--muted);margin-top:0.75rem;">Status: <span style="color:#22C55E;font-weight:bold;">● Dynamic Geofence Geocoding Ready</span></div>
+            </div>
+        `;
+
+        demoSvgRoute = mapContainer.querySelector('#demo-path-line');
+        demoPickupIcon = mapContainer.querySelector('#demo-pickup-pin');
+        demoDropIcon = mapContainer.querySelector('#demo-drop-pin');
+    }
+
+    function drawDemoPolyline(pickup, drop) {
+        if (!demoSvgRoute || !demoPickupIcon || !demoDropIcon) return;
+
+        // Map coordinates to local canvas coordinate ratios
+        // Bounds center on Varanasi Cantt coordinates [25.3176, 82.9739]
+        const latRange = window.APP_CONFIG.MAP_BOUNDS.north - window.APP_CONFIG.MAP_BOUNDS.south;
+        const lngRange = window.APP_CONFIG.MAP_BOUNDS.east - window.APP_CONFIG.MAP_BOUNDS.west;
+
+        const getCanvasPercent = (lat, lng) => {
+            const x = ((lng - window.APP_CONFIG.MAP_BOUNDS.west) / lngRange) * 100;
+            const y = (1 - (lat - window.APP_CONFIG.MAP_BOUNDS.south) / latRange) * 100;
+            return { x, y };
+        };
+
+        const pPercent = getCanvasPercent(pickup.lat, pickup.lng);
+        const dPercent = getCanvasPercent(drop.lat, drop.lng);
+
+        // Position pins
+        demoPickupIcon.style.left = `${pPercent.x}%`;
+        demoPickupIcon.style.top = `${pPercent.y}%`;
+        demoPickupIcon.style.display = 'block';
+
+        demoDropIcon.style.left = `${dPercent.x}%`;
+        demoDropIcon.style.top = `${dPercent.y}%`;
+        demoDropIcon.style.display = 'block';
+
+        // Draw line curve path inside SVG canvas
+        const w = 300; // estimated width
+        const h = 180; // estimated height
+        
+        const px = (pPercent.x / 100) * w;
+        const py = (pPercent.y / 100) * h;
+        const dx = (dPercent.x / 100) * w;
+        const dy = (dPercent.y / 100) * h;
+
+        // SVG quadratic curve
+        const mx = (px + dx) / 2;
+        const my = (py + dy) / 2 - 20;
+
+        const pathD = `M ${px} ${py} Q ${mx} ${my} ${dx} ${dy}`;
+        demoSvgRoute.setAttribute('d', pathD);
+
+        // Trigger trace animation
+        demoSvgRoute.style.strokeDashoffset = '1000';
+        setTimeout(() => {
+            demoSvgRoute.style.strokeDashoffset = '0';
+        }, 50);
+    }
+
+    function clearDemoRoute() {
+        if (demoSvgRoute) demoSvgRoute.setAttribute('d', '');
+        if (demoPickupIcon) demoPickupIcon.style.display = 'none';
+        if (demoDropIcon) demoDropIcon.style.display = 'none';
+    }
+
+    function renderSuggestionsList(predictions, inputEl, listEl, onSelect) {
         listEl.innerHTML = '';
-        if (data.length === 0) {
+        if (predictions.length === 0) {
             listEl.innerHTML = '<li class="info-item">No locations found.</li>';
             return;
         }
 
-        data.forEach((item, idx) => {
+        predictions.forEach((item, idx) => {
             const li = document.createElement('li');
             li.role = "option";
             li.id = `${inputEl.id}-opt-${idx}`;
             li.className = 'suggestion-item';
-            
-            // Clean display name
-            const shortName = item.display_name.split(',').slice(0, 3).join(',');
-            li.innerHTML = `<span>📍</span> ${shortName}`;
-            
+
+            const mainText = item.structured_formatting ? item.structured_formatting.main_text : item.description.split(',')[0];
+            const secText = item.structured_formatting ? item.structured_formatting.secondary_text : "Varanasi, Uttar Pradesh";
+
+            li.innerHTML = `<span>📍</span> <div><strong>${mainText}</strong><br><small style="color:var(--muted);font-size:0.75rem;">${secText}</small></div>`;
+
             li.addEventListener('click', () => {
-                inputEl.value = shortName;
+                inputEl.value = `${mainText}, ${secText}`;
                 listEl.style.display = 'none';
-                
-                const coords = {
-                    lat: parseFloat(item.lat),
-                    lng: parseFloat(item.lon)
-                };
-                
-                onSelect(coords);
+
+                // Fetch details coordinates
+                window.MapProvider.selectPlace(item.place_id, (details) => {
+                    onSelect(details);
+                });
             });
             listEl.appendChild(li);
         });
@@ -303,114 +661,36 @@
         listEl.style.display = 'block';
     }
 
-    function renderRouteOnMap(route) {
-        // Remove old routes
-        if (routePolyline) {
-            mapInstance.removeLayer(routePolyline);
-        }
-
-        // Draw smooth blue driving line (similar to Ola/Uber)
-        routePolyline = L.geoJSON(route.geometry, {
-            style: {
-                color: '#2563EB', // Brand Primary Blue
-                weight: 6,
-                opacity: 0.85,
-                lineCap: 'round',
-                lineJoin: 'round'
-            }
-        }).addTo(mapInstance);
-
-        // Place custom SVG markers
-        const pickupCoords = lastRouteParams.pickupCoords;
-        const dropCoords = lastRouteParams.dropCoords;
-
-        if (pickupMarker) mapInstance.removeLayer(pickupMarker);
-        if (dropoffMarker) mapInstance.removeLayer(dropoffMarker);
-
-        // Custom green circle pickup marker SVG icon
-        const pickupIcon = L.divIcon({
-            html: `<div style="background:#22C55E;width:14px;height:14px;border:3px solid #FFF;border-radius:50%;box-shadow:0 0 10px rgba(0,0,0,0.3);"></div>`,
-            className: 'custom-pickup-marker',
-            iconSize: [20, 20],
-            iconAnchor: [10, 10]
-        });
-
-        // Custom red circle dropoff marker SVG icon
-        const dropoffIcon = L.divIcon({
-            html: `<div style="background:#EF4444;width:14px;height:14px;border:3px solid #FFF;border-radius:50%;box-shadow:0 0 10px rgba(0,0,0,0.3);"></div>`,
-            className: 'custom-dropoff-marker',
-            iconSize: [20, 20],
-            iconAnchor: [10, 10]
-        });
-
-        pickupMarker = L.marker([pickupCoords.lat, pickupCoords.lng], { icon: pickupIcon }).addTo(mapInstance);
-        dropoffMarker = L.marker([dropCoords.lat, dropCoords.lng], { icon: dropoffIcon }).addTo(mapInstance);
-
-        // Auto zoom and fit bounds with padding to prevent margins cutoff
-        const bounds = L.latLngBounds([
-            [pickupCoords.lat, pickupCoords.lng],
-            [dropCoords.lat, dropCoords.lng]
-        ]);
-        mapInstance.fitBounds(bounds, { padding: [50, 50] });
-
-        // Convert OSRM distance (meters) to KM and duration (seconds) to Minutes
-        const distKm = parseFloat((route.distance / 1000).toFixed(1));
-        const durationMin = Math.round(route.duration / 60);
-
-        if (onRouteCalculatedCallback) {
-            onRouteCalculatedCallback(distKm, durationMin);
-        }
-    }
-
-    // Initialize Map on Page Load
-    function initLeafletMap() {
-        const mapContainer = document.getElementById('map');
-        if (!mapContainer) return;
-
-        // Create Leaflet map centered on default location
-        mapInstance = L.map('map', {
-            zoomControl: false, // Position custom controls in css later
-            attributionControl: true
-        }).setView(CONFIG.DEFAULT_CENTER, CONFIG.DEFAULT_ZOOM);
-
-        // Add standard OpenStreetMap CartoDB Tiles (minimalist, clean design)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(mapInstance);
-
-        // Standard zoom control reposition
-        L.control.zoom({ position: 'bottomright' }).addTo(mapInstance);
-    }
-
-    // ----------------------------------------------------
-    // INITIALIZATION & LISTENERS SETUP
-    // ----------------------------------------------------
+    // Initialize MapProvider on DOM content ready
     document.addEventListener('DOMContentLoaded', () => {
-        initLeafletMap();
+        // Initialize MapProvider
+        window.MapProvider.init();
 
-        // Bind Autocomplete Suggestion Listeners
         const pickupInput = document.getElementById('pickup-input');
         const pickupSuggestions = document.getElementById('pickup-suggestions');
         const dropoffInput = document.getElementById('dropoff-input');
         const dropoffSuggestions = document.getElementById('dropoff-suggestions');
 
         if (pickupInput && pickupSuggestions) {
-            setupKeyboardAutocomplete(pickupInput, pickupSuggestions, (coords) => {
-                pickupInput.dataset.lat = coords.lat;
-                pickupInput.dataset.lng = coords.lng;
-                
-                // Dispatch event to trigger recalculation in booking.js
+            setupKeyboardAutocomplete(pickupInput, pickupSuggestions, (details) => {
+                pickupInput.dataset.placeId = details.placeId;
+                pickupInput.dataset.lat = details.lat;
+                pickupInput.dataset.lng = details.lng;
+                pickupInput.dataset.address = details.address;
+                pickupInput.value = details.name;
+
                 pickupInput.dispatchEvent(new Event('change'));
             });
         }
 
         if (dropoffInput && dropoffSuggestions) {
-            setupKeyboardAutocomplete(dropoffInput, dropoffSuggestions, (coords) => {
-                dropoffInput.dataset.lat = coords.lat;
-                dropoffInput.dataset.lng = coords.lng;
-                
-                // Dispatch event to trigger recalculation in booking.js
+            setupKeyboardAutocomplete(dropoffInput, dropoffSuggestions, (details) => {
+                dropoffInput.dataset.placeId = details.placeId;
+                dropoffInput.dataset.lat = details.lat;
+                dropoffInput.dataset.lng = details.lng;
+                dropoffInput.dataset.address = details.address;
+                dropoffInput.value = details.name;
+
                 dropoffInput.dispatchEvent(new Event('change'));
             });
         }
@@ -419,16 +699,16 @@
         if (mapRetryBtn) {
             mapRetryBtn.addEventListener('click', () => {
                 if (lastRouteParams) {
-                    window.MapProvider.getRoute(lastRouteParams.pickupCoords, lastRouteParams.dropCoords);
+                    window.MapProvider.drawRoute(lastRouteParams.pickupCoords, lastRouteParams.dropCoords);
                 }
             });
         }
 
-        // Online / Offline Status Checkers
+        // Offline event bindings
         window.addEventListener('online', () => {
             toggleOverlay(mapOffline, false);
-            if (lastRouteParams && !routePolyline) {
-                window.MapProvider.getRoute(lastRouteParams.pickupCoords, lastRouteParams.dropCoords);
+            if (lastRouteParams && !isGoogleLoaded && !isDemoMode) {
+                window.MapProvider.init();
             }
         });
 
@@ -436,7 +716,6 @@
             toggleOverlay(mapOffline, true);
         });
 
-        // Initialize status check
         if (!navigator.onLine) {
             toggleOverlay(mapOffline, true);
         }
