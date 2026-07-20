@@ -521,6 +521,13 @@
   margin-top: 0.5rem;
   border: none;
   cursor: pointer;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+
+.confirm-btn:hover:not(:disabled) {
+  background: var(--primary-dark) !important;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
 }
 
 .confirm-btn:disabled {
@@ -625,12 +632,14 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   text-align: center;
-  transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+  transition: border-color var(--transition), background var(--transition), box-shadow var(--transition), transform var(--transition);
 }
 
 .payment-option:hover .option-card {
   background: var(--surface);
   border-color: rgba(37, 99, 235, 0.25);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .payment-option input:checked + .option-card {
@@ -695,6 +704,14 @@
   font-size: 0.92rem;
   border-radius: var(--radius-sm);
   cursor: pointer;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+
+.coupon-wrapper .apply-btn:hover {
+  background: var(--primary) !important;
+  color: #fff !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .coupon-msg {
