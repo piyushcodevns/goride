@@ -259,6 +259,9 @@
     // INITIALIZATION & EVENT LISTENERS
     // ----------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
+        if (window.MapProvider) {
+            window.MapProvider.init();
+        }
         initDateLimits();
         checkAndTriggerRoute();
         updateFareCard();
@@ -560,15 +563,15 @@
                         placeId: pickupInput.dataset.placeId || "mock-pickup-id",
                         name: pickupInput.value,
                         address: pickupInput.dataset.address || pickupInput.value,
-                        lat: pickupCoords.lat,
-                        lng: pickupCoords.lng
+                        lat: pickupCoords ? pickupCoords.lat : null,
+                        lng: pickupCoords ? pickupCoords.lng : null
                     },
                     drop: {
                         placeId: dropoffInput.dataset.placeId || "mock-dropoff-id",
                         name: dropoffInput.value,
                         address: dropoffInput.dataset.address || dropoffInput.value,
-                        lat: dropCoords.lat,
-                        lng: dropCoords.lng
+                        lat: dropCoords ? dropCoords.lat : null,
+                        lng: dropCoords ? dropCoords.lng : null
                     },
                     route: {
                         distanceKm: currentDistance,
