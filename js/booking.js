@@ -338,6 +338,117 @@
         });
     }
 
+    // Render suggestion items inside UI list box
+    function showSuggestions(results, inputEl, listEl) {
+        listEl.innerHTML = '';
+        if (!results || results.length === 0) {
+            listEl.innerHTML = '<li class="info-item" style="padding: 10px; color: var(--muted); font-size: 0.85rem;">No locations found.</li>';
+            return;
+        }
+
+        results.forEach((item, idx) => {
+            const li = document.createElement('li');
+            li.role = "option";
+            li.id = `${inputEl.id}-opt-${idx}`;
+            li.className = 'suggestion-item';
+            li.style.display = 'flex';
+            li.style.alignItems = 'center';
+            li.style.padding = '8px 12px';
+            li.style.cursor = 'pointer';
+            li.style.transition = 'background var(--transition)';
+            li.style.borderTop = '1px solid var(--border)';
+
+            li.innerHTML = `
+                <span style="margin-right:10px; font-size:1rem;">📍</span>
+                <div style="text-align: left;">
+                    <strong style="font-size:0.88rem; color:var(--text);">${item.name}</strong><br>
+                    <small style="color:var(--muted); font-size:0.75rem;">${item.address}</small>
+                </div>
+            `;
+
+            li.addEventListener('click', () => {
+                selectPlace(item, inputEl, listEl);
+            });
+            listEl.appendChild(li);
+        });
+
+        listEl.style.display = 'block';
+    }
+
+    // Handle suggestion selections (Step 4)
+    function selectPlace(item, inputEl, listEl) {
+        inputEl.dataset.lat = item.lat;
+        inputEl.dataset.lng = item.lng;
+        inputEl.dataset.placeId = item.placeId;
+        inputEl.dataset.address = item.address;
+        inputEl.value = item.name;
+
+        listEl.style.display = 'none';
+
+        // Add Marker on map
+        const type = inputEl.id === 'pickup-input' ? 'pickup' : 'dropoff';
+        if (window.MapProvider && window.MapProvider.addMarker) {
+            window.MapProvider.addMarker(item.lat, item.lng, type);
+        }
+
+        checkAndTriggerRoute();
+        performLiveValidation();
+    }
+
+    // Keyboard controls handler
+    function setupKeyboardAutocomplete(inputEl, listEl) {
+        let activeIndex = -1;
+
+        const items = () => listEl.querySelectorAll('.suggestion-item');
+
+        const setActive = (index) => {
+            const listItems = items();
+            listItems.forEach((item, idx) => {
+                if (idx === index) {
+                    item.classList.add('focused');
+                    item.setAttribute('aria-selected', 'true');
+                    inputEl.setAttribute('aria-activedescendant', item.id);
+                } else {
+                    item.classList.remove('focused');
+                    item.setAttribute('aria-selected', 'false');
+                }
+            });
+        };
+
+        inputEl.addEventListener('keydown', (e) => {
+            const listItems = items();
+            const open = listEl.style.display === 'block';
+
+            if (!open || listItems.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeIndex = (activeIndex + 1) % listItems.length;
+                setActive(activeIndex);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeIndex = (activeIndex - 1 + listItems.length) % listItems.length;
+                setActive(activeIndex);
+            } else if (e.key === 'Enter') {
+                if (activeIndex >= 0 && activeIndex < listItems.length) {
+                    e.preventDefault();
+                    listItems[activeIndex].click();
+                    listEl.style.display = 'none';
+                    activeIndex = -1;
+                }
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                listEl.style.display = 'none';
+                activeIndex = -1;
+                inputEl.removeAttribute('aria-activedescendant');
+            }
+        });
+    }
+
+    // Bind keydown events on inputs
+    setupKeyboardAutocomplete(pickupInput, pickupSuggestions);
+    setupKeyboardAutocomplete(dropoffInput, dropoffSuggestions);
+
     // Debounced Autocomplete inputs searches (300ms delay)
     const triggerPickupSearch = debounce(() => {
         const query = pickupInput.value;
@@ -349,17 +460,24 @@
             pickupSuggestions.style.display = 'none';
             checkAndTriggerRoute();
             performLiveValidation();
+            
+            // Clear marker on map
+            if (window.MapProvider && window.MapProvider.clearRoute) {
+                window.MapProvider.clearRoute();
+            }
             return;
         }
-        window.MapProvider.search(query, pickupInput, pickupSuggestions, (details) => {
-            pickupInput.dataset.lat = details.lat;
-            pickupInput.dataset.lng = details.lng;
-            pickupInput.dataset.placeId = details.placeId;
-            pickupInput.dataset.address = details.address;
-            pickupInput.value = details.name;
 
-            checkAndTriggerRoute();
-            performLiveValidation();
+        // Show loading spinner indicator (Phase 2)
+        pickupSuggestions.innerHTML = '<li class="info-item" style="padding: 10px; color: var(--muted); font-size: 0.85rem;">⏳ Searching locations...</li>';
+        pickupSuggestions.style.display = 'block';
+
+        window.MapProvider.searchPlaces(query, (err, results) => {
+            if (err) {
+                pickupSuggestions.innerHTML = '<li class="info-item" style="padding: 10px; color: var(--accent); font-size: 0.85rem;">⚠️ Unable to fetch locations.</li>';
+                return;
+            }
+            showSuggestions(results, pickupInput, pickupSuggestions);
         });
     }, 300);
 
@@ -373,17 +491,24 @@
             dropoffSuggestions.style.display = 'none';
             checkAndTriggerRoute();
             performLiveValidation();
+
+            // Clear marker on map
+            if (window.MapProvider && window.MapProvider.clearRoute) {
+                window.MapProvider.clearRoute();
+            }
             return;
         }
-        window.MapProvider.search(query, dropoffInput, dropoffSuggestions, (details) => {
-            dropoffInput.dataset.lat = details.lat;
-            dropoffInput.dataset.lng = details.lng;
-            dropoffInput.dataset.placeId = details.placeId;
-            dropoffInput.dataset.address = details.address;
-            dropoffInput.value = details.name;
 
-            checkAndTriggerRoute();
-            performLiveValidation();
+        // Show loading spinner indicator (Phase 2)
+        dropoffSuggestions.innerHTML = '<li class="info-item" style="padding: 10px; color: var(--muted); font-size: 0.85rem;">⏳ Searching locations...</li>';
+        dropoffSuggestions.style.display = 'block';
+
+        window.MapProvider.searchPlaces(query, (err, results) => {
+            if (err) {
+                dropoffSuggestions.innerHTML = '<li class="info-item" style="padding: 10px; color: var(--accent); font-size: 0.85rem;">⚠️ Unable to fetch locations.</li>';
+                return;
+            }
+            showSuggestions(results, dropoffInput, dropoffSuggestions);
         });
     }, 300);
 

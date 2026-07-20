@@ -34,13 +34,14 @@
             suv: { base: 150, perKm: 20 }
         },
         
-        // Google Maps API credentials & properties
+        // API URLs and parameters
         API: {
-            KEY: "YOUR_API_KEY", // Configurable placeholder for Google Cloud API Key
-            DEBOUNCE_DELAY: 500,
-            MIN_CHARS: 3,
-            MAX_SUGGESTIONS: 5,
-            THROTTLE_INTERVAL: 1000 // 1 req/sec limit
+            PHOTON: "https://photon.komoot.io/api",
+            NOMINATIM: "https://nominatim.openstreetmap.org",
+            OSRM: "https://router.project-osrm.org/route/v1/driving",
+            DEBOUNCE_DELAY: 300,
+            MIN_CHARS: 2,
+            MAX_SUGGESTIONS: 5
         },
         
         // UI Constants
