@@ -105,6 +105,21 @@ img {
   color: var(--primary);
 }
 
+.nav-link.highlight-link {
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  background: rgba(37, 99, 235, 0.05);
+  font-weight: 600;
+}
+
+.nav-link.highlight-link:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
 .nav-buttons {
   display: flex;
   align-items: center;
