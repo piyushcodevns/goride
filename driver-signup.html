@@ -4,40 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="index, follow">
-    <title>Create Account | Go Ride</title>
-    <meta name="description" content="Sign up for Go Ride to book safe, fast and affordable rides within seconds.">
-    <meta name="keywords" content="Sign Up, Register, Go Ride, Create Ride Account">
+    <title>Become a Driver Partner | Go Ride</title>
+    <meta name="description" content="Join Go Ride as a driver partner. Earn on your own terms, choose your hours, and make money in Varanasi.">
+    <meta name="keywords" content="Driver partner, Driver signup, Earn money Varanasi, Go Ride driver">
     <meta name="author" content="Go Ride">
     <meta name="theme-color" content="#2563EB">
-    <link rel="canonical" href="https://goride.com/register.html">
+    <link rel="canonical" href="https://goride.com/driver-signup.html">
 
     <!-- OpenGraph Tags -->
-    <meta property="og:title" content="Create Account | Go Ride">
-    <meta property="og:description" content="Sign up for Go Ride to book safe, fast and affordable rides within seconds.">
+    <meta property="og:title" content="Become a Driver Partner | Go Ride">
+    <meta property="og:description" content="Join Go Ride as a driver partner. Earn on your own terms, choose your hours, and make money in Varanasi.">
     <meta property="og:image" content="https://goride.com/assets/images/og-cover.jpg">
-    <meta property="og:url" content="https://goride.com/register.html">
+    <meta property="og:url" content="https://goride.com/driver-signup.html">
     <meta property="og:type" content="website">
 
     <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
     <link rel="manifest" href="manifest.json">
-
-    <!-- Schema.org JSON-LD Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "name": "Create Account | Go Ride",
-      "description": "Sign up for Go Ride to book safe, fast and affordable rides within seconds.",
-      "publisher": {
-        "@type": "Organization",
-        "name": "Go Ride Technologies",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://goride.com/assets/svg/logo.svg"
-        }
-      }
-    }
-    </script>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,6 +27,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/responsive.css">
@@ -90,76 +75,83 @@
     <main class="auth-section">
         <div class="container">
             <div class="auth-wrapper reveal">
-                <div class="auth-card">
+                <div class="auth-card" style="max-width: 550px;">
                     <div class="auth-header">
                         <img src="assets/svg/logo.svg" alt="Go Ride logo" class="auth-logo" loading="lazy" decoding="async">
-                        <h2>Create Account</h2>
-                        <p>Sign up to start booking safe and affordable rides</p>
+                        <h2>Drive & Earn with Go Ride</h2>
+                        <p>Partner with us to enjoy flexible hours and great earnings in Varanasi</p>
                     </div>
 
-                    <form id="register-form" class="auth-form" novalidate>
+                    <form id="driver-form" class="auth-form" novalidate>
                         <!-- Name input -->
                         <div class="input-group">
-                            <label for="reg-name">Full Name</label>
+                            <label for="drv-name">Full Name</label>
                             <div class="input-wrapper">
                                 <span class="input-icon" aria-hidden="true">👤</span>
-                                <input type="text" id="reg-name" name="name" placeholder="Enter your full name..." required autocomplete="name">
+                                <input type="text" id="drv-name" name="name" placeholder="Enter your full name..." required autocomplete="name">
                             </div>
                         </div>
 
                         <!-- Email input -->
                         <div class="input-group">
-                            <label for="reg-email">Email Address</label>
+                            <label for="drv-email">Email Address</label>
                             <div class="input-wrapper">
                                 <span class="input-icon" aria-hidden="true">✉️</span>
-                                <input type="email" id="reg-email" name="email" placeholder="Enter your email..." required autocomplete="email">
+                                <input type="email" id="drv-email" name="email" placeholder="Enter your email..." required autocomplete="email">
                             </div>
                         </div>
 
                         <!-- Phone input -->
                         <div class="input-group">
-                            <label for="reg-phone">Phone Number</label>
+                            <label for="drv-phone">Phone Number</label>
                             <div class="input-wrapper">
                                 <span class="input-icon" aria-hidden="true">📞</span>
-                                <input type="tel" id="reg-phone" name="phone" placeholder="Enter phone number..." required autocomplete="tel">
+                                <input type="tel" id="drv-phone" name="phone" placeholder="Enter phone number..." required autocomplete="tel">
                             </div>
                         </div>
 
-                        <!-- Password input -->
+                        <!-- Vehicle Type Dropdown -->
                         <div class="input-group">
-                            <label for="reg-password">Password</label>
+                            <label for="drv-vehicle">Vehicle Type</label>
                             <div class="input-wrapper">
-                                <span class="input-icon" aria-hidden="true">🔒</span>
-                                <input type="password" id="reg-password" name="password" placeholder="Create a password..." required autocomplete="new-password">
-                                <button type="button" id="toggle-password" class="password-toggle-btn" aria-label="Show password">👁️</button>
-                            </div>
-                            
-                            <!-- Password Strength Indicator -->
-                            <div class="password-strength-meter">
-                                <div class="strength-bar-container">
-                                    <div class="strength-bar-fill"></div>
-                                </div>
-                                <span id="strength-text" class="strength-label">Password Strength: <strong>Too Short</strong></span>
+                                <span class="input-icon" aria-hidden="true">🏍️</span>
+                                <select id="drv-vehicle" name="vehicle" required>
+                                    <option value="" disabled selected>Select your vehicle type...</option>
+                                    <option value="bike">Motorcycle (Go Bike)</option>
+                                    <option value="auto">Auto Rickshaw (Go Auto)</option>
+                                    <option value="mini">Mini Hatchback (Go Mini)</option>
+                                    <option value="sedan">Sedan (Go Sedan)</option>
+                                    <option value="suv">SUV (Go SUV)</option>
+                                </select>
                             </div>
                         </div>
 
-                        <!-- Terms and Conditions Checkbox -->
+                        <!-- DL input -->
+                        <div class="input-group">
+                            <label for="drv-dl">Driving License Number</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon" aria-hidden="true">🪪</span>
+                                <input type="text" id="drv-dl" name="license" placeholder="e.g. UP65202X0000000" required>
+                            </div>
+                        </div>
+
+                        <!-- Terms Checkbox -->
                         <div class="auth-row">
                             <label class="remember-checkbox">
                                 <input type="checkbox" id="agree-terms" name="agree" required>
                                 <span class="checkbox-box"></span>
-                                <span class="checkbox-text">I agree to the <a href="terms.html" target="_blank">Terms &amp; Conditions</a></span>
+                                <span class="checkbox-text">I agree to the driver <a href="terms.html" target="_blank">Terms &amp; Conditions</a></span>
                             </label>
                         </div>
 
                         <!-- Submit button -->
-                        <button type="submit" id="register-submit-btn" class="primary-btn auth-submit-btn">
-                            Sign Up
+                        <button type="submit" id="driver-submit-btn" class="primary-btn auth-submit-btn">
+                            Apply to Drive
                         </button>
                     </form>
 
                     <div class="auth-footer">
-                        <p>Already have an account? <a href="login.html">Sign In</a></p>
+                        <p>Already registered? <a href="login.html">Sign In here</a></p>
                     </div>
                 </div>
             </div>
@@ -187,37 +179,54 @@
                     </ul>
                 </div>
                 <div>
-                    <h3>Support</h3>
+                    <h3>Safety &amp; Support</h3>
                     <ul>
-                        <li><a href="contact.html">Help Center</a></li>
-                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="index.html#safety">Safety First</a></li>
                         <li><a href="privacy-policy.html">Privacy Policy</a></li>
-                        <li><a href="login.html">Login</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3>Follow Us</h3>
-                    <ul>
-                        <li><a href="https://instagram.com/goride" aria-label="Follow Go Ride on Instagram">Instagram</a></li>
-                        <li><a href="https://x.com/goride" aria-label="Follow Go Ride on Twitter">Twitter</a></li>
-                        <li><a href="https://linkedin.com/company/goride" aria-label="Follow Go Ride on LinkedIn">LinkedIn</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="footer-bottom">© 2026 Go Ride Technologies. All rights reserved.</div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Go Ride Technologies. All rights reserved.</p>
+            </div>
         </div>
     </footer>
-
-    <!-- Back to top button -->
-    <button id="backToTop" class="scroll-to-top" aria-label="Back to top">↑</button>
-
-    <!-- Toast container -->
-    <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
     <!-- Scripts -->
     <script src="js/main.js" defer></script>
     <script src="js/animations.js" defer></script>
-    <script src="js/register.js" defer></script>
+    <script src="js/toast.js" defer></script>
     <script src="js/dataset.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('driver-form');
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    const name = document.getElementById('drv-name').value.trim();
+                    const email = document.getElementById('drv-email').value.trim();
+                    const phone = document.getElementById('drv-phone').value.trim();
+                    const vehicle = document.getElementById('drv-vehicle').value;
+                    const dl = document.getElementById('drv-dl').value.trim();
+                    const agree = document.getElementById('agree-terms').checked;
+
+                    if (!name || !email || !phone || !vehicle || !dl) {
+                        window.showToast("Please fill in all details.", "error");
+                        return;
+                    }
+                    if (!agree) {
+                        window.showToast("You must agree to the Terms & Conditions.", "error");
+                        return;
+                    }
+
+                    // Success Mock submission
+                    window.showToast("Application submitted successfully!", "success");
+                    form.reset();
+                });
+            }
+        });
+    </script>
 </body>
 </html>

@@ -11,6 +11,18 @@ if (menuToggle && navLinks) {
   });
 }
 
+// Sticky Header Shadow effect on scroll
+const headerEl = document.querySelector('.header');
+if (headerEl) {
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 20) {
+      headerEl.classList.add('scrolled');
+    } else {
+      headerEl.classList.remove('scrolled');
+    }
+  });
+}
+
 const faqItems = document.querySelectorAll('.faq-item');
 
 faqItems.forEach((item) => {
@@ -81,11 +93,18 @@ window.showToast = (message, type = 'info') => {
 // Scroll to Top Button
 const scrollTopBtn = document.getElementById('backToTop');
 if (scrollTopBtn) {
+  let scrollThrottle = false;
   window.addEventListener('scroll', () => {
-    if (window.scrollY > 400) {
-      scrollTopBtn.classList.add('is-visible');
-    } else {
-      scrollTopBtn.classList.remove('is-visible');
+    if (!scrollThrottle) {
+      window.requestAnimationFrame(() => {
+        if (window.scrollY > 400) {
+          scrollTopBtn.classList.add('is-visible');
+        } else {
+          scrollTopBtn.classList.remove('is-visible');
+        }
+        scrollThrottle = false;
+      });
+      scrollThrottle = true;
     }
   });
 
@@ -97,6 +116,10 @@ if (scrollTopBtn) {
 // Toast Handlers for booking redirects
 document.querySelectorAll('a[href="booking.html"]').forEach(btn => {
   btn.addEventListener('click', (e) => {
+    // Skip toast redirect if already on the booking page
+    if (window.location.pathname.endsWith('booking.html')) {
+      return;
+    }
     e.preventDefault();
     window.showToast("Redirecting to booking portal...", "success");
     setTimeout(() => {
