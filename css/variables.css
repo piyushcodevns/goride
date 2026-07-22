@@ -29,6 +29,7 @@
   --color-secondary-hover: #D97706; /* Amber 600 */
   --color-accent: #22C55E; /* Green 500 */
   --color-accent-hover: #16A34A; /* Green 600 */
+  --color-accent-light: #DCFCE7; /* Green 100 */
 
   /* 1.2. Semantic & UI Colors */
   --color-success: var(--color-accent);
@@ -73,6 +74,7 @@
   --secondary-dark: var(--color-secondary-hover);
   --accent: var(--color-accent);
   --accent-dark: var(--color-accent-hover);
+  --accent-light: var(--color-accent-light);
   --danger: var(--color-danger);
   --warning: var(--color-warning);
   --success: var(--color-success);
@@ -84,6 +86,7 @@
   --muted: var(--color-text-secondary);
   --border: var(--color-border);
   --shadow: var(--shadow-md);
+  --surface-alt: var(--color-gray-100);
   --shadow-hover: var(--shadow-lg);
   --font-primary: var(--font-family-body);
   --transition: var(--transition-normal);
