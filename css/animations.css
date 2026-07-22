@@ -17,3 +17,9 @@
 .hero-image {
   animation: floaty 4.5s ease-in-out infinite;
 }
+
+@keyframes scrollDot {
+  0% { transform: translateX(-50%) translateY(0); opacity: 0.3; }
+  50% { transform: translateX(-50%) translateY(0.45rem); opacity: 1; }
+  100% { transform: translateX(-50%) translateY(0.8rem); opacity: 0; }
+}

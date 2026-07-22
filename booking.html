@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <title>Book a Ride | Go Ride</title>
+    <meta name="description" content="Book safe, fast, and affordable rides with Go Ride. Calculate fares, select vehicle options, and track your driver.">
+    <meta name="keywords" content="Book Ride, Go Ride, Taxi, Cab booking, Bike taxi, Smart ride">
+    <meta name="author" content="Go Ride">
+    <meta name="theme-color" content="#2563EB">
+    <link rel="canonical" href="https://goride.com/booking.html">
+
+    <!-- OpenGraph Tags -->
+    <meta property="og:title" content="Book a Ride | Go Ride - Smart Booking Portal">
+    <meta property="og:description" content="Book safe, fast, and affordable rides with Go Ride. Calculate fares, select vehicle options, and track your driver in real-time.">
+    <meta property="og:image" content="https://goride.com/assets/images/og-cover.jpg">
+    <meta property="og:url" content="https://goride.com/booking.html">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Book a Ride | Go Ride - Smart Booking Portal">
+    <meta name="twitter:description" content="Book safe, fast, and affordable rides with Go Ride. Calculate fares, select vehicle options, and track your driver in real-time.">
+    <meta name="twitter:image" content="https://goride.com/assets/images/og-cover.jpg">
+
+    <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Schema.org JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Book a Ride | Go Ride",
+      "description": "Book safe, fast, and affordable rides with Go Ride. Calculate fares, select vehicle options, and track your driver.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Go Ride Technologies",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://goride.com/assets/svg/logo.svg"
+        }
+      }
+    }
+    </script>
+
+    <!-- Preloads -->
+    <link rel="preload" href="assets/svg/logo.svg" as="image" type="image/svg+xml">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/booking.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <!-- Page Loader -->
+    <div id="page-loader" aria-hidden="true"></div>
+
+    <!-- Reusable Navbar -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar" aria-label="Primary navigation">
+                <a class="brand" href="index.html">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                    <span>Go Ride</span>
+                </a>
+
+                <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
+
+                <ul class="nav-links">
+                    <li><a class="nav-link" href="index.html">Home</a></li>
+                    <li><a class="nav-link" href="services.html">Services</a></li>
+                    <li><a class="nav-link" href="index.html#safety">Safety</a></li>
+                    <li><a class="nav-link" href="about.html">About</a></li>
+                    <li><a class="nav-link" href="contact.html">Contact</a></li>
+                    <li><a class="nav-link highlight-link" href="driver-signup.html">Become Driver</a></li>
+                </ul>
+
+                <div class="nav-buttons">
+                    <a href="login.html" class="login-btn">
+                        Login
+                    </a>
+                    <a href="booking.html" class="book-btn">
+                        Book Ride
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Booking Hero Section -->
+    <section class="booking-hero">
+        <div class="container">
+            <div class="hero-content reveal">
+                <span class="hero-badge">🚖 Real-time Booking Portal</span>
+                <h1>Book Your <span>Smart Ride</span></h1>
+                <p>Enter your pickup & drop-off locations, choose your preferred ride, and experience safe, reliable travel.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Form Section -->
+    <section class="booking-section">
+        <div class="container">
+            <div class="booking-grid">
+                <!-- Left side: Booking Form & Inputs -->
+                <div class="booking-card reveal">
+                    <div class="card-header">
+                        <h2>Plan Your Journey</h2>
+                        <p>Fill in details to calculate fare and find nearby drivers</p>
+                    </div>
+
+                    <form id="booking-form" class="booking-form-element" novalidate>
+                        <!-- Pickup Location Group -->
+                        <div class="input-group">
+                            <label for="pickup-input">Pickup Location</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon" aria-hidden="true">📍</span>
+                                <input type="text" id="pickup-input" name="pickup" placeholder="Enter pickup address..." required autocomplete="off" inputmode="search" spellcheck="false" aria-autocomplete="list" aria-controls="pickup-suggestions">
+                                <button type="button" class="current-location-btn" aria-label="Use current location">🎯</button>
+                            </div>
+                            <!-- Suggestions Dropdown -->
+                            <ul id="pickup-suggestions" class="suggestions-list" role="listbox" aria-label="Pickup location suggestions" aria-live="polite"></ul>
+                        </div>
+
+                        <!-- Dropoff Location Group -->
+                        <div class="input-group">
+                            <label for="dropoff-input">Drop-off Location</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon" aria-hidden="true">🏁</span>
+                                <input type="text" id="dropoff-input" name="dropoff" placeholder="Enter destination address..." required autocomplete="off" inputmode="search" spellcheck="false" aria-autocomplete="list" aria-controls="dropoff-suggestions">
+                            </div>
+                            <!-- Suggestions Dropdown -->
+                            <ul id="dropoff-suggestions" class="suggestions-list" role="listbox" aria-label="Drop-off location suggestions" aria-live="polite"></ul>
+                        </div>
+
+                        <!-- Schedule/Time Option -->
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="booking-date">Date</label>
+                                <input type="date" id="booking-date" name="date" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="booking-time">Time</label>
+                                <input type="time" id="booking-time" name="time" required>
+                            </div>
+                        </div>
+
+                        <!-- Passengers Selector Group -->
+                        <div class="input-group passenger-counter-group">
+                            <label for="passenger-count">Passengers</label>
+                            <div class="passenger-counter-wrapper">
+                                <button type="button" class="counter-btn minus-btn" aria-label="Decrease passenger count" id="dec-passengers">-</button>
+                                <input type="number" id="passenger-count" name="passengers" value="2" min="1" max="6" readonly aria-live="polite">
+                                <button type="button" class="counter-btn plus-btn" aria-label="Increase passenger count" id="inc-passengers">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Toggle Booking Type (Ride Now vs Schedule) -->
+                        <div class="booking-toggle-row" role="tablist" aria-label="Booking Mode">
+                            <button type="button" class="toggle-btn active" role="tab" aria-selected="true" data-type="now">Ride Now</button>
+                            <button type="button" class="toggle-btn" role="tab" aria-selected="false" data-type="schedule">Schedule Later</button>
+                        </div>
+
+                        <!-- Vehicle Selection Section -->
+                        <div class="vehicle-selection-container">
+                            <h3 class="subsection-title">Select Ride Type</h3>
+                            <div class="vehicles-list" role="radiogroup" aria-label="Select ride type">
+                                <!-- Vehicle Item: Bike -->
+                                <div class="vehicle-item active" role="radio" aria-checked="true" tabindex="0" data-type="bike" data-base-fare="40" data-per-km="8">
+                                    <div class="vehicle-info">
+                                        <span class="vehicle-icon" aria-hidden="true">🛵</span>
+                                        <div>
+                                            <h4>Bike</h4>
+                                            <p class="eta">Nearby • 2 min away</p>
+                                        </div>
+                                    </div>
+                                    <div class="vehicle-price">
+                                        <span class="price">₹ --</span>
+                                        <span class="capacity" aria-label="Capacity: 1 seat">👤 1</span>
+                                    </div>
+                                </div>
+
+                                <!-- Vehicle Item: Auto -->
+                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="auto" data-base-fare="50" data-per-km="10">
+                                    <div class="vehicle-info">
+                                        <span class="vehicle-icon" aria-hidden="true">🛺</span>
+                                        <div>
+                                            <h4>Auto</h4>
+                                            <p class="eta">Nearby • 3 min away</p>
+                                        </div>
+                                    </div>
+                                    <div class="vehicle-price">
+                                        <span class="price">₹ --</span>
+                                        <span class="capacity" aria-label="Capacity: 3 seats">👤 3</span>
+                                    </div>
+                                </div>
+
+                                <!-- Vehicle Item: Mini -->
+                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="mini" data-base-fare="70" data-per-km="12">
+                                    <div class="vehicle-info">
+                                        <span class="vehicle-icon" aria-hidden="true">🚗</span>
+                                        <div>
+                                            <h4>Mini</h4>
+                                            <p class="eta">Nearby • 4 min away</p>
+                                        </div>
+                                    </div>
+                                    <div class="vehicle-price">
+                                        <span class="price">₹ --</span>
+                                        <span class="capacity" aria-label="Capacity: 4 seats">👤 4</span>
+                                    </div>
+                                </div>
+
+                                <!-- Vehicle Item: Sedan -->
+                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="sedan" data-base-fare="100" data-per-km="16">
+                                    <div class="vehicle-info">
+                                        <span class="vehicle-icon" aria-hidden="true">🚘</span>
+                                        <div>
+                                            <h4>Sedan</h4>
+                                            <p class="eta">Nearby • 5 min away</p>
+                                        </div>
+                                    </div>
+                                    <div class="vehicle-price">
+                                        <span class="price">₹ --</span>
+                                        <span class="capacity" aria-label="Capacity: 4 seats">👤 4</span>
+                                    </div>
+                                </div>
+
+                                <!-- Vehicle Item: SUV -->
+                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="suv" data-base-fare="150" data-per-km="20">
+                                    <div class="vehicle-info">
+                                        <span class="vehicle-icon" aria-hidden="true">🚙</span>
+                                        <div>
+                                            <h4>SUV</h4>
+                                            <p class="eta">Nearby • 6 min away</p>
+                                        </div>
+                                    </div>
+                                    <div class="vehicle-price">
+                                        <span class="price">₹ --</span>
+                                        <span class="capacity" aria-label="Capacity: 6 seats">👤 6</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method Section -->
+                        <div class="payment-method-container">
+                            <h3 class="subsection-title">Payment Method</h3>
+                            <div class="payment-options">
+                                <label class="payment-option active">
+                                    <input type="radio" name="payment" value="upi" checked class="visually-hidden">
+                                    <span class="option-card">
+                                        <span class="payment-icon" aria-hidden="true">📱</span>
+                                        <span class="payment-text">UPI / GPay</span>
+                                    </span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="card" class="visually-hidden">
+                                    <span class="option-card">
+                                        <span class="payment-icon" aria-hidden="true">💳</span>
+                                        <span class="payment-text">Card</span>
+                                    </span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="cash" class="visually-hidden">
+                                    <span class="option-card">
+                                        <span class="payment-icon" aria-hidden="true">💵</span>
+                                        <span class="payment-text">Cash</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Coupon / Promo Code -->
+                        <div class="coupon-container">
+                            <label for="coupon-input">Promo Code</label>
+                            <div class="coupon-wrapper">
+                                <input type="text" id="coupon-input" placeholder="Enter coupon (e.g. GORIDE20)" autocomplete="off">
+                                <button type="button" id="apply-coupon-btn" class="secondary-btn apply-btn">Apply</button>
+                            </div>
+                            <small id="coupon-message" class="coupon-msg" aria-live="polite"></small>
+                        </div>
+
+                        <!-- Fare Summary Section -->
+                        <div class="fare-summary-container">
+                            <div class="subsection-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                                <h3 class="subsection-title" style="margin: 0;">Fare Breakdown</h3>
+                                <span class="demo-badge" style="font-size: 0.75rem; background: rgba(37, 99, 235, 0.08); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 99px; font-weight: 600;">Demo Estimate</span>
+                            </div>
+                            <div class="fare-card" role="region" aria-label="Fare summary detail">
+                                <div class="fare-row-detail">
+                                    <span>Distance</span>
+                                    <span id="distance-val">0.0 KM</span>
+                                </div>
+                                <div class="fare-row-detail">
+                                    <span>ETA</span>
+                                    <span id="eta-val">0 Mins</span>
+                                </div>
+                                <div class="fare-row-detail">
+                                    <span>Base Fare</span>
+                                    <span id="base-fare-val">₹0.00</span>
+                                </div>
+                                <div class="fare-row-detail">
+                                    <span>Distance Fare</span>
+                                    <span id="distance-fare-val">₹0.00</span>
+                                </div>
+                                <div class="fare-row-detail">
+                                    <span>Taxes &amp; Fees</span>
+                                    <span id="taxes-val">₹0.00</span>
+                                </div>
+                                <div class="fare-row-detail total">
+                                    <span>Estimated Total</span>
+                                    <span id="total-fare-val">₹0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Confirm Booking Button -->
+                        <button type="submit" id="confirm-booking-btn" class="primary-btn confirm-btn" disabled>
+                            Confirm Booking
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Right side: Map/Visualization Placeholder -->
+                <div class="booking-map-card reveal" role="region" aria-label="Route map preview">
+                    <div class="map-container">
+                        <!-- Interactive Leaflet Map div -->
+                        <div id="map" style="width: 100%; height: 100%; background: var(--surface);"></div>
+
+                        <!-- Map Loader Overlay -->
+                        <div id="map-loader" class="map-overlay-wrapper map-loader-wrapper" aria-hidden="true">
+                            <div class="map-spinner"></div>
+                            <span>Calculating Route...</span>
+                        </div>
+
+                        <!-- Map Retry Overlay -->
+                        <div id="map-retry" class="map-overlay-wrapper map-retry-wrapper" aria-hidden="true">
+                            <p>Unable to calculate route.</p>
+                            <button type="button" id="map-retry-btn" class="secondary-btn apply-btn" style="padding: 0.6rem 1.2rem !important; font-size: 0.85rem;">Retry</button>
+                        </div>
+
+                        <!-- Map Offline Overlay -->
+                        <div id="map-offline" class="map-overlay-wrapper map-offline-wrapper" aria-hidden="true">
+                            <p>You're offline. Route preview unavailable.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reusable Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <a class="brand" href="index.html">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                        <span>Go Ride</span>
+                    </a>
+                    <p>Ride smarter, ride better with dependable travel for every journey.</p>
+                </div>
+                <div>
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="booking.html">Book Ride</a></li>
+                        <li><a href="terms.html">Terms &amp; Conditions</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="login.html">Login</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Follow Us</h3>
+                    <ul>
+                        <li><a href="https://instagram.com/goride" aria-label="Follow Go Ride on Instagram">Instagram</a></li>
+                        <li><a href="https://x.com/goride" aria-label="Follow Go Ride on Twitter">Twitter</a></li>
+                        <li><a href="https://linkedin.com/company/goride" aria-label="Follow Go Ride on LinkedIn">LinkedIn</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">© 2026 Go Ride Technologies. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Back to top button -->
+    <button id="backToTop" class="scroll-to-top" aria-label="Back to top">↑</button>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
+        <div class="modal-card">
+            <div class="modal-icon" aria-hidden="true">🎉</div>
+            <h2 id="modal-title">Ride Booked Successfully</h2>
+            <p>Your booking request has been received. We are looking for nearby drivers.</p>
+            <div class="driver-match-details" style="gap: 0.5rem;">
+                <div class="receipt-row" style="display: flex; justify-content: space-between; width: 100%; font-size: 0.95rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+                    <span>Booking ID:</span>
+                    <strong id="booking-id-val" style="font-family: monospace; color: var(--primary); font-size: 1rem;">GR-20260720-0000</strong>
+                </div>
+                <div class="receipt-row" style="display: flex; justify-content: space-between; width: 100%; font-size: 0.95rem; padding-top: 0.25rem;">
+                    <span>Estimated Arrival:</span>
+                    <strong style="color: var(--accent);">3 Mins</strong>
+                </div>
+            </div>
+            <button type="button" id="close-modal-btn" class="primary-btn modal-btn">Done</button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="modal-overlay" aria-hidden="true">
+        <div class="loader-card">
+            <div class="loader-spinner" aria-hidden="true"></div>
+            <h3>Processing Booking...</h3>
+            <p>Please wait while we register your booking request</p>
+            <div class="loader-progress-bar">
+                <div class="loader-progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/main.js" defer></script>
+    <script src="js/animations.js" defer></script>
+    <script src="js/toast.js" defer></script>
+    <script src="js/config.js" defer></script>
+    <script src="js/validation.js" defer></script>
+    <script src="js/dataset.js" defer></script>
+    <script src="js/map.js" defer></script>
+    <script src="js/booking.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,321 @@
+/* ==========================================================================
+   GO RIDE - AUTHENTICATION STYLES (V1)
+   ========================================================================== */
+
+/* Auth Layout Section */
+.auth-section {
+  padding: 5rem 0;
+  min-height: calc(100vh - 80px - 320px); /* Adjust based on navbar & footer */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-wrapper {
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.auth-card {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: clamp(2rem, 5vw, 3rem) clamp(1.5rem, 5vw, 2.5rem);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  transition: border-color var(--transition);
+}
+
+.auth-card:hover {
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-logo {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 1rem;
+}
+
+.auth-header h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.35rem;
+}
+
+.auth-header p {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+/* Auth Form details */
+.auth-form {
+  display: grid;
+  gap: 1.4rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.input-group label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper .input-icon {
+  position: absolute;
+  left: 1.1rem;
+  font-size: 1.1rem;
+  color: var(--muted);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.input-wrapper input,
+.input-wrapper select {
+  width: 100%;
+  padding: 0.95rem 1rem 0.95rem 2.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.input-wrapper select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 2.8rem; /* Space for arrow */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
+}
+
+.input-wrapper input:focus,
+.input-wrapper select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+/* Input password padding adjustment for reveal button */
+.input-wrapper input[type="password"],
+.input-wrapper input[type="text"]#reg-password,
+.input-wrapper input[type="text"]#login-password {
+  padding-right: 2.8rem;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.9rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.15rem;
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  padding: 0.25rem;
+  border-radius: 50%;
+  transition: color var(--transition), background var(--transition);
+  z-index: 5;
+}
+
+.password-toggle-btn:hover {
+  color: var(--primary);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+/* Remember Me Checkbox */
+.auth-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.remember-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+.remember-checkbox input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkbox-box {
+  height: 18px;
+  width: 18px;
+  background-color: var(--background);
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.remember-checkbox:hover input ~ .checkbox-box {
+  border-color: var(--primary);
+}
+
+.remember-checkbox input:checked ~ .checkbox-box {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.checkbox-box::after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.remember-checkbox input:checked ~ .checkbox-box::after {
+  display: block;
+}
+
+.checkbox-text {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.checkbox-text a {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.checkbox-text a:hover {
+  text-decoration: underline;
+}
+
+.forgot-link {
+  color: var(--primary);
+  font-weight: 600;
+  transition: color var(--transition);
+}
+
+.forgot-link:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Submit Action Button */
+.auth-submit-btn {
+  width: 100%;
+  padding: 1rem !important;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+/* Auth Card Footer link */
+.auth-footer {
+  text-align: center;
+  margin-top: 1.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.auth-footer a {
+  color: var(--primary);
+  font-weight: 700;
+  transition: color var(--transition);
+}
+
+.auth-footer a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Password Strength Indicator Styles */
+.password-strength-meter {
+  margin-top: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.strength-bar-container {
+  height: 5px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+}
+
+.strength-bar-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: 99px;
+  transition: width var(--transition), background-color var(--transition);
+}
+
+.strength-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.strength-label strong {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Strength Colors & Widths */
+.strength-weak {
+  width: 33.3%;
+  background-color: var(--color-danger);
+}
+
+.strength-medium {
+  width: 66.6%;
+  background-color: var(--color-warning);
+}
+
+.strength-strong {
+  width: 100%;
+  background-color: var(--color-accent);
+}
+
+/* Keyboard Outline focus state overrides */
+.remember-checkbox input:focus-visible ~ .checkbox-box {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
