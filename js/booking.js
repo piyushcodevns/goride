@@ -742,6 +742,12 @@
                 // Output ready-to-use backend object in console logs
                 console.log("Go Ride Booking Object Ready for Backend API Insertion:", bookingObject);
                 // TODO: Booking API - submit final ride details (bookingObject) to DB in V2
+                
+                // Save record for ML dataset
+                if (window.saveBookingRecord) {
+                    const recordData = { ...data, ...bookingObject };
+                    window.saveBookingRecord(recordData);
+                }
 
                 successModal.classList.add('active');
                 successModal.setAttribute('aria-hidden', 'false');

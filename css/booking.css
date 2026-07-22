@@ -2,11 +2,6 @@
    GO RIDE - BOOKING PORTAL STYLES (V1)
    ========================================================================== */
 
-:root {
-  --shadow-sm: 0 6px 18px rgba(15, 23, 42, 0.06);
-  --surface-alt: #F1F5F9;
-}
-
 /* Booking Hero Section */
 .booking-hero {
   padding: 4.5rem 0 2rem 0;
@@ -26,10 +21,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: rgba(37, 99, 235, 0.08);
-  color: var(--primary);
-  border-radius: 999px;
-  font-weight: 600;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-semibold);
   font-size: 0.85rem;
   margin-bottom: 1.25rem;
   border: 1px solid rgba(37, 99, 235, 0.12);
@@ -37,8 +32,8 @@
 
 .booking-hero h1 {
   font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--text);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
   line-height: 1.2;
   margin-bottom: 1rem;
 }
@@ -51,7 +46,7 @@
 }
 
 .booking-hero p {
-  color: var(--muted);
+  color: var(--color-text-secondary);
   font-size: 1.05rem;
   line-height: 1.5;
 }
@@ -72,17 +67,17 @@
 .booking-card,
 .booking-map-card {
   background: rgba(255, 255, 255, 0.8);
-  border: 1px solid var(--border);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 2.25rem;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-md);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+  transition: transform var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal);
 }
 
 .booking-card:hover {
-  border-color: rgba(37, 99, 235, 0.2);
+  border-color: var(--color-primary);
 }
 
 .booking-card .card-header {
@@ -91,8 +86,8 @@
 
 .booking-card .card-header h2 {
   font-size: 1.45rem;
-  color: var(--text);
-  font-weight: 700;
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
   margin-bottom: 0.35rem;
 }
 
@@ -116,8 +111,8 @@
 
 .input-group label {
   font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--text);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
 }
 
 .input-wrapper {
@@ -130,21 +125,21 @@
   position: absolute;
   left: 1.1rem;
   font-size: 1.1rem;
-  color: var(--muted);
+  color: var(--color-text-secondary);
   pointer-events: none;
-  z-index: 2;
+  z-index: var(--z-index-content);
 }
 
 .input-wrapper input {
   width: 100%;
   padding: 0.95rem 1rem 0.95rem 2.8rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-family: inherit;
   font-size: 0.95rem;
-  color: var(--text);
-  background: var(--background);
-  transition: border-color var(--transition), box-shadow var(--transition);
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
 }
 
 /* Right button inside pickup wrapper */
@@ -159,22 +154,22 @@
   border: none;
   cursor: pointer;
   font-size: 1.1rem;
-  color: var(--primary);
+  color: var(--color-primary);
   display: grid;
   place-items: center;
   padding: 0.25rem;
   border-radius: 50%;
-  transition: background var(--transition), transform var(--transition);
+  transition: background var(--transition-normal), transform var(--transition-normal);
 }
 
 .current-location-btn:hover {
-  background: rgba(37, 99, 235, 0.08);
+  background: var(--color-primary-light);
   transform: scale(1.1);
 }
 
 .input-wrapper input:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
 
@@ -191,19 +186,19 @@
 .form-row input[type="date"],
 .form-row input[type="time"] {
   padding: 0.95rem 1rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-family: inherit;
   font-size: 0.95rem;
-  color: var(--text);
-  background: var(--background);
-  transition: border-color var(--transition);
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  transition: border-color var(--transition-normal);
 }
 
 .form-row input[type="date"]:focus,
 .form-row input[type="time"]:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--color-primary);
 }
 
 /* Suggestions Autocomplete Dropdown */
@@ -212,14 +207,14 @@
   top: 100%;
   left: 0;
   width: 100%;
-  background: var(--background);
-  border: 1px solid var(--border);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
   margin: 0.35rem 0 0 0;
   padding: 0.5rem 0;
   list-style: none;
-  z-index: 100;
+  z-index: var(--z-index-dropdown);
   display: none; /* Controlled via JS */
 }
 
@@ -230,20 +225,20 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  transition: background var(--transition);
+  transition: background var(--transition-normal);
 }
 
 .suggestions-list li:hover {
-  background: var(--surface);
-  color: var(--primary);
+  background: var(--color-surface);
+  color: var(--color-primary);
 }
 
 /* Ride Booking Toggle Buttons */
 .booking-toggle-row {
   display: flex;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
   padding: 0.25rem;
   margin-top: 0.5rem;
 }
@@ -254,16 +249,16 @@
   background: none;
   border: none;
   font-family: inherit;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   font-size: 0.9rem;
-  color: var(--muted);
-  border-radius: 999px;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: background var(--transition), color var(--transition), box-shadow var(--transition);
+  transition: background var(--transition-normal), color var(--transition-normal), box-shadow var(--transition-normal);
 }
 
 .booking-toggle-row .toggle-btn.active {
-  background: var(--primary);
+  background: var(--color-primary);
   color: #fff;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
@@ -303,14 +298,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--muted);
+  color: var(--color-text-secondary);
   text-align: center;
   padding: 2rem;
 }
 
 .map-placeholder p {
-  font-weight: 600;
-  color: var(--text);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
   margin-bottom: 0.25rem;
   font-size: 1.05rem;
 }
@@ -324,20 +319,20 @@
   position: absolute;
   width: 2.2rem;
   height: 2.2rem;
-  background: #fff;
-  border: 2px solid var(--primary);
+  background: var(--color-background);
+  border: 2px solid var(--color-primary);
   border-radius: 50%;
   display: grid;
   place-items: center;
   font-size: 1rem;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  z-index: 5;
+  z-index: var(--z-index-content);
 }
 
 .pickup-marker {
   top: 30%;
   left: 25%;
-  border-color: var(--primary);
+  border-color: var(--color-primary);
 }
 
 .dropoff-marker {
@@ -353,43 +348,19 @@
   left: 30%;
   width: 42%;
   height: 38%;
-  border-top: 3px dashed var(--primary);
-  border-right: 3px dashed var(--primary);
+  border-top: 3px dashed var(--color-primary);
+  border-right: 3px dashed var(--color-primary);
   border-top-right-radius: 40px;
   pointer-events: none;
-  z-index: 2;
+  z-index: var(--z-index-base);
   opacity: 0.45;
-}
-
-/* ==========================================================================
-   RESPONSIVE MEDIA QUERIES
-   ========================================================================== */
-@media (max-width: 992px) {
-  .booking-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .booking-hero h1 {
-    font-size: 2.1rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .booking-card {
-    padding: 1.5rem;
-  }
-  
-  .form-row {
-    flex-direction: column;
-    gap: 1.25rem;
-  }
 }
 
 /* Subsection Titles */
 .subsection-title {
   font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
   margin-top: 0.5rem;
   margin-bottom: 0.8rem;
 }
@@ -410,33 +381,33 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.9rem 1.15rem;
-  background: var(--background);
-  border: 1px solid var(--border);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: border-color var(--transition), background var(--transition), box-shadow var(--transition), transform var(--transition);
+  transition: border-color var(--transition-normal), background var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
 }
 
 .vehicle-item:hover {
-  background: var(--surface);
+  background: var(--color-surface);
   border-color: rgba(37, 99, 235, 0.25);
   transform: translateY(-2px);
 }
 
 .vehicle-item.active {
   background: rgba(37, 99, 235, 0.04);
-  border-color: var(--primary);
+  border-color: var(--color-primary);
   box-shadow: var(--shadow-sm);
 }
 
 .vehicle-item:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--color-primary);
   outline-offset: 3px;
   transform: translateY(-2px);
 }
 
 .booking-toggle-row .toggle-btn:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--color-primary);
   outline-offset: -2px;
 }
 
@@ -454,14 +425,14 @@
 
 .vehicle-info h4 {
   font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
   margin-bottom: 0.15rem;
 }
 
 .vehicle-info .eta {
   font-size: 0.8rem;
-  color: var(--muted);
+  color: var(--color-text-secondary);
 }
 
 .vehicle-price {
@@ -473,13 +444,13 @@
 
 .vehicle-price .price {
   font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
 }
 
 .vehicle-price .capacity {
   font-size: 0.75rem;
-  color: var(--muted);
+  color: var(--color-text-secondary);
 }
 
 /* Fare Summary styles */
@@ -488,8 +459,8 @@
 }
 
 .fare-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   padding: 1.15rem;
   display: flex;
@@ -501,97 +472,32 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.88rem;
-  color: var(--muted);
+  color: var(--color-text-secondary);
 }
 
 .fare-row-detail.total {
-  border-top: 1px dashed var(--border);
+  border-top: 1px dashed var(--color-border);
   padding-top: 0.6rem;
   margin-top: 0.2rem;
-  font-weight: 700;
-  color: var(--text);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
   font-size: 1.05rem;
 }
 
 /* Confirm Button styling */
 .confirm-btn {
   width: 100%;
-  padding: 1rem !important;
   font-size: 1.05rem;
   margin-top: 0.5rem;
-  border: none;
   cursor: pointer;
-  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
-}
-
-.confirm-btn:hover:not(:disabled) {
-  background: var(--primary-dark) !important;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
 }
 
 .confirm-btn:disabled {
-  background: var(--border) !important;
-  color: var(--muted) !important;
+  background: var(--color-border) !important;
+  color: var(--color-text-secondary) !important;
   box-shadow: none !important;
   transform: none !important;
   cursor: not-allowed;
-}
-
-/* Float Animation definition */
-@keyframes floaty {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
-}
-
-/* Mobile Overrides for Booking Card & Vehicles */
-@media (max-width: 425px) {
-  .booking-card {
-    padding: 1.25rem;
-  }
-}
-
-@media (max-width: 375px) {
-  .vehicle-item {
-    padding: 0.8rem 1rem;
-  }
-  .vehicle-icon {
-    font-size: 1.5rem;
-  }
-  .vehicle-info h4 {
-    font-size: 0.9rem;
-  }
-  .vehicle-price .price {
-    font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 320px) {
-  .booking-card {
-    padding: 1rem;
-  }
-  .input-wrapper input {
-    padding-left: 2.5rem;
-  }
-  .input-wrapper .input-icon {
-    left: 0.8rem;
-  }
-  .vehicle-item {
-    padding: 0.65rem 0.8rem;
-  }
-  .vehicle-icon {
-    font-size: 1.3rem;
-  }
-  .vehicle-info h4 {
-    font-size: 0.85rem;
-  }
-  .vehicle-info .eta {
-    font-size: 0.75rem;
-  }
 }
 
 /* Visually Hidden Utility for Accessible native inputs */
@@ -628,15 +534,15 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.8rem 0.5rem;
-  background: var(--background);
-  border: 1px solid var(--border);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   text-align: center;
-  transition: border-color var(--transition), background var(--transition), box-shadow var(--transition), transform var(--transition);
+  transition: border-color var(--transition-normal), background var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
 }
 
 .payment-option:hover .option-card {
-  background: var(--surface);
+  background: var(--color-surface);
   border-color: rgba(37, 99, 235, 0.25);
   transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
@@ -644,7 +550,7 @@
 
 .payment-option input:checked + .option-card {
   background: rgba(37, 99, 235, 0.04);
-  border-color: var(--primary);
+  border-color: var(--color-primary);
   box-shadow: var(--shadow-sm);
 }
 
@@ -659,8 +565,8 @@
 
 .payment-text {
   font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
 }
 
 /* Coupon Styles */
@@ -673,8 +579,8 @@
 
 .coupon-container label {
   font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--text);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
 }
 
 .coupon-wrapper {
@@ -685,18 +591,18 @@
 .coupon-wrapper input {
   flex: 1;
   padding: 0.85rem 1rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-family: inherit;
   font-size: 0.92rem;
-  color: var(--text);
-  background: var(--background);
-  transition: border-color var(--transition);
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  transition: border-color var(--transition-normal);
 }
 
 .coupon-wrapper input:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--color-primary);
 }
 
 .coupon-wrapper .apply-btn {
@@ -704,11 +610,11 @@
   font-size: 0.92rem;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  transition: background var(--transition-normal), transform var(--transition-normal), box-shadow var(--transition-normal);
 }
 
 .coupon-wrapper .apply-btn:hover {
-  background: var(--primary) !important;
+  background: var(--color-primary) !important;
   color: #fff !important;
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
@@ -716,17 +622,17 @@
 
 .coupon-msg {
   font-size: 0.8rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   display: block;
   min-height: 1.2rem;
 }
 
 .coupon-msg.success {
-  color: var(--accent);
+  color: var(--color-accent);
 }
 
 .coupon-msg.error {
-  color: #DC2626;
+  color: var(--color-danger);
 }
 
 /* Modals & Overlays Styles */
@@ -736,7 +642,7 @@
   background: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  z-index: 1000;
+  z-index: var(--z-index-modal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -752,8 +658,8 @@
 
 /* Success Modal Card */
 .modal-card {
-  background: var(--background);
-  border: 1px solid var(--border);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 2.5rem;
   max-width: 440px;
@@ -776,13 +682,13 @@
 
 .modal-card h2 {
   font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--text);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
   margin-bottom: 0.75rem;
 }
 
 .modal-card p {
-  color: var(--muted);
+  color: var(--color-text-secondary);
   font-size: 0.95rem;
   line-height: 1.5;
   margin-bottom: 1.5rem;
@@ -790,8 +696,8 @@
 
 /* Driver Matching Details inside Modal */
 .driver-match-details {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 1.25rem;
   text-align: left;
@@ -825,26 +731,26 @@
 
 .driver-profile strong {
   font-size: 0.95rem;
-  color: var(--text);
+  color: var(--color-text-primary);
 }
 
 .driver-profile span {
   font-size: 0.78rem;
-  color: var(--muted);
+  color: var(--color-text-secondary);
 }
 
 .vehicle-plate-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--color-border);
   padding-top: 0.85rem;
   font-size: 0.9rem;
 }
 
 .vehicle-plate-info span {
-  font-weight: 500;
-  color: var(--text);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
 }
 
 .vehicle-plate-info strong {
@@ -867,8 +773,8 @@
 
 /* Finding Driver Loader Overlay */
 .loader-card {
-  background: var(--background);
-  border: 1px solid var(--border);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 2.5rem;
   max-width: 380px;
@@ -884,20 +790,20 @@
 .loader-spinner {
   width: 3.5rem;
   height: 3.5rem;
-  border: 4px solid var(--border);
-  border-top-color: var(--primary);
+  border: 4px solid var(--color-border);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin-loader 0.8s linear infinite;
 }
 
 .loader-card h3 {
   font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
 }
 
 .loader-card p {
-  color: var(--muted);
+  color: var(--color-text-secondary);
   font-size: 0.88rem;
   line-height: 1.4;
 }
@@ -905,8 +811,8 @@
 .loader-progress-bar {
   width: 100%;
   height: 6px;
-  background: var(--border);
-  border-radius: 99px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
   overflow: hidden;
   margin-top: 0.5rem;
 }
@@ -915,22 +821,8 @@
   width: 0%;
   height: 100%;
   background: linear-gradient(135deg, var(--primary), var(--accent));
-  border-radius: 99px;
+  border-radius: var(--radius-full);
   transition: width 0.1s linear;
-}
-
-/* Responsive adjustments for payment */
-@media (max-width: 375px) {
-  .payment-options {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .payment-option .option-card {
-    flex-direction: row;
-    justify-content: center;
-    gap: 0.75rem;
-    padding: 0.75rem;
-  }
 }
 
 /* Passengers Counter Styles */
@@ -949,21 +841,21 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--background);
-  color: var(--text);
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  color: var(--color-text-primary);
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   user-select: none;
-  transition: background var(--transition), border-color var(--transition), transform var(--transition);
+  transition: background var(--transition-normal), border-color var(--transition-normal), transform var(--transition-normal);
 }
 
 .counter-btn:hover {
-  background: var(--surface);
+  background: var(--color-surface);
   border-color: rgba(37, 99, 235, 0.25);
   transform: scale(1.05);
 }
@@ -976,27 +868,21 @@
   flex: 1;
   text-align: center;
   font-size: 1.1rem;
-  font-weight: 700;
-  border: 1px solid var(--border);
+  font-weight: var(--font-weight-bold);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  background: var(--surface);
+  background: var(--color-surface);
   height: 2.5rem;
   width: 50px;
-  color: var(--text);
+  color: var(--color-text-primary);
   padding: 0;
   pointer-events: none; /* readonly style */
 }
 
-/* Spinner Animation Definition */
-@keyframes spin-loader {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 /* Receipt Details */
 .booking-receipt-details {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 1.25rem;
   display: flex;
@@ -1018,7 +904,7 @@
   position: relative;
   height: 100%;
   min-height: 420px;
-  background: var(--surface);
+  background: var(--color-surface);
   border-radius: var(--radius-sm);
   overflow: hidden;
 }
@@ -1036,7 +922,7 @@
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  z-index: 10;
+  z-index: var(--z-index-content);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1044,7 +930,7 @@
   gap: 1rem;
   opacity: 0;
   visibility: hidden;
-  transition: opacity var(--transition), visibility var(--transition);
+  transition: opacity var(--transition-normal), visibility var(--transition-normal);
 }
 
 .map-overlay-wrapper.active {
@@ -1055,8 +941,8 @@
 .map-overlay-wrapper span, 
 .map-overlay-wrapper p {
   font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
   margin: 0;
   text-align: center;
 }
@@ -1065,8 +951,8 @@
 .map-spinner {
   width: 2.2rem;
   height: 2.2rem;
-  border: 3.5px solid var(--border);
-  border-top-color: var(--primary);
+  border: 3.5px solid var(--color-border);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin-loader 0.8s linear infinite;
 }
@@ -1074,7 +960,7 @@
 /* Keyboard suggestions selection focus states */
 .suggestion-item.focused {
   background: rgba(37, 99, 235, 0.08) !important;
-  color: var(--primary) !important;
+  color: var(--color-primary) !important;
   outline: none;
 }
 
@@ -1083,17 +969,17 @@
   z-index: 999;
   max-height: 220px;
   overflow-y: auto;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-md);
   border-radius: var(--radius-sm);
 }
 
 /* Google Maps Autocomplete Dropdown Styling */
 .pac-container {
   border-radius: var(--radius-sm) !important;
-  border: 1px solid var(--border) !important;
-  box-shadow: var(--shadow) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-md) !important;
   font-family: 'Poppins', sans-serif !important;
-  background-color: var(--background) !important;
+  background-color: var(--color-background) !important;
   margin-top: 4px !important;
   z-index: 99999 !important;
 }
@@ -1101,16 +987,16 @@
 .pac-item {
   padding: 8px 12px !important;
   cursor: pointer !important;
-  border-top: 1px solid var(--border) !important;
+  border-top: 1px solid var(--color-border) !important;
   display: flex !important;
   align-items: center !important;
-  color: var(--text) !important;
-  transition: background var(--transition) !important;
+  color: var(--color-text-primary) !important;
+  transition: background var(--transition-normal) !important;
 }
 
 .pac-item:hover,
 .pac-item-selected {
-  background-color: var(--surface) !important;
+  background-color: var(--color-surface) !important;
 }
 
 .pac-icon {
@@ -1119,15 +1005,15 @@
 
 .pac-item-query {
   font-size: 0.9rem !important;
-  color: var(--text) !important;
+  color: var(--color-text-primary) !important;
 }
 
 .pac-matched {
-  font-weight: 700 !important;
-  color: var(--primary) !important;
+  font-weight: var(--font-weight-bold) !important;
+  color: var(--color-primary) !important;
 }
 
 .pac-secondary-text {
   font-size: 0.75rem !important;
-  color: var(--muted) !important;
+  color: var(--color-text-secondary) !important;
 }

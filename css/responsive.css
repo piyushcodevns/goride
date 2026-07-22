@@ -1,4 +1,4 @@
-@media (max-width: 1024px) {
+?@media (max-width: 1024px) {
   .why-choose-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -199,6 +199,49 @@
   }
 }
 
+@media (max-width: 992px) {
+  .booking-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .booking-hero h1 {
+    font-size: 2.1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .booking-card {
+    padding: 1.5rem;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .payment-options {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .payment-option .option-card {
+    flex-direction: row;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .auth-card {
+    padding: 2.25rem 1.5rem;
+  }
+  .auth-header h2 {
+    font-size: 1.5rem;
+  }
+}
+
 /* ==========================================
    ULTRA-MOBILE RESPONSIVE FIXES (320px, 375px, 425px)
    ========================================== */
@@ -307,5 +350,29 @@
     text-align: center;
     justify-content: center;
   }
+
+  .vehicle-item {
+    padding: 0.65rem 0.8rem;
+  }
+  .vehicle-icon {
+    font-size: 1.3rem;
+  }
+  .vehicle-info h4 {
+    font-size: 0.85rem;
+  }
+  .vehicle-info .eta {
+    font-size: 0.75rem;
+  }
 }
 
+@media (max-width: 425px) {
+  .booking-card {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .vehicle-item {
+    padding: 0.8rem 1rem;
+  }
+}

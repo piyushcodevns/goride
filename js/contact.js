@@ -176,6 +176,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = oldBtnText;
                 
+                // Save record for ML dataset
+                if (window.saveBookingRecord) {
+                    const recordData = { pickup: 'Contact Form Inquiry', drop: inquirySelect.value, fare: { vehicle: 'support' } };
+                    window.saveBookingRecord(recordData);
+                }
+
                 // Clear validation styles
                 clearValidation(nameInput);
                 clearValidation(emailInput);

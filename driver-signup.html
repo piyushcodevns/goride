@@ -27,6 +27,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/responsive.css">
@@ -112,8 +115,8 @@
                             <label for="drv-vehicle">Vehicle Type</label>
                             <div class="input-wrapper">
                                 <span class="input-icon" aria-hidden="true">🏍️</span>
-                                <select id="drv-vehicle" name="vehicle" required style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-family: inherit; font-size: 0.95rem; appearance: none; cursor: pointer;">
-                                    <option value="" disabled selected>Select vehicle type...</option>
+                                <select id="drv-vehicle" name="vehicle" required>
+                                    <option value="" disabled selected>Select your vehicle type...</option>
                                     <option value="bike">Motorcycle (Go Bike)</option>
                                     <option value="auto">Auto Rickshaw (Go Auto)</option>
                                     <option value="mini">Mini Hatchback (Go Mini)</option>
@@ -194,6 +197,7 @@
     <script src="js/main.js" defer></script>
     <script src="js/animations.js" defer></script>
     <script src="js/toast.js" defer></script>
+    <script src="js/dataset.js" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('driver-form');

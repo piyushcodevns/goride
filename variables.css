@@ -1,0 +1,5 @@
+/* ==========================================================================
+   GO RIDE - DESIGN SYSTEM TOKENS (ROOT REDIRECT)
+   Importing central design system variables from css/variables.css
+   ========================================================================== */
+@import url("./css/variables.css");

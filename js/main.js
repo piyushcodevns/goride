@@ -11,6 +11,18 @@ if (menuToggle && navLinks) {
   });
 }
 
+// Sticky Header Shadow effect on scroll
+const headerEl = document.querySelector('.header');
+if (headerEl) {
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 20) {
+      headerEl.classList.add('scrolled');
+    } else {
+      headerEl.classList.remove('scrolled');
+    }
+  });
+}
+
 const faqItems = document.querySelectorAll('.faq-item');
 
 faqItems.forEach((item) => {
