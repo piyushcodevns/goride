@@ -1,3 +1,6 @@
+// Establish the global namespace
+window.GoRide = { utils: {}, config: {} };
+
 const menuToggle = document.querySelector('.menu-toggle');
 const navLinks = document.querySelector('.nav-links');
 
@@ -8,18 +11,6 @@ if (menuToggle && navLinks) {
 
   navLinks.querySelectorAll('a').forEach((link) => {
     link.addEventListener('click', () => navLinks.classList.remove('active'));
-  });
-}
-
-// Sticky Header Shadow effect on scroll
-const headerEl = document.querySelector('.header');
-if (headerEl) {
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 20) {
-      headerEl.classList.add('scrolled');
-    } else {
-      headerEl.classList.remove('scrolled');
-    }
   });
 }
 
@@ -71,7 +62,7 @@ window.addEventListener('load', () => {
 });
 
 // Reusable Toast System
-window.showToast = (message, type = 'info') => {
+window.GoRide.showToast = (message, type = 'info') => {
   const container = document.getElementById('toast-container');
   if (!container) return;
 
@@ -121,61 +112,9 @@ document.querySelectorAll('a[href="booking.html"]').forEach(btn => {
       return;
     }
     e.preventDefault();
-    window.showToast("Redirecting to booking portal...", "success");
+    window.GoRide.showToast("Redirecting to booking portal...", "success");
     setTimeout(() => {
       window.location.href = btn.getAttribute('href');
     }, 700);
   });
 });
-
-// Simulated Skeleton Loading Trigger
-const skeletonLoaders = document.querySelectorAll('.skeleton-onload');
-if (skeletonLoaders.length > 0) {
-  skeletonLoaders.forEach(el => el.classList.add('skeleton'));
-  window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-      skeletonLoaders.forEach(el => el.classList.remove('skeleton'));
-    }, 750);
-  });
-}
-
-// Contact Form Validation
-const contactForm = document.getElementById('contact-form');
-if (contactForm) {
-  contactForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const name = document.getElementById('contact-name').value.trim();
-    const email = document.getElementById('contact-email').value.trim();
-    const phone = document.getElementById('contact-phone').value.trim();
-    const subject = document.getElementById('contact-subject').value.trim();
-    const inquiry = document.getElementById('contact-inquiry').value;
-    const message = document.getElementById('contact-message').value.trim();
-    
-    // Check empty fields
-    if (!name || !email || !phone || !subject || !inquiry || !message) {
-      window.showToast("Please fill in all required fields.", "info");
-      return;
-    }
-    
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      window.showToast("Please enter a valid email address.", "info");
-      return;
-    }
-    
-    // Phone validation
-    const phoneRegex = /^[0-9]{10,12}$/;
-    if (!phoneRegex.test(phone.replace(/[\s\-+()]/g, ''))) {
-      window.showToast("Please enter a valid phone number.", "info");
-      return;
-    }
-    
-    // Success submission
-    window.showToast("Message sent successfully! Our team will contact you soon.", "success");
-    contactForm.reset();
-  });
-}
-
-

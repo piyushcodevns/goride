@@ -53,7 +53,7 @@
         return { valid: true };
     }
 
-    window.validateBooking = function(data) {
+    window.GoRide.validateBooking = function(data) {
         const pickup = data.pickup || '';
         const drop = data.drop || '';
         const date = data.date || '';

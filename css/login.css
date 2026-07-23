@@ -238,12 +238,12 @@
 /* Submit Action Button */
 .auth-submit-btn {
   width: 100%;
-  padding: 1rem !important;
   font-size: 1rem;
   border: none;
   cursor: pointer;
   margin-top: 0.5rem;
 }
+
 /* Auth Card Footer link */
 .auth-footer {
   text-align: center;
@@ -318,4 +318,23 @@
 .remember-checkbox input:focus-visible ~ .checkbox-box {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* Validation States */
+.input-group .error-msg {
+  color: var(--color-danger);
+  font-size: 0.78rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.input-group.has-error input,
+.input-group.has-error select {
+  border-color: var(--color-danger);
+}
+
+.input-group.has-error input:focus,
+.input-group.has-error select:focus {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
 }

@@ -2,18 +2,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const contactForm = document.getElementById('contact-form');
     if (!contactForm) return;
 
-    // Clone form to clear any existing anonymous submit listeners from main.js
-    const cleanForm = contactForm.cloneNode(true);
-    contactForm.parentNode.replaceChild(cleanForm, contactForm);
-
     // Get input elements from the clean form
-    const nameInput = cleanForm.querySelector('#contact-name');
-    const emailInput = cleanForm.querySelector('#contact-email');
-    const phoneInput = cleanForm.querySelector('#contact-phone');
-    const subjectInput = cleanForm.querySelector('#contact-subject');
-    const inquirySelect = cleanForm.querySelector('#contact-inquiry');
-    const messageInput = cleanForm.querySelector('#contact-message');
-    const submitBtn = cleanForm.querySelector('button[type="submit"]');
+    const nameInput = contactForm.querySelector('#contact-name');
+    const emailInput = contactForm.querySelector('#contact-email');
+    const phoneInput = contactForm.querySelector('#contact-phone');
+    const subjectInput = contactForm.querySelector('#contact-subject');
+    const inquirySelect = contactForm.querySelector('#contact-inquiry');
+    const messageInput = contactForm.querySelector('#contact-message');
+    const submitBtn = contactForm.querySelector('button[type="submit"]');
 
     // Helper: Show error state
     const showError = (input, message) => {
@@ -23,16 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!errorEl) {
             errorEl = document.createElement('small');
             errorEl.className = 'error-msg';
-            errorEl.style.color = '#DC2626';
-            errorEl.style.fontSize = '0.8rem';
-            errorEl.style.marginTop = '0.25rem';
-            errorEl.style.display = 'block';
             group.appendChild(errorEl);
         }
-        
         errorEl.innerText = message;
-        input.style.borderColor = '#DC2626';
-        input.style.boxShadow = '0 0 0 3px rgba(220, 38, 38, 0.12)';
+        group.classList.add('has-error');
+        group.classList.remove('has-success');
         return false;
     };
 
@@ -43,8 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (errorEl) {
             errorEl.remove();
         }
-        input.style.borderColor = 'var(--accent)';
-        input.style.boxShadow = '0 0 0 3px rgba(34, 197, 94, 0.12)';
+        group.classList.add('has-success');
+        group.classList.remove('has-error');
         return true;
     };
 
@@ -55,8 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (errorEl) {
             errorEl.remove();
         }
-        input.style.borderColor = '';
-        input.style.boxShadow = '';
+        group.classList.remove('has-error', 'has-success');
     };
 
     // Individual validators
@@ -131,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     messageInput.addEventListener('input', validateMessage);
 
     // Form Submit logic
-    cleanForm.addEventListener('submit', (e) => {
+    contactForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
         // Run all validators
@@ -172,15 +162,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // Simulate successful response
                 window.showToast("Message sent successfully! We will contact you soon.", "success");
-                cleanForm.reset();
+                contactForm.reset();
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = oldBtnText;
-                
-                // Save record for ML dataset
-                if (window.saveBookingRecord) {
-                    const recordData = { pickup: 'Contact Form Inquiry', drop: inquirySelect.value, fare: { vehicle: 'support' } };
-                    window.saveBookingRecord(recordData);
-                }
 
                 // Clear validation styles
                 clearValidation(nameInput);

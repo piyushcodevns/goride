@@ -70,58 +70,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Validation Helpers
     // ----------------------------------------------------
     const showError = (input, message) => {
-        const wrapper = input.parentElement;
-        let errorEl = wrapper.nextElementSibling;
-        
-        // Account for strength meter element spacing
-        if (input === passwordInput) {
-            const group = input.closest('.input-group');
-            errorEl = group.querySelector('.error-msg');
-            if (!errorEl) {
-                errorEl = document.createElement('small');
-                errorEl.className = 'error-msg';
-                errorEl.style.color = '#DC2626';
-                errorEl.style.fontSize = '0.78rem';
-                errorEl.style.marginTop = '0.25rem';
-                errorEl.style.display = 'block';
-                group.appendChild(errorEl);
-            }
-            errorEl.innerText = message;
-            input.style.borderColor = '#DC2626';
-            input.style.boxShadow = '0 0 0 3px rgba(220, 38, 38, 0.12)';
-            return false;
-        }
-
-        if (!errorEl || !errorEl.classList.contains('error-msg')) {
+        const group = input.closest('.input-group');
+        let errorEl = group.querySelector('.error-msg');
+        if (!errorEl) {
             errorEl = document.createElement('small');
             errorEl.className = 'error-msg';
-            errorEl.style.color = '#DC2626';
-            errorEl.style.fontSize = '0.78rem';
-            errorEl.style.marginTop = '0.25rem';
-            errorEl.style.display = 'block';
-            wrapper.parentNode.appendChild(errorEl);
+            // Insert after input wrapper or after strength meter for password
+            const meter = group.querySelector('.password-strength-meter');
+            if (meter) {
+                meter.insertAdjacentElement('afterend', errorEl);
+            } else {
+                group.appendChild(errorEl);
+            }
         }
-        
         errorEl.innerText = message;
-        input.style.borderColor = '#DC2626';
-        input.style.boxShadow = '0 0 0 3px rgba(220, 38, 38, 0.12)';
+        group.classList.add('has-error');
         return false;
     };
 
     const clearError = (input) => {
-        const wrapper = input.parentElement;
-        let errorEl = wrapper.nextElementSibling;
-        
-        if (input === passwordInput) {
-            const group = input.closest('.input-group');
-            errorEl = group.querySelector('.error-msg');
-            if (errorEl) errorEl.remove();
-        } else if (errorEl && errorEl.classList.contains('error-msg')) {
+        const group = input.closest('.input-group');
+        const errorEl = group.querySelector('.error-msg');
+        if (errorEl) {
             errorEl.remove();
         }
-        
-        input.style.borderColor = '';
-        input.style.boxShadow = '';
+        group.classList.remove('has-error');
         return true;
     };
 
@@ -190,12 +163,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const agreeTerms = agreeCheckbox.checked;
 
         if (!agreeTerms) {
-            window.showToast("Please agree to the Terms & Conditions.", "error");
+            window.GoRide.showToast("Please agree to the Terms & Conditions.", "error");
             return;
         }
 
         if (!isNameOk || !isEmailOk || !isPhoneOk || !isPasswordOk) {
-            window.showToast("Please correct the errors in the registration form.", "error");
+            window.GoRide.showToast("Please correct the errors in the registration form.", "error");
             return;
         }
 
@@ -208,12 +181,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const emailVal = emailInput.value.trim().toLowerCase();
             
             if (emailVal === 'error@goride.com') {
-                window.showToast("Email address already registered.", "error");
+                window.GoRide.showToast("Email address already registered.", "error");
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = oldBtnText;
                 emailInput.focus();
             } else {
-                window.showToast("Account created successfully! Redirecting to Sign In...", "success");
+                window.GoRide.showToast("Account created successfully! Redirecting to Sign In...", "success");
                 
                 setTimeout(() => {
                     window.location.href = 'login.html';

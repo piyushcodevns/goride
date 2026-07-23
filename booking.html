@@ -72,11 +72,11 @@
         <div class="container">
             <nav class="navbar" aria-label="Primary navigation">
                 <a class="brand" href="index.html">
-                    <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo">
                     <span>Go Ride</span>
                 </a>
 
-                <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
+                <button class="menu-toggle" aria-label="Toggle navigation"><span aria-hidden="true">☰</span></button>
 
                 <ul class="nav-links">
                     <li><a class="nav-link" href="index.html">Home</a></li>
@@ -294,9 +294,9 @@
 
                         <!-- Fare Summary Section -->
                         <div class="fare-summary-container">
-                            <div class="subsection-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-                                <h3 class="subsection-title" style="margin: 0;">Fare Breakdown</h3>
-                                <span class="demo-badge" style="font-size: 0.75rem; background: rgba(37, 99, 235, 0.08); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 99px; font-weight: 600;">Demo Estimate</span>
+                            <div class="subsection-header">
+                                <h3 class="subsection-title">Fare Breakdown</h3>
+                                <span class="demo-badge">Demo Estimate</span>
                             </div>
                             <div class="fare-card" role="region" aria-label="Fare summary detail">
                                 <div class="fare-row-detail">
@@ -336,11 +336,8 @@
                 <!-- Right side: Map/Visualization Placeholder -->
                 <div class="booking-map-card reveal" role="region" aria-label="Route map preview">
                     <div class="map-container">
-                        <!-- Interactive Leaflet Map div -->
-                        <div id="map" style="width: 100%; height: 100%; background: var(--surface);"></div>
-
-                        <!-- Map Loader Overlay -->
-                        <div id="map-loader" class="map-overlay-wrapper map-loader-wrapper" aria-hidden="true">
+                        <div id="map"></div>
+                        <div id="map-loader" class="map-overlay-wrapper" aria-hidden="true">
                             <div class="map-spinner"></div>
                             <span>Calculating Route...</span>
                         </div>
@@ -348,7 +345,7 @@
                         <!-- Map Retry Overlay -->
                         <div id="map-retry" class="map-overlay-wrapper map-retry-wrapper" aria-hidden="true">
                             <p>Unable to calculate route.</p>
-                            <button type="button" id="map-retry-btn" class="secondary-btn apply-btn" style="padding: 0.6rem 1.2rem !important; font-size: 0.85rem;">Retry</button>
+                            <button type="button" id="map-retry-btn" class="secondary-btn apply-btn apply-btn--small">Retry</button>
                         </div>
 
                         <!-- Map Offline Overlay -->
@@ -365,7 +362,7 @@
     <footer class="site-footer">
         <div class="container">
             <div class="footer-grid">
-                <div>
+                <div class="footer-brand">
                     <a class="brand" href="index.html">
                         <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
                         <span>Go Ride</span>
@@ -393,9 +390,9 @@
                 <div>
                     <h3>Follow Us</h3>
                     <ul>
-                        <li><a href="https://instagram.com/goride" aria-label="Follow Go Ride on Instagram">Instagram</a></li>
-                        <li><a href="https://x.com/goride" aria-label="Follow Go Ride on Twitter">Twitter</a></li>
-                        <li><a href="https://linkedin.com/company/goride" aria-label="Follow Go Ride on LinkedIn">LinkedIn</a></li>
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">LinkedIn</a></li>
                     </ul>
                 </div>
             </div>
@@ -415,14 +412,14 @@
             <div class="modal-icon" aria-hidden="true">🎉</div>
             <h2 id="modal-title">Ride Booked Successfully</h2>
             <p>Your booking request has been received. We are looking for nearby drivers.</p>
-            <div class="driver-match-details" style="gap: 0.5rem;">
-                <div class="receipt-row" style="display: flex; justify-content: space-between; width: 100%; font-size: 0.95rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+            <div class="driver-match-details">
+                <div class="receipt-row receipt-row--bordered">
                     <span>Booking ID:</span>
-                    <strong id="booking-id-val" style="font-family: monospace; color: var(--primary); font-size: 1rem;">GR-20260720-0000</strong>
+                    <strong id="booking-id-val">GR-20260720-0000</strong>
                 </div>
-                <div class="receipt-row" style="display: flex; justify-content: space-between; width: 100%; font-size: 0.95rem; padding-top: 0.25rem;">
+                <div class="receipt-row">
                     <span>Estimated Arrival:</span>
-                    <strong style="color: var(--accent);">3 Mins</strong>
+                    <strong class="accent-text">3 Mins</strong>
                 </div>
             </div>
             <button type="button" id="close-modal-btn" class="primary-btn modal-btn">Done</button>
@@ -430,10 +427,10 @@
     </div>
 
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="modal-overlay" aria-hidden="true">
+    <div id="loading-overlay" class="modal-overlay" aria-hidden="true" role="alertdialog" aria-modal="true" aria-labelledby="loader-title">
         <div class="loader-card">
             <div class="loader-spinner" aria-hidden="true"></div>
-            <h3>Processing Booking...</h3>
+            <h3 id="loader-title">Processing Booking...</h3>
             <p>Please wait while we register your booking request</p>
             <div class="loader-progress-bar">
                 <div class="loader-progress-fill"></div>

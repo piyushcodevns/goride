@@ -44,6 +44,9 @@
     let appliedDiscount = 0; // in rupees
     let selectedVehicleType = 'bike'; // default
 
+    // Namespace for utils
+    window.GoRide.utils = window.GoRide.utils || {};
+
     // ----------------------------------------------------
     // SINGLE RESPONSIBILITY HELPER FUNCTIONS
     // ----------------------------------------------------
@@ -72,7 +75,7 @@
     }
 
     // Calculate dynamic fare based on matrix rules in config.js
-    window.calculateFare = function(distance, rideType) {
+    window.GoRide.utils.calculateFare = function(distance, rideType) {
         const fareConfig = window.APP_CONFIG.FARE;
         const config = fareConfig[rideType] || fareConfig.bike;
         const base = config.base;
@@ -89,13 +92,13 @@
     };
 
     // Calculate dynamic ETA based on distance
-    window.calculateETA = function(distance) {
+    window.GoRide.utils.calculateETA = function(distance) {
         if (distance === 0) return 0;
         return Math.round((distance / 40) * 60 + 2);
     };
 
     // Generate random timestamped duplicate-safe Booking ID
-    window.generateBookingID = function() {
+    window.GoRide.utils.generateBookingID = function() {
         const now = new Date();
         const datePart = now.getFullYear() + 
                          String(now.getMonth() + 1).padStart(2, '0') + 
@@ -106,7 +109,7 @@
     };
 
     // Toggle full screen matching spinner
-    window.toggleLoading = function(show) {
+    window.GoRide.utils.toggleLoading = function(show) {
         if (show) {
             loadingOverlay.classList.add('active');
             loadingOverlay.setAttribute('aria-hidden', 'false');
@@ -125,13 +128,13 @@
     };
 
     // Render numbers in dynamic estimated breakdown card
-    window.updateFareCard = function() {
-        const fare = window.calculateFare(currentDistance, selectedVehicleType);
+    window.GoRide.utils.updateFareCard = function() {
+        const fare = window.GoRide.utils.calculateFare(currentDistance, selectedVehicleType);
         
         // Update list placeholders as well
         vehicleItems.forEach(item => {
             const type = item.dataset.type;
-            const itemFare = window.calculateFare(currentDistance, type);
+            const itemFare = window.GoRide.utils.calculateFare(currentDistance, type);
             const priceSpan = item.querySelector('.price');
             if (priceSpan) {
                 if (currentDistance > 0) {
@@ -175,7 +178,7 @@
             } : null
         };
 
-        const result = window.validateBooking(data);
+        const result = window.GoRide.validateBooking(data);
         if (result.valid) {
             confirmBookingBtn.disabled = false;
         } else {
@@ -184,7 +187,7 @@
     }
 
     // Reset inputs, indicators and totals
-    window.resetBooking = function() {
+    window.GoRide.utils.resetBooking = function() {
         bookingForm.reset();
         couponInput.value = "";
         couponMessage.innerText = "";
@@ -216,7 +219,7 @@
         });
 
         initDateLimits();
-        updateFareCard();
+        window.GoRide.utils.updateFareCard();
         performLiveValidation();
 
         // Clear Map Route
@@ -263,8 +266,7 @@
             window.MapProvider.init();
         }
         initDateLimits();
-        checkAndTriggerRoute();
-        updateFareCard();
+        window.GoRide.utils.updateFareCard();
         performLiveValidation();
     });
 
@@ -273,14 +275,14 @@
         window.MapProvider.registerRouteCalculated((distance, duration) => {
             currentDistance = distance;
             currentDuration = duration;
-            updateFareCard();
+            window.GoRide.utils.updateFareCard();
             performLiveValidation();
         });
 
         window.MapProvider.registerRouteCleared(() => {
             currentDistance = 0;
             currentDuration = 0;
-            updateFareCard();
+            window.GoRide.utils.updateFareCard();
             performLiveValidation();
         });
     }
@@ -301,8 +303,7 @@
                         pickupInput.dataset.address = "My Current Location, Varanasi, Uttar Pradesh";
                         pickupInput.dataset.placeId = "geolocation-pickup-id";
 
-                        currentLocationBtn.classList.remove('loading');
-                        window.showToast("Current location detected!", "success");
+                        currentLocationBtn.classList.remove('loading');                        window.GoRide.showToast("Current location detected!", "success");
                         
                         checkAndTriggerRoute();
                         performLiveValidation();
@@ -315,8 +316,7 @@
                         pickupInput.dataset.address = "Varanasi Junction, Cantt, Varanasi, Uttar Pradesh";
                         pickupInput.dataset.placeId = "fallback-cantt-id";
 
-                        currentLocationBtn.classList.remove('loading');
-                        window.showToast("Permission denied. Fallback address loaded.", "info");
+                        currentLocationBtn.classList.remove('loading');                        window.GoRide.showToast("Permission denied. Fallback address loaded.", "info");
 
                         checkAndTriggerRoute();
                         performLiveValidation();
@@ -329,8 +329,7 @@
                 pickupInput.dataset.address = "Varanasi Junction, Cantt, Varanasi, Uttar Pradesh";
                 pickupInput.dataset.placeId = "fallback-cantt-id";
 
-                currentLocationBtn.classList.remove('loading');
-                window.showToast("Geolocation not supported.", "error");
+                currentLocationBtn.classList.remove('loading');                window.GoRide.showToast("Geolocation not supported.", "error");
 
                 checkAndTriggerRoute();
                 performLiveValidation();
@@ -351,12 +350,6 @@
             li.role = "option";
             li.id = `${inputEl.id}-opt-${idx}`;
             li.className = 'suggestion-item';
-            li.style.display = 'flex';
-            li.style.alignItems = 'center';
-            li.style.padding = '8px 12px';
-            li.style.cursor = 'pointer';
-            li.style.transition = 'background var(--transition)';
-            li.style.borderTop = '1px solid var(--border)';
 
             li.innerHTML = `
                 <span style="margin-right:10px; font-size:1rem;">📍</span>
@@ -551,7 +544,7 @@
             });
             btn.classList.add('active');
             btn.setAttribute('aria-selected', 'true');
-            window.showToast(`Booking mode: ${btn.innerText}`, "info");
+            window.GoRide.showToast(`Booking mode: ${btn.innerText}`, "info");
         });
     });
 
@@ -595,7 +588,7 @@
         item.setAttribute('aria-checked', 'true');
         selectedVehicleType = item.dataset.type;
         
-        updateFareCard();
+        window.GoRide.utils.updateFareCard();
         performLiveValidation();
     }
 
@@ -622,26 +615,26 @@
             return;
         }
 
-        const fare = window.calculateFare(currentDistance, selectedVehicleType);
+        const fare = window.GoRide.utils.calculateFare(currentDistance, selectedVehicleType);
 
         if (code === "GORIDE20") {
             appliedDiscount = Math.round(fare.total * 0.2);
             couponMessage.innerText = `Promo code GORIDE20 applied! Saved ₹${appliedDiscount}.`;
             couponMessage.classList.add('success');
-            window.showToast("20% promo code applied successfully!", "success");
+            window.GoRide.showToast("20% promo code applied successfully!", "success");
         } else if (code === "WELCOME50") {
             appliedDiscount = 50;
             couponMessage.innerText = "Welcome promo applied! Saved flat ₹50.";
             couponMessage.classList.add('success');
-            window.showToast("₹50 promo discount applied!", "success");
+            window.GoRide.showToast("₹50 promo discount applied!", "success");
         } else {
             appliedDiscount = 0;
             couponMessage.innerText = "Invalid promo code. Try GORIDE20.";
             couponMessage.classList.add('error');
-            window.showToast("Invalid promo code.", "error");
+            window.GoRide.showToast("Invalid promo code.", "error");
         }
         
-        updateFareCard();
+        window.GoRide.utils.updateFareCard();
     });
 
     // ----------------------------------------------------
@@ -679,10 +672,10 @@
         };
 
         // 2. Validate booking inputs
-        const result = window.validateBooking(data);
+        const result = window.GoRide.validateBooking(data);
 
         if (!result.valid) {
-            window.showToast(result.message, "error");
+            window.GoRide.showToast(result.message, "error");
             
             // Focus invalid field
             if (result.field === 'pickup') pickupInput.focus();
@@ -693,7 +686,7 @@
         }
 
         // 3. Trigger Loader Overlay
-        window.toggleLoading(true);
+        window.GoRide.utils.toggleLoading(true);
         progressFill.style.width = '0%';
 
         let progress = 0;
@@ -705,14 +698,14 @@
                 clearInterval(interval);
 
                 // Hide Loader
-                window.toggleLoading(false);
+                window.GoRide.utils.toggleLoading(false);
 
                 // Populate success modal
-                const bookingId = window.generateBookingID();
+                const bookingId = window.GoRide.utils.generateBookingID();
                 bookingIdVal.innerText = bookingId;
 
                 // Assemble the consolidated structured booking object (V6)
-                const fareCalculation = window.calculateFare(currentDistance, selectedVehicleType);
+                const fareCalculation = window.GoRide.utils.calculateFare(currentDistance, selectedVehicleType);
                 const bookingObject = {
                     pickup: {
                         placeId: pickupInput.dataset.placeId || "mock-pickup-id",
@@ -751,7 +744,7 @@
 
                 successModal.classList.add('active');
                 successModal.setAttribute('aria-hidden', 'false');
-                window.showToast("Ride Booked Successfully!", "success");
+                window.GoRide.showToast("Ride Booked Successfully!", "success");
             }
         }, 200); // 1000ms minimum duration loader
     });
@@ -760,6 +753,6 @@
     closeModalBtn.addEventListener('click', () => {
         successModal.classList.remove('active');
         successModal.setAttribute('aria-hidden', 'true');
-        window.resetBooking();
+        window.GoRide.utils.resetBooking();
     });
 })();
