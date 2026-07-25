@@ -1,16 +1,75 @@
-# Python
+# ==========================
+# Dependencies
+# ==========================
+node_modules/
+
+# ==========================
+# Environment Variables
+# ==========================
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# ==========================
+# Prisma
+# ==========================
+generated/prisma/
+.prisma/
+
+# ==========================
+# Logs
+# ==========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================
+# Build Output
+# ==========================
+dist/
+build/
+coverage/
+
+# ==========================
+# Temporary Files
+# ==========================
+tmp/
+temp/
+*.tmp
+
+# ==========================
+# Operating System Files
+# ==========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================
+# VS Code
+# ==========================
+.vscode/
+
+# ==========================
+# JetBrains IDEs
+# ==========================
+.idea/
+
+# ==========================
+# Python (Future AI/ML)
+# ==========================
 .venv/
+venv/
 __pycache__/
 *.pyc
 
-# Environment
-.env
-
-# VS Code
-.vscode/
-
-# OS Files
-.DS_Store
-Thumbs.db
-
-/generated/prisma
+# ==========================
+# Misc
+# ==========================
+*.pid
+*.seed
+*.pid.lock
