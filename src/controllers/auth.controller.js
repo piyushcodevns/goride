@@ -3,6 +3,7 @@ const {
   loginUser,
   forgotPassword,
   resetPassword,
+  changePassword,
 } = require("../services/auth.service");
 
 // ================= REGISTER =================
@@ -91,10 +92,35 @@ const resetPasswordController = async (req, res) => {
   }
 };
 
+// ================= CHANGE PASSWORD =================
+
+const changePasswordController = async (req, res) => {
+  try {
+    const result = await changePassword(
+      req.user.id,
+      req.body.currentPassword,
+      req.body.newPassword,
+      req.body.confirmPassword
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully.",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
   profile,
   forgotPasswordController,
   resetPasswordController,
+  changePasswordController,
 };

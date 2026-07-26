@@ -47,6 +47,25 @@ const savePasswordResetToken = async (
 };
 
 /**
+ * Save email verification token
+ */
+const saveEmailVerificationToken = async (
+  userId,
+  emailVerificationToken,
+  emailVerificationExpires,
+) => {
+  return prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      emailVerificationToken,
+      emailVerificationExpires,
+    },
+  });
+};
+
+/**
  * Find user by phone
  */
 const findUserByPhone = async (phone) => {
@@ -70,6 +89,20 @@ const findUserByResetToken = async (passwordResetToken) => {
 };
 
 /**
+ * Find user by email verification token
+ */
+const findUserByEmailVerificationToken = async (emailVerificationToken) => {
+  return prisma.user.findFirst({
+    where: {
+      emailVerificationToken,
+      emailVerificationExpires: {
+        gt: new Date(),
+      },
+    },
+  });
+};
+
+/**
  * Update password and clear reset token
  */
 const updatePassword = async (userId, hashedPassword) => {
@@ -86,6 +119,22 @@ const updatePassword = async (userId, hashedPassword) => {
 };
 
 /**
+ * Mark email as verified
+ */
+const verifyUserEmail = async (userId) => {
+  return prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      emailVerified: true,
+      emailVerificationToken: null,
+      emailVerificationExpires: null,
+    },
+  });
+};
+
+/**
  * Find user by email with password
  */
 const findUserByEmailWithPassword = async (email) => {
@@ -94,13 +143,41 @@ const findUserByEmailWithPassword = async (email) => {
   });
 };
 
+/**
+ * Find user with password by ID
+ */
+const findUserByIdWithPassword = async (id) => {
+  return prisma.user.findUnique({
+    where: { id },
+  });
+};
+
+/**
+ * Update user password
+ */
+const changeUserPassword = async (userId, hashedPassword) => {
+  return prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      password: hashedPassword,
+    },
+  });
+};
+
 module.exports = {
   findUserByEmail,
   findUserByEmailWithPassword,
   findUserByPhone,
   findUserByResetToken,
+  findUserByEmailVerificationToken,
   findUserById,
   createUser,
   savePasswordResetToken,
+  saveEmailVerificationToken,
   updatePassword,
+  verifyUserEmail,
+  findUserByIdWithPassword,
+  changeUserPassword,
 };

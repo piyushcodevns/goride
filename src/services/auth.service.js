@@ -1,14 +1,21 @@
 const bcrypt = require("bcrypt");
-const prisma = require("../config/prisma");
+// const prisma = require("../config/prisma");
 
 const {
   findUserByEmail,
   findUserByEmailWithPassword,
   findUserByPhone,
   findUserByResetToken,
+  findUserByEmailVerificationToken,
+
+  findUserByIdWithPassword,
+  changeUserPassword,
+
   createUser,
   savePasswordResetToken,
+  saveEmailVerificationToken,
   updatePassword,
+  verifyUserEmail,
 } = require("../repositories/auth.repository");
 
 const generateResetToken = require("../utils/generateToken");
@@ -43,6 +50,7 @@ const registerUser = async (userData) => {
     phone: validatedData.phone,
     password: hashedPassword,
   });
+
   const token = generateToken({
     id: user.id,
     email: user.email,
@@ -114,11 +122,11 @@ const forgotPassword = async ({ email }) => {
     to: user.email,
     subject: "GoRide Password Reset",
     html: `
-    <h2>Password Reset</h2>
-    <p>Your password reset token is:</p>
-    <h3>${resetToken}</h3>
-    <p>This token will expire in 15 minutes.</p>
-  `,
+      <h2>Password Reset</h2>
+      <p>Your password reset token is:</p>
+      <h3>${resetToken}</h3>
+      <p>This token will expire in 15 minutes.</p>
+    `,
   });
 
   console.log("=================================");
@@ -129,8 +137,6 @@ const forgotPassword = async ({ email }) => {
     message: "Password reset email sent successfully.",
   };
 };
-
-// ================= RESET PASSWORD =================
 
 // ================= RESET PASSWORD =================
 
@@ -152,9 +158,49 @@ const resetPassword = async ({ token, password }) => {
   };
 };
 
+// ================= CHANGE PASSWORD =================
+
+const changePassword = async (
+  userId,
+  currentPassword,
+  newPassword,
+  confirmPassword,
+) => {
+  const user = await findUserByIdWithPassword(userId);
+
+  if (!user) {
+    throw new Error("User not found.");
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+  if (!isMatch) {
+    throw new Error("Current password is incorrect.");
+  }
+
+  if (newPassword !== confirmPassword) {
+    throw new Error("New password and confirm password do not match.");
+  }
+
+  const isSamePassword = await bcrypt.compare(newPassword, user.password);
+
+  if (isSamePassword) {
+    throw new Error("New password must be different from current password.");
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  await changeUserPassword(userId, hashedPassword);
+
+  return {
+    message: "Password changed successfully.",
+  };
+};
+
 module.exports = {
   registerUser,
   loginUser,
   forgotPassword,
   resetPassword,
+  changePassword,
 };
