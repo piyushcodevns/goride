@@ -4,6 +4,8 @@ const {
   forgotPassword,
   resetPassword,
   changePassword,
+  sendVerificationEmail,
+  verifyEmail,
 } = require("../services/auth.service");
 
 // ================= REGISTER =================
@@ -116,6 +118,44 @@ const changePasswordController = async (req, res) => {
   }
 };
 
+// ================= SEND VERIFICATION EMAIL =================
+
+const sendVerificationEmailController = async (req, res) => {
+  try {
+    const result = await sendVerificationEmail(req.user.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Verification email sent successfully.",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ================= VERIFY EMAIL =================
+
+const verifyEmailController = async (req, res) => {
+  try {
+    const result = await verifyEmail(req.body.token);
+
+    return res.status(200).json({
+      success: true,
+      message: "Email verified successfully.",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -123,4 +163,6 @@ module.exports = {
   forgotPasswordController,
   resetPasswordController,
   changePasswordController,
+  sendVerificationEmailController,
+  verifyEmailController,
 };

@@ -1,5 +1,14 @@
 const { z } = require("zod");
 
+const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .max(100, "Password must not exceed 100 characters")
+  .regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#]).+$/,
+    "Password must contain uppercase, lowercase, number and special character",
+  );
+
 const registerSchema = z.object({
   fullName: z
     .string()
@@ -15,10 +24,7 @@ const registerSchema = z.object({
     .string()
     .regex(/^[6-9]\d{9}$/, "Invalid Indian phone number"),
 
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(100),
+  password: passwordSchema,
 });
 
 const loginSchema = z.object({
@@ -29,4 +35,5 @@ const loginSchema = z.object({
 module.exports = {
   registerSchema,
   loginSchema,
+  passwordSchema,
 };

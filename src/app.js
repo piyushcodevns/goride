@@ -8,10 +8,13 @@ const morgan = require("morgan");
 const authRoutes = require("./routes/auth.routes");
 
 const app = express();
+const userRoutes = require("./routes/user.routes");
+const driverRoutes = require("./routes/driver.routes");
+const vehicleRoutes = require("./routes/vehicle.routes");
 
 /* ===========================
    Security & Middleware
-=========================== */
+=========================== */  
 
 app.use(helmet());
 
@@ -33,6 +36,9 @@ app.use(morgan("dev"));
 =========================== */
 
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/driver", driverRoutes);
+app.use("/api/driver/vehicle", vehicleRoutes);
 
 /* ===========================
    Health Check

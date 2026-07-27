@@ -20,10 +20,14 @@ const {
 
 const generateResetToken = require("../utils/generateToken");
 const hashToken = require("../utils/hashToken");
+const generateOTP = require("../utils/generateOTP");
 const { generateToken } = require("../utils/jwt");
 const { sendEmail } = require("./email.service");
 
-const { registerSchema } = require("../validators/auth.validator");
+const { 
+  registerSchema,
+  passwordSchema,
+} = require("../validators/auth.validator");
 
 // ================= REGISTER =================
 
@@ -141,6 +145,7 @@ const forgotPassword = async ({ email }) => {
 // ================= RESET PASSWORD =================
 
 const resetPassword = async ({ token, password }) => {
+  passwordSchema.parse(password);
   const hashedToken = hashToken(token);
 
   const user = await findUserByResetToken(hashedToken);
@@ -166,6 +171,7 @@ const changePassword = async (
   newPassword,
   confirmPassword,
 ) => {
+  passwordSchema.parse(newPassword);
   const user = await findUserByIdWithPassword(userId);
 
   if (!user) {
@@ -197,10 +203,79 @@ const changePassword = async (
   };
 };
 
+// ================= SEND VERIFICATION EMAIL =================
+
+const sendVerificationEmail = async (userId) => {
+  const user = await findUserByIdWithPassword(userId);
+
+  if (!user) {
+    throw new Error("User not found.");
+  }
+
+  if (user.emailVerified) {
+    throw new Error("Email is already verified.");
+  }
+
+  // Generate 6 digit OTP
+  const verificationOTP = generateOTP();
+
+  // Hash OTP before saving in database
+  const hashedToken = hashToken(verificationOTP);
+
+  const emailVerificationExpires = new Date(
+    Date.now() + 15 * 60 * 1000
+  );
+
+  await saveEmailVerificationToken(
+    user.id,
+    hashedToken,
+    emailVerificationExpires
+  );
+
+  await sendEmail({
+    to: user.email,
+    subject: "GoRide Email Verification",
+    html: `
+      <h2>GoRide Email Verification</h2>
+      <p>Your verification code is:</p>
+      <h1>${verificationOTP}</h1>
+      <p>This code will expire in 15 minutes.</p>
+    `,
+  });
+
+  console.log("=================================");
+  console.log("EMAIL VERIFICATION OTP:", verificationOTP);
+  console.log("=================================");
+
+  return {
+    message: "Verification email sent successfully.",
+  };
+};
+
+// ================= VERIFY EMAIL =================
+
+const verifyEmail = async (otp) => {
+  const hashedToken = hashToken(otp);
+
+  const user = await findUserByEmailVerificationToken(hashedToken);
+
+  if (!user) {
+    throw new Error("Invalid or expired verification token.");
+  }
+
+  await verifyUserEmail(user.id);
+
+  return {
+    message: "Email verified successfully.",
+  };
+};
+
 module.exports = {
   registerUser,
   loginUser,
   forgotPassword,
   resetPassword,
   changePassword,
+  sendVerificationEmail,
+  verifyEmail,
 };

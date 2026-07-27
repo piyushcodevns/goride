@@ -32,6 +32,21 @@ enum VehicleType {
   CAR
 }
 
+enum DriverAvailability {
+  OFFLINE
+  AVAILABLE
+  BUSY
+}
+
+enum RideStatus {
+  REQUESTED
+  ACCEPTED
+  ARRIVED
+  STARTED
+  COMPLETED
+  CANCELLED
+}
+
 model User {
   id       String @id @default(cuid())
   fullName String
@@ -55,6 +70,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   driver Driver?
+  rides  Ride[]
 }
 
 model Driver {
@@ -66,14 +82,20 @@ model Driver {
   licenseNumber String @unique
   aadharNumber  String @unique
 
-  status DriverStatus @default(PENDING)
+  experience Int
 
-  isOnline Boolean @default(false)
+  status       DriverStatus       @default(PENDING)
+  availability DriverAvailability @default(OFFLINE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   vehicle Vehicle?
+
+  rides Ride[]
+
+  @@index([status])
+  @@index([availability])
 }
 
 model Vehicle {
@@ -88,9 +110,38 @@ model Vehicle {
   model String
 
   color String
+  seats Int
 
   vehicleNumber String @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([vehicleType])
+}
+
+model Ride {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  driverId String?
+  driver   Driver? @relation(fields: [driverId], references: [id], onDelete: SetNull)
+
+  pickup      String
+  destination String
+
+  distance Float
+  fare     Float
+
+  vehicleType VehicleType
+  status      RideStatus  @default(REQUESTED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([driverId])
+  @@index([status])
 }
