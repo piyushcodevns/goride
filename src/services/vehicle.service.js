@@ -5,6 +5,7 @@ const {
   updateVehicle,
   deleteVehicle,
 } = require("../repositories/vehicle.repository");
+
 const { getDriverByUserId } = require("../repositories/driver.repository");
 
 const {
@@ -12,25 +13,25 @@ const {
   updateVehicleSchema,
 } = require("../validators/vehicle.validator");
 
+
+// Add Vehicle
 const addVehicle = async (userId, data) => {
-  // Validate request
   const validatedData = createVehicleSchema.parse(data);
 
-  // Check driver exists
   const driver = await getDriverByUserId(userId);
 
   if (!driver) {
     throw new Error("Driver profile not found.");
   }
 
-  // Check driver already has a vehicle
+
   const existingVehicle = await getVehicleByDriverId(driver.id);
 
   if (existingVehicle) {
     throw new Error("Driver already has a registered vehicle.");
   }
 
-  // Check duplicate vehicle number
+
   const vehicleNumberExists = await getVehicleByNumber(
     validatedData.vehicleNumber
   );
@@ -39,8 +40,8 @@ const addVehicle = async (userId, data) => {
     throw new Error("Vehicle number already exists.");
   }
 
-  // Create vehicle
-  return await createVehicle({
+
+  return createVehicle({
     driverId: driver.id,
     vehicleNumber: validatedData.vehicleNumber,
     vehicleType: validatedData.vehicleType,
@@ -51,64 +52,95 @@ const addVehicle = async (userId, data) => {
   });
 };
 
+
+
+// Get My Vehicle
 const getVehicle = async (userId) => {
-  // Check driver exists
+
   const driver = await getDriverByUserId(userId);
 
   if (!driver) {
     throw new Error("Driver profile not found.");
   }
 
-  // Get vehicle
+
   const vehicle = await getVehicleByDriverId(driver.id);
 
   if (!vehicle) {
     throw new Error("Vehicle not found.");
   }
+
 
   return vehicle;
 };
 
+
+
+// Update My Vehicle
 const updateMyVehicle = async (userId, data) => {
-  // Validate request
+
   const validatedData = updateVehicleSchema.parse(data);
 
-  // Check driver exists
+
   const driver = await getDriverByUserId(userId);
 
   if (!driver) {
     throw new Error("Driver profile not found.");
   }
 
-  // Check vehicle exists
+
   const vehicle = await getVehicleByDriverId(driver.id);
 
   if (!vehicle) {
     throw new Error("Vehicle not found.");
   }
 
-  // Update vehicle
-  return await updateVehicle(driver.id, validatedData);
+
+  // Vehicle number change validation
+  if (
+    validatedData.vehicleNumber &&
+    validatedData.vehicleNumber !== vehicle.vehicleNumber
+  ) {
+
+    const existingVehicle = await getVehicleByNumber(
+      validatedData.vehicleNumber
+    );
+
+    if (existingVehicle) {
+      throw new Error("Vehicle number already exists.");
+    }
+  }
+
+
+  return updateVehicle(
+    driver.id,
+    validatedData
+  );
 };
 
+
+
+// Delete My Vehicle
 const deleteMyVehicle = async (userId) => {
-  // Check driver exists
+
   const driver = await getDriverByUserId(userId);
 
   if (!driver) {
     throw new Error("Driver profile not found.");
   }
 
-  // Check vehicle exists
+
   const vehicle = await getVehicleByDriverId(driver.id);
 
   if (!vehicle) {
     throw new Error("Vehicle not found.");
   }
 
-  // Delete vehicle
-  return await deleteVehicle(driver.id);
+
+  return deleteVehicle(driver.id);
 };
+
+
 
 module.exports = {
   addVehicle,

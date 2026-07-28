@@ -61,6 +61,23 @@ const getDriverByUserId = async (userId) => {
   });
 };
 
+// Get Driver by Driver ID
+const getDriverById = async (driverId) => {
+  return prisma.driver.findUnique({
+    where: {
+      id: driverId,
+    },
+    include: {
+      user: {
+        select: userSelect,
+      },
+      vehicle: {
+        select: vehicleSelect,
+      },
+    },
+  });
+};
+
 // Get Driver by License Number
 const getDriverByLicenseNumber = async (licenseNumber) => {
   return prisma.driver.findUnique({
@@ -98,20 +115,28 @@ const updateDriver = async (userId, data) => {
 };
 
 // Update Driver Availability
-const updateDriverAvailability = async (userId, availability) => {
+const updateDriverAvailability = async (driverId, availability) => {
   return prisma.driver.update({
     where: {
-      userId,
+      id: driverId,
     },
     data: {
       availability,
     },
+    include: {
+      user: {
+        select: userSelect,
+      },
+      vehicle: {
+        select: vehicleSelect,
+      },
+    },
   });
 };
-
 module.exports = {
   createDriver,
   getDriverByUserId,
+  getDriverById,
   getDriverByLicenseNumber,
   getDriverByAadharNumber,
   updateDriver,

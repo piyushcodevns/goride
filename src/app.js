@@ -5,12 +5,14 @@ const compression = require("compression");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 
-const authRoutes = require("./routes/auth.routes");
+
 
 const app = express();
+const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
 const driverRoutes = require("./routes/driver.routes");
 const vehicleRoutes = require("./routes/vehicle.routes");
+const rideRoutes = require("./routes/ride.routes");
 
 /* ===========================
    Security & Middleware
@@ -39,6 +41,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/driver", driverRoutes);
 app.use("/api/driver/vehicle", vehicleRoutes);
+app.use("/api/rides", rideRoutes);
 
 /* ===========================
    Health Check

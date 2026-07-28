@@ -92,7 +92,8 @@ model Driver {
 
   vehicle Vehicle?
 
-  rides Ride[]
+  rides      Ride[]
+  RideReject RideReject[]
 
   @@index([status])
   @@index([availability])
@@ -138,10 +139,27 @@ model Ride {
   vehicleType VehicleType
   status      RideStatus  @default(REQUESTED)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  RideReject RideReject[]
 
   @@index([userId])
   @@index([driverId])
   @@index([status])
+}
+
+model RideReject {
+  id String @id @default(cuid())
+
+  rideId String
+  ride   Ride   @relation(fields: [rideId], references: [id], onDelete: Cascade)
+
+  driverId String
+  driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([rideId, driverId])
+  @@index([rideId])
+  @@index([driverId])
 }

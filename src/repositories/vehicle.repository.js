@@ -7,14 +7,19 @@ const createVehicle = async (data) => {
   });
 };
 
+
 // Get Vehicle by Driver ID
 const getVehicleByDriverId = async (driverId) => {
   return prisma.vehicle.findUnique({
     where: {
       driverId,
     },
+    include: {
+      driver: true,
+    },
   });
 };
+
 
 // Get Vehicle by Vehicle Number
 const getVehicleByNumber = async (vehicleNumber) => {
@@ -25,7 +30,8 @@ const getVehicleByNumber = async (vehicleNumber) => {
   });
 };
 
-// Update Vehicle
+
+// Update Vehicle by Driver ID
 const updateVehicle = async (driverId, data) => {
   return prisma.vehicle.update({
     where: {
@@ -35,14 +41,26 @@ const updateVehicle = async (driverId, data) => {
   });
 };
 
-// Delete Vehicle
+
+// Delete Vehicle with ownership validation support
 const deleteVehicle = async (driverId) => {
+  const vehicle = await prisma.vehicle.findUnique({
+    where: {
+      driverId,
+    },
+  });
+
+  if (!vehicle) {
+    throw new Error("Vehicle not found.");
+  }
+
   return prisma.vehicle.delete({
     where: {
       driverId,
     },
   });
 };
+
 
 module.exports = {
   createVehicle,
