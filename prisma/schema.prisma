@@ -1,165 +1,183 @@
-generator client {
-  provider = "prisma-client-js"
-}
+  generator client {
+    provider = "prisma-client-js"
+  }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+  datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+  }
 
-enum UserRole {
-  USER
-  DRIVER
-  ADMIN
-}
+  enum UserRole {
+    USER
+    DRIVER
+    ADMIN
+  }
 
-enum Gender {
-  MALE
-  FEMALE
-  OTHER
-}
+  enum Gender {
+    MALE
+    FEMALE
+    OTHER
+  }
 
-enum DriverStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  SUSPENDED
-}
+  enum DriverStatus {
+    PENDING
+    APPROVED
+    REJECTED
+    SUSPENDED
+  }
 
-enum VehicleType {
-  BIKE
-  AUTO
-  CAR
-}
+  enum VehicleType {
+    BIKE
+    AUTO
+    CAR
+  }
 
-enum DriverAvailability {
-  OFFLINE
-  AVAILABLE
-  BUSY
-}
+  enum DriverAvailability {
+    OFFLINE
+    AVAILABLE
+    BUSY
+  }
 
-enum RideStatus {
-  REQUESTED
-  ACCEPTED
-  ARRIVED
-  STARTED
-  COMPLETED
-  CANCELLED
-}
+  enum RideStatus {
+    REQUESTED
+    ACCEPTED
+    ARRIVED
+    STARTED
+    COMPLETED
+    CANCELLED
+  }
 
-model User {
-  id       String @id @default(cuid())
-  fullName String
-  email    String @unique
-  phone    String @unique
-  password String
+  model User {
+    id       String @id @default(cuid())
+    fullName String
+    email    String @unique
+    phone    String @unique
+    password String
 
-  passwordResetToken   String?
-  passwordResetExpires DateTime?
+    passwordResetToken   String?
+    passwordResetExpires DateTime?
 
-  emailVerified            Boolean   @default(false)
-  emailVerificationToken   String?
-  emailVerificationExpires DateTime?
-  role                     UserRole  @default(USER)
-  gender                   Gender?
-  profileImage             String?
-  isVerified               Boolean   @default(false)
-  isActive                 Boolean   @default(true)
+    emailVerified            Boolean   @default(false)
+    emailVerificationToken   String?
+    emailVerificationExpires DateTime?
+    role                     UserRole  @default(USER)
+    gender                   Gender?
+    profileImage             String?
+    isVerified               Boolean   @default(false)
+    isActive                 Boolean   @default(true)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  driver Driver?
-  rides  Ride[]
-}
+    driver Driver?
+    rides  Ride[]
+  }
 
-model Driver {
-  id String @id @default(cuid())
+  model Driver {
+    id String @id @default(cuid())
 
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  licenseNumber String @unique
-  aadharNumber  String @unique
+    licenseNumber String @unique
+    aadharNumber  String @unique
 
-  experience Int
+    experience Int
 
-  status       DriverStatus       @default(PENDING)
-  availability DriverAvailability @default(OFFLINE)
+    status       DriverStatus       @default(PENDING)
+    availability DriverAvailability @default(OFFLINE)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  vehicle Vehicle?
+    vehicle Vehicle?
 
-  rides      Ride[]
-  RideReject RideReject[]
+    rides      Ride[]
+    RideReject RideReject[]
 
-  @@index([status])
-  @@index([availability])
-}
+    @@index([status])
+    @@index([availability])
+  }
 
-model Vehicle {
-  id String @id @default(cuid())
+  model Vehicle {
+    id String @id @default(cuid())
 
-  driverId String @unique
-  driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+    driverId String @unique
+    driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
-  vehicleType VehicleType
+    vehicleType VehicleType
 
-  brand String
-  model String
+    brand String
+    model String
 
-  color String
-  seats Int
+    color String
+    seats Int
 
-  vehicleNumber String @unique
+    vehicleNumber String @unique
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  @@index([vehicleType])
-}
+    @@index([vehicleType])
+  }
 
-model Ride {
+  model Ride {
   id String @id @default(cuid())
 
   userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   driverId String?
   driver   Driver? @relation(fields: [driverId], references: [id], onDelete: SetNull)
 
-  pickup      String
-  destination String
+  // Pickup Details
+  pickup          String
+  pickupLatitude  Float?
+  pickupLongitude Float?
 
+  // Destination Details
+  destination          String
+  destinationLatitude  Float?
+  destinationLongitude Float?
+
+  // Route Details
   distance Float
-  fare     Float
+  duration Float?
 
+  estimatedArrival DateTime?
+
+  // Encoded Route / Geometry
+  routeGeometry Json?
+
+  // Pricing
+  fare Float
+
+  // Ride Information
   vehicleType VehicleType
-  status      RideStatus  @default(REQUESTED)
+  status      RideStatus @default(REQUESTED)
 
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   RideReject RideReject[]
 
   @@index([userId])
   @@index([driverId])
   @@index([status])
+  @@index([vehicleType])
 }
+  model RideReject {
+    id String @id @default(cuid())
 
-model RideReject {
-  id String @id @default(cuid())
+    rideId String
+    ride Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
 
-  rideId String
-  ride   Ride   @relation(fields: [rideId], references: [id], onDelete: Cascade)
+    driverId String
+    driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
-  driverId String
-  driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
 
-  createdAt DateTime @default(now())
-
-  @@unique([rideId, driverId])
-  @@index([rideId])
-  @@index([driverId])
-}
+    @@unique([rideId, driverId])
+    @@index([rideId])
+    @@index([driverId])
+  }

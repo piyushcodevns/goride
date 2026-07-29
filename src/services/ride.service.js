@@ -1,9 +1,21 @@
 const rideRepository = require("../repositories/ride.repository");
+const prisma = require("../config/prisma");
 
 const {
   getDriverById,
   updateDriverAvailability,
 } = require("../repositories/driver.repository");
+
+const { getRouteDetails } = require("./openRoute.service");
+
+const { calculateFare } = require("../config/fare.config");
+
+const {
+  BadRequestError,
+  ConflictError,
+  UnauthorizedError,
+  NotFoundError,
+} = require("../utils/AppError");
 
 /**
  * Allowed Ride Status Flow
@@ -24,8 +36,8 @@ const validateStatusTransition = (currentStatus, newStatus) => {
   const allowedStatuses = RIDE_STATUS_FLOW[currentStatus];
 
   if (!allowedStatuses.includes(newStatus)) {
-    throw new Error(
-      `Invalid ride status transition: ${currentStatus} → ${newStatus}`
+    throw new BadRequestError(
+      `Invalid ride status transition: ${currentStatus} → ${newStatus}`,
     );
   }
 };
@@ -34,26 +46,95 @@ const validateStatusTransition = (currentStatus, newStatus) => {
  * Create Ride
  */
 const createRide = async (rideData) => {
-  const { userId, pickup, destination, vehicleType } = rideData;
+  const {
+    userId,
+    pickup,
+    destination,
+    pickupLatitude,
+    pickupLongitude,
+    destinationLatitude,
+    destinationLongitude,
+    vehicleType,
+  } = rideData;
 
-  const activeRide = await rideRepository.getActiveRideByUserId(userId);
-
-  if (activeRide) {
-    throw new Error(
-      "You already have an active ride. Complete or cancel it before booking a new one."
+  if (!pickup || !destination || !vehicleType) {
+    throw new BadRequestError(
+      "Pickup, destination and vehicle type are required.",
     );
   }
 
   if (pickup.trim().toLowerCase() === destination.trim().toLowerCase()) {
-    throw new Error("Pickup and destination cannot be the same.");
+    throw new BadRequestError("Pickup and destination cannot be same.");
   }
+
+  const activeRide = await rideRepository.getActiveRideByUserId(userId);
+
+  if (activeRide) {
+    throw new ConflictError("You already have an active ride.");
+  }
+
+  if (
+    !pickupLatitude ||
+    !pickupLongitude ||
+    !destinationLatitude ||
+    !destinationLongitude
+  ) {
+    throw new BadRequestError(
+      "Pickup and destination coordinates are required.",
+    );
+  }
+
+  /**
+   * Get Route Details
+   */
+  const routeDetails = await getRouteDetails(
+    {
+      latitude: pickupLatitude,
+      longitude: pickupLongitude,
+    },
+    {
+      latitude: destinationLatitude,
+      longitude: destinationLongitude,
+    },
+  );
+
+  /**
+   * Calculate Fare
+   */
+  const fare = calculateFare(vehicleType, routeDetails.distance);
+
+  /**
+   * ETA
+   */
+  const estimatedArrival = new Date(
+    Date.now() + routeDetails.duration * 60 * 1000,
+  );
 
   return await rideRepository.createRide({
     userId,
+
     pickup: pickup.trim(),
+
+    pickupLatitude,
+
+    pickupLongitude,
+
     destination: destination.trim(),
-    distance: 0,
-    fare: 0,
+
+    destinationLatitude,
+
+    destinationLongitude,
+
+    distance: routeDetails.distance,
+
+    duration: routeDetails.duration,
+
+    estimatedArrival,
+
+    routeGeometry: routeDetails.geometry,
+
+    fare,
+
     vehicleType,
   });
 };
@@ -65,31 +146,31 @@ const getRideById = async (rideId) => {
   const ride = await rideRepository.getRideById(rideId);
 
   if (!ride) {
-    throw new Error("Ride not found.");
+    throw new NotFoundError("Ride not found.");
   }
 
   return ride;
 };
 
 /**
- * Get User Ride History
+ * User Ride History
  */
 const getUserRides = async (userId) => {
   return await rideRepository.getUserRides(userId);
 };
 
 /**
- * Get Available Rides For Driver
+ * Available Rides
  */
 const getAvailableRides = async (driverId) => {
   const driver = await getDriverById(driverId);
 
   if (!driver) {
-    throw new Error("Driver not found.");
+    throw new NotFoundError("Driver not found.");
   }
 
   if (driver.status !== "APPROVED") {
-    throw new Error("Driver is not approved yet.");
+    throw new BadRequestError("Driver is not approved.");
   }
 
   const rejectedRideIds =
@@ -107,38 +188,40 @@ const assignDriver = async (rideId, driverId) => {
   const ride = await getRideById(rideId);
 
   if (ride.status !== "REQUESTED") {
-    throw new Error("Driver can only be assigned to requested rides.");
+    throw new ConflictError("Ride is not available.");
   }
 
   const driver = await getDriverById(driverId);
 
   if (!driver) {
-    throw new Error("Driver not found.");
+    throw new NotFoundError("Driver not found.");
   }
 
   if (driver.status !== "APPROVED") {
-    throw new Error("Driver is not approved yet.");
+    throw new BadRequestError("Driver is not approved.");
   }
 
   if (driver.availability !== "AVAILABLE") {
-    throw new Error("Driver is not available.");
+    throw new ConflictError("Driver is not available.");
   }
 
   if (!driver.vehicle) {
-    throw new Error("Please register your vehicle before accepting rides.");
+    throw new BadRequestError("Vehicle registration required.");
   }
 
   const activeRide = await rideRepository.getActiveRideByDriverId(driverId);
 
   if (activeRide) {
-    throw new Error("Driver already has an active ride.");
+    throw new ConflictError("Driver already has active ride.");
   }
 
-  const updatedRide = await rideRepository.assignDriver(rideId, driverId);
+  return prisma.$transaction(async (tx) => {
+    const updatedRide = await rideRepository.assignDriver(rideId, driverId, tx);
 
-  await updateDriverAvailability(driver.id, "BUSY");
+    await updateDriverAvailability(driverId, "BUSY", tx);
 
-  return updatedRide;
+    return updatedRide;
+  });
 };
 
 /**
@@ -147,23 +230,25 @@ const assignDriver = async (rideId, driverId) => {
 const updateRideStatus = async (rideId, driverId, status) => {
   const ride = await getRideById(rideId);
 
-  if (!ride.driverId) {
-    throw new Error("No driver assigned to this ride.");
-  }
-
   if (ride.driverId !== driverId) {
-    throw new Error("You are not authorized to update this ride.");
+    throw new UnauthorizedError("Unauthorized.");
   }
 
   validateStatusTransition(ride.status, status);
 
-  const updatedRide = await rideRepository.updateRideStatus(rideId, status);
+  return prisma.$transaction(async (tx) => {
+    const updatedRide = await rideRepository.updateRideStatus(
+      rideId,
+      status,
+      tx,
+    );
 
-  if (status === "COMPLETED") {
-    await updateDriverAvailability(driverId, "AVAILABLE");
-  }
+    if (status === "COMPLETED") {
+      await updateDriverAvailability(driverId, "AVAILABLE", tx);
+    }
 
-  return updatedRide;
+    return updatedRide;
+  });
 };
 
 /**
@@ -173,28 +258,7 @@ const rejectRide = async (rideId, driverId) => {
   const ride = await getRideById(rideId);
 
   if (ride.status !== "REQUESTED") {
-    throw new Error("Only requested rides can be rejected.");
-  }
-
-  const driver = await getDriverById(driverId);
-
-  if (!driver) {
-    throw new Error("Driver not found.");
-  }
-
-  if (driver.status !== "APPROVED") {
-    throw new Error("Driver is not approved yet.");
-  }
-
-  if (driver.availability !== "AVAILABLE") {
-    throw new Error("Driver is not available.");
-  }
-
-  const alreadyRejected =
-    await rideRepository.hasDriverRejectedRide(rideId, driverId);
-
-  if (alreadyRejected) {
-    throw new Error("You have already rejected this ride.");
+    throw new ConflictError("Only requested rides can be rejected.");
   }
 
   await rideRepository.createRideReject(rideId, driverId);
@@ -212,26 +276,28 @@ const cancelRide = async (rideId, userId) => {
   const ride = await getRideById(rideId);
 
   if (ride.userId !== userId) {
-    throw new Error("You are not allowed to cancel this ride.");
+    throw new UnauthorizedError("Unauthorized.");
   }
 
   if (!["REQUESTED", "ACCEPTED"].includes(ride.status)) {
-    throw new Error("This ride cannot be cancelled.");
+    throw new ConflictError("Ride cannot be cancelled.");
   }
 
-  return await rideRepository.cancelRide(rideId);
+  return prisma.$transaction(async (tx) => {
+    const cancelledRide = await rideRepository.cancelRide(rideId, tx);
+
+    if (ride.driverId) {
+      await updateDriverAvailability(ride.driverId, "AVAILABLE", tx);
+    }
+
+    return cancelledRide;
+  });
 };
 
 /**
- * Get Driver Current Ride
+ * Driver Current Ride
  */
 const getDriverCurrentRide = async (driverId) => {
-  const driver = await getDriverById(driverId);
-
-  if (!driver) {
-    throw new Error("Driver not found.");
-  }
-
   return await rideRepository.getCurrentRideByDriver(driverId);
 };
 

@@ -62,8 +62,8 @@ const getDriverByUserId = async (userId) => {
 };
 
 // Get Driver by Driver ID
-const getDriverById = async (driverId) => {
-  return prisma.driver.findUnique({
+const getDriverById = async (driverId, db = prisma) => {
+  return db.driver.findUnique({
     where: {
       id: driverId,
     },
@@ -115,8 +115,12 @@ const updateDriver = async (userId, data) => {
 };
 
 // Update Driver Availability
-const updateDriverAvailability = async (driverId, availability) => {
-  return prisma.driver.update({
+const updateDriverAvailability = async (
+  driverId,
+  availability,
+  db = prisma
+) => {
+  return db.driver.update({
     where: {
       id: driverId,
     },
@@ -133,6 +137,7 @@ const updateDriverAvailability = async (driverId, availability) => {
     },
   });
 };
+
 module.exports = {
   createDriver,
   getDriverByUserId,

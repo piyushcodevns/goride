@@ -3,8 +3,8 @@ const prisma = require("../config/prisma");
 /**
  * Create a new ride
  */
-const createRide = async (data) => {
-  return prisma.ride.create({
+const createRide = async (data, db = prisma) => {
+  return db.ride.create({
     data,
   });
 };
@@ -78,8 +78,8 @@ const getUserRides = async (userId) => {
 /**
  * Assign driver to ride
  */
-const assignDriver = async (rideId, driverId) => {
-  return prisma.ride.update({
+const assignDriver = async (rideId, driverId, db = prisma) => {
+  return db.ride.update({
     where: {
       id: rideId,
     },
@@ -93,8 +93,8 @@ const assignDriver = async (rideId, driverId) => {
 /**
  * Update ride status
  */
-const updateRideStatus = async (rideId, status) => {
-  return prisma.ride.update({
+const updateRideStatus = async (rideId, status, db = prisma) => {
+  return db.ride.update({
     where: {
       id: rideId,
     },
@@ -166,8 +166,8 @@ const getAvailableRides = async () => {
 /**
  * Cancel Ride
  */
-const cancelRide = async (rideId) => {
-  return prisma.ride.update({
+const cancelRide = async (rideId, db = prisma) => {
+  return db.ride.update({
     where: {
       id: rideId,
     },
