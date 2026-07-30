@@ -47,6 +47,21 @@ enum RideStatus {
   CANCELLED
 }
 
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  CARD
+  WALLET
+}
+
 model User {
   id       String @id @default(cuid())
   fullName String
@@ -72,6 +87,7 @@ model User {
   driver      Driver?
   rides       Ride[]
   rideReviews RideReview[]
+  payments    Payment[]
 }
 
 model Driver {
@@ -170,6 +186,8 @@ model Ride {
   RideReject RideReject[]
   rideReview RideReview?
 
+  payment Payment?
+
   @@index([userId])
   @@index([driverId])
   @@index([status])
@@ -213,4 +231,30 @@ model RideReview {
 
   @@index([driverId])
   @@index([userId])
+}
+
+model Payment {
+  id String @id @default(cuid())
+
+  rideId String @unique
+  ride   Ride   @relation(fields: [rideId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  amount Float
+
+  paymentMethod PaymentMethod
+  status        PaymentStatus @default(PENDING)
+
+  gateway       String?
+  transactionId String? @unique
+
+  paidAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }

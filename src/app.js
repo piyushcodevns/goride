@@ -18,6 +18,7 @@ const driverRoutes = require("./routes/driver.routes");
 const vehicleRoutes = require("./routes/vehicle.routes");
 const rideRoutes = require("./routes/ride.routes");
 const rideReviewRoutes = require("./routes/rideReview.routes");
+const paymentRoutes = require("./routes/payment.routes");
 
 const { apiLimiter } = require("./middleware/rateLimit.middleware");
 
@@ -72,6 +73,8 @@ app.use("/api/driver/vehicle", vehicleRoutes);
 app.use("/api/rides", rideRoutes);
 
 app.use("/api/ride-reviews", rideReviewRoutes);
+
+app.use("/api/payments", paymentRoutes);
 
 /* ===========================
    Health Check
