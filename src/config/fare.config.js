@@ -2,12 +2,12 @@
  * GoRide Fare Configuration
  *
  * Centralized fare rules.
- * Future me:
+ * Future:
  * - Surge pricing
  * - Discounts
  * - Coupons
  * - Dynamic pricing
- * easily add kar sakte hain.
+ * - AI Fare Prediction
  */
 
 const FARE_CONFIG = {
@@ -36,7 +36,6 @@ const FARE_CONFIG = {
   },
 };
 
-
 /**
  * Calculate Ride Fare
  */
@@ -44,28 +43,32 @@ const calculateFare = (vehicleType, distance) => {
   const config = FARE_CONFIG[vehicleType];
 
   if (!config) {
-    throw new Error(
-      "Invalid vehicle type for fare calculation."
-    );
+    throw new Error("Invalid vehicle type for fare calculation.");
   }
 
-  if (!distance || distance <= 0) {
-    throw new Error(
-      "Distance must be greater than zero."
-    );
+  if (typeof distance !== "number" || distance <= 0) {
+    throw new Error("Distance must be greater than zero.");
   }
 
-  const calculatedFare =
-    config.baseFare +
-    distance * config.perKm;
+  const baseFare = config.baseFare;
+  const distanceFare = Number((distance * config.perKm).toFixed(2));
 
+  const subtotal = baseFare + distanceFare;
 
-  return Math.max(
-    Math.ceil(calculatedFare),
+  const totalFare = Math.max(
+    Math.ceil(subtotal),
     config.minimumFare
   );
-};
 
+  return {
+    baseFare,
+    distanceFare,
+    subtotal,
+    minimumFare: config.minimumFare,
+    minimumFareApplied: totalFare === config.minimumFare,
+    totalFare,
+  };
+};
 
 module.exports = {
   FARE_CONFIG,

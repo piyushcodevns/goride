@@ -8,7 +8,7 @@ const {
 
 const { getRouteDetails } = require("./openRoute.service");
 
-const { calculateFare } = require("../config/fare.config");
+const { calculateFare } = require("./fare.service");
 
 const {
   BadRequestError,
@@ -55,6 +55,8 @@ const createRide = async (rideData) => {
     destinationLatitude,
     destinationLongitude,
     vehicleType,
+    isScheduled = false,
+    scheduledFor = null,
   } = rideData;
 
   if (!pickup || !destination || !vehicleType) {
@@ -74,14 +76,47 @@ const createRide = async (rideData) => {
   }
 
   if (
-    !pickupLatitude ||
-    !pickupLongitude ||
-    !destinationLatitude ||
-    !destinationLongitude
+    pickupLatitude == null ||
+    pickupLongitude == null ||
+    destinationLatitude == null ||
+    destinationLongitude == null ||
+    Number.isNaN(pickupLatitude) ||
+    Number.isNaN(pickupLongitude) ||
+    Number.isNaN(destinationLatitude) ||
+    Number.isNaN(destinationLongitude)
   ) {
     throw new BadRequestError(
-      "Pickup and destination coordinates are required.",
+      "Valid pickup and destination coordinates are required.",
     );
+  }
+
+  /**
+   * Scheduled Ride Validation
+   */
+  if (isScheduled) {
+    if (!scheduledFor) {
+      throw new BadRequestError("Scheduled date and time are required.");
+    }
+
+    const scheduledDate = new Date(scheduledFor);
+
+    if (Number.isNaN(scheduledDate.getTime())) {
+      throw new BadRequestError("Invalid scheduled date and time.");
+    }
+
+    const now = new Date();
+
+    if (scheduledDate <= now) {
+      throw new BadRequestError("Scheduled ride must be in the future.");
+    }
+
+    const minimumScheduleTime = new Date(now.getTime() + 15 * 60 * 1000);
+
+    if (scheduledDate < minimumScheduleTime) {
+      throw new BadRequestError(
+        "Scheduled ride must be at least 15 minutes in advance.",
+      );
+    }
   }
 
   /**
@@ -101,13 +136,15 @@ const createRide = async (rideData) => {
   /**
    * Calculate Fare
    */
-  const fare = calculateFare(vehicleType, routeDetails.distance);
+  const fareDetails = calculateFare(vehicleType, routeDetails.distance);
 
   /**
    * ETA
    */
+  const rideStartTime = isScheduled ? new Date(scheduledFor) : new Date();
+
   const estimatedArrival = new Date(
-    Date.now() + routeDetails.duration * 60 * 1000,
+    rideStartTime.getTime() + routeDetails.duration * 60 * 1000,
   );
 
   return await rideRepository.createRide({
@@ -133,7 +170,10 @@ const createRide = async (rideData) => {
 
     routeGeometry: routeDetails.geometry,
 
-    fare,
+    fare: fareDetails.totalFare,
+
+    isScheduled,
+    scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
 
     vehicleType,
   });
@@ -185,38 +225,47 @@ const getAvailableRides = async (driverId) => {
  * Assign Driver
  */
 const assignDriver = async (rideId, driverId) => {
-  const ride = await getRideById(rideId);
-
-  if (ride.status !== "REQUESTED") {
-    throw new ConflictError("Ride is not available.");
-  }
-
-  const driver = await getDriverById(driverId);
-
-  if (!driver) {
-    throw new NotFoundError("Driver not found.");
-  }
-
-  if (driver.status !== "APPROVED") {
-    throw new BadRequestError("Driver is not approved.");
-  }
-
-  if (driver.availability !== "AVAILABLE") {
-    throw new ConflictError("Driver is not available.");
-  }
-
-  if (!driver.vehicle) {
-    throw new BadRequestError("Vehicle registration required.");
-  }
-
-  const activeRide = await rideRepository.getActiveRideByDriverId(driverId);
-
-  if (activeRide) {
-    throw new ConflictError("Driver already has active ride.");
-  }
-
   return prisma.$transaction(async (tx) => {
-    const updatedRide = await rideRepository.assignDriver(rideId, driverId, tx);
+    const ride = await rideRepository.getRideById(rideId, tx);
+
+    if (!ride) {
+      throw new NotFoundError("Ride not found.");
+    }
+
+    if (ride.status !== "REQUESTED") {
+      throw new ConflictError("Ride is not available.");
+    }
+
+    const driver = await getDriverById(driverId, tx);
+
+    if (!driver) {
+      throw new NotFoundError("Driver not found.");
+    }
+
+    if (driver.status !== "APPROVED") {
+      throw new BadRequestError("Driver is not approved.");
+    }
+
+    if (driver.availability !== "AVAILABLE") {
+      throw new ConflictError("Driver is not available.");
+    }
+
+    if (!driver.vehicle) {
+      throw new BadRequestError("Vehicle registration required.");
+    }
+
+    const activeRide =
+      await rideRepository.getActiveRideByDriverId(driverId, tx);
+
+    if (activeRide) {
+      throw new ConflictError("Driver already has an active ride.");
+    }
+
+    const updatedRide = await rideRepository.assignDriver(
+      rideId,
+      driverId,
+      tx,
+    );
 
     await updateDriverAvailability(driverId, "BUSY", tx);
 

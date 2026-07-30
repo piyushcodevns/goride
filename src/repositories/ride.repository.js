@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const { ConflictError } = require("../utils/AppError");
 
 /**
  * Create a new ride
@@ -12,8 +13,8 @@ const createRide = async (data, db = prisma) => {
 /**
  * Get ride by ID
  */
-const getRideById = async (rideId) => {
-  return prisma.ride.findUnique({
+const getRideById = async (rideId, db = prisma) => {
+  return db.ride.findUnique({
     where: {
       id: rideId,
     },
@@ -79,22 +80,32 @@ const getUserRides = async (userId) => {
  * Assign driver to ride
  */
 const assignDriver = async (rideId, driverId, db = prisma) => {
-  return db.ride.update({
+  const result = await db.ride.updateMany({
     where: {
       id: rideId,
+      driverId: null,
+      status: "REQUESTED",
     },
     data: {
       driverId,
       status: "ACCEPTED",
     },
   });
+
+  if (result.count === 0) {
+    throw new ConflictError(
+      "Ride is no longer available or has already been accepted.",
+    );
+  }
+
+  return getRideById(rideId, db);
 };
 
 /**
  * Update ride status
  */
 const updateRideStatus = async (rideId, status, db = prisma) => {
-  return db.ride.update({
+  await db.ride.update({
     where: {
       id: rideId,
     },
@@ -102,15 +113,18 @@ const updateRideStatus = async (rideId, status, db = prisma) => {
       status,
     },
   });
+
+  return getRideById(rideId, db);
 };
 
 /**
  * Get active ride of a user
  */
-const getActiveRideByUserId = async (userId) => {
-  return prisma.ride.findFirst({
+const getActiveRideByUserId = async (userId, db = prisma) => {
+  return db.ride.findFirst({
     where: {
       userId,
+      isScheduled: false,
       status: {
         in: ["REQUESTED", "ACCEPTED", "ARRIVED", "STARTED"],
       },
@@ -124,8 +138,8 @@ const getActiveRideByUserId = async (userId) => {
 /**
  * Get active ride of a driver
  */
-const getActiveRideByDriverId = async (driverId) => {
-  return prisma.ride.findFirst({
+const getActiveRideByDriverId = async (driverId, db = prisma) => {
+  return db.ride.findFirst({
     where: {
       driverId,
       status: {
@@ -146,6 +160,7 @@ const getAvailableRides = async () => {
     where: {
       status: "REQUESTED",
       driverId: null,
+      isScheduled: false,
     },
     orderBy: {
       createdAt: "desc",
@@ -167,7 +182,7 @@ const getAvailableRides = async () => {
  * Cancel Ride
  */
 const cancelRide = async (rideId, db = prisma) => {
-  return db.ride.update({
+  await db.ride.update({
     where: {
       id: rideId,
     },
@@ -175,6 +190,8 @@ const cancelRide = async (rideId, db = prisma) => {
       status: "CANCELLED",
     },
   });
+
+  return getRideById(rideId, db);
 };
 
 /**

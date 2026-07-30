@@ -47,6 +47,9 @@ const createRideSchema = z
       required_error: "Vehicle type is required.",
       invalid_type_error: "Invalid vehicle type.",
     }),
+    isScheduled: z.boolean().optional().default(false),
+
+    scheduledFor: z.string().datetime().optional().nullable(),
   })
   .strict();
 
