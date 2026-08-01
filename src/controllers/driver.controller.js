@@ -3,25 +3,24 @@ const {
   getDriverProfile,
   updateDriverProfile,
   updateAvailability,
+  approveDriver,
 } = require("../services/driver.service");
 
-const register = async (req, res) => {
+const register = async (req, res, next) => {
   try {
     const driver = await registerDriver(req.user.id, req.body);
 
     return res.status(201).json({
       success: true,
-      message: "Driver registration submitted successfully. Waiting for admin approval.",
+      message:
+        "Driver registration submitted successfully. Waiting for admin approval.",
       data: driver,
     });
   } catch (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    next(error);
   }
 };
-const getProfile = async (req, res) => {
+const getProfile = async (req, res, next) => {
   try {
     const driver = await getDriverProfile(req.user.id);
 
@@ -31,14 +30,11 @@ const getProfile = async (req, res) => {
       data: driver,
     });
   } catch (error) {
-    return res.status(404).json({
-      success: false,
-      message: error.message,
-    });
+    next(error);
   }
 };
 
-const updateProfile = async (req, res) => {
+const updateProfile = async (req, res, next) => {
   try {
     const driver = await updateDriverProfile(req.user.id, req.body);
 
@@ -48,19 +44,13 @@ const updateProfile = async (req, res) => {
       data: driver,
     });
   } catch (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    next(error);
   }
 };
 
-const updateAvailabilityController = async (req, res) => {
+const updateAvailabilityController = async (req, res, next) => {
   try {
-    const driver = await updateAvailability(
-      req.user.id,
-      req.body.availability
-    );
+    const driver = await updateAvailability(req.user.id, req.body.availability);
 
     return res.status(200).json({
       success: true,
@@ -68,10 +58,21 @@ const updateAvailabilityController = async (req, res) => {
       data: driver,
     });
   } catch (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.message,
+    next(error);
+  }
+};
+
+const approveDriverController = async (req, res, next) => {
+  try {
+    const driver = await approveDriver(req.params.driverId, req.body.status);
+
+    return res.status(200).json({
+      success: true,
+      message: `Driver ${req.body.status.toLowerCase()} successfully.`,
+      data: driver,
     });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -80,4 +81,5 @@ module.exports = {
   getProfile,
   updateProfile,
   updateAvailabilityController,
+  approveDriverController,
 };

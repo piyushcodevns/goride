@@ -118,7 +118,7 @@ const updateDriver = async (userId, data) => {
 const updateDriverAvailability = async (
   driverId,
   availability,
-  db = prisma
+  db = prisma,
 ) => {
   return db.driver.update({
     where: {
@@ -126,6 +126,26 @@ const updateDriverAvailability = async (
     },
     data: {
       availability,
+    },
+    include: {
+      user: {
+        select: userSelect,
+      },
+      vehicle: {
+        select: vehicleSelect,
+      },
+    },
+  });
+};
+
+// Approve / Reject Driver
+const updateDriverStatus = async (driverId, status) => {
+  return prisma.driver.update({
+    where: {
+      id: driverId,
+    },
+    data: {
+      status,
     },
     include: {
       user: {
@@ -146,4 +166,5 @@ module.exports = {
   getDriverByAadharNumber,
   updateDriver,
   updateDriverAvailability,
+  updateDriverStatus,
 };

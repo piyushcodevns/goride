@@ -1,37 +1,131 @@
 const {
   calculateFare: baseFareCalculator,
+  COMMON_CHARGES,
 } = require("../config/fare.config");
 
+
 /**
- * Calculate Ride Fare
+ * Calculate Dynamic Ride Fare
+ *
+ * Formula:
+ *
+ * Base Fare
+ * + Distance Fare
+ * + Duration Fare
+ * + Booking Fee
+ * + Platform Fee
+ * + GST
+ *
+ * Future:
+ * + Surge
+ * + Coupon
+ * + Toll
+ * + AI Pricing
+ *
  */
-const calculateFare = (vehicleType, distance) => {
-  const fare = baseFareCalculator(vehicleType, distance);
+const calculateFare = (
+  vehicleType,
+  distance,
+  duration = 0
+) => {
+
+  const fare = baseFareCalculator(
+    vehicleType,
+    distance,
+    duration
+  );
+
+
+  const bookingFee = COMMON_CHARGES.bookingFee;
+
+  const platformFee = COMMON_CHARGES.platformFee;
+
+
+  const surgeMultiplier = 1;
+
+  const surgeAmount = 0;
+
+
+  const discount = 0;
+
+
+  const tollCharges = 0;
+
+
+  const airportCharges = 0;
+
+
+  const subtotal = Number(
+    (
+      fare.totalFare +
+      bookingFee +
+      platformFee +
+      tollCharges +
+      airportCharges +
+      surgeAmount -
+      discount
+    ).toFixed(2)
+  );
+
+
+  const gst = Number(
+    (
+      (subtotal *
+        COMMON_CHARGES.gstPercentage) /
+      100
+    ).toFixed(2)
+  );
+
+
+  const totalFare = Number(
+    (
+      subtotal +
+      gst
+    ).toFixed(2)
+  );
+
 
   return {
+
     baseFare: fare.baseFare,
+
     distanceFare: fare.distanceFare,
 
-    surgeMultiplier: 1,
-    surgeAmount: 0,
+    durationFare: fare.durationFare,
 
-    durationFare: 0,
 
-    tax: 0,
+    bookingFee,
 
-    discount: 0,
+    platformFee,
 
-    tollCharges: 0,
 
-    airportCharges: 0,
+    surgeMultiplier,
 
-    subtotal: fare.subtotal,
+    surgeAmount,
 
-    minimumFareApplied: fare.minimumFareApplied,
 
-    totalFare: fare.totalFare,
+    tollCharges,
+
+    airportCharges,
+
+
+    discount,
+
+
+    gst,
+
+
+    subtotal,
+
+
+    minimumFareApplied:
+      fare.minimumFareApplied,
+
+
+    totalFare,
   };
 };
+
 
 module.exports = {
   calculateFare,

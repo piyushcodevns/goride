@@ -1,11 +1,15 @@
 const {
   createDriver,
   getDriverByUserId,
+  getDriverById,
   getDriverByLicenseNumber,
   getDriverByAadharNumber,
   updateDriver,
   updateDriverAvailability,
+  updateDriverStatus,
 } = require("../repositories/driver.repository");
+
+const { NotFoundError, BadRequestError } = require("../utils/AppError");
 
 const { registerDriverSchema } = require("../validators/driver.validator");
 
@@ -15,7 +19,7 @@ const registerDriver = async (userId, data) => {
   const existingDriver = await getDriverByUserId(userId);
 
   if (existingDriver) {
-    throw new Error("Driver profile already exists.");
+    throw new BadRequestError("Driver profile already exists.");
   }
 
   const licenseExists = await getDriverByLicenseNumber(
@@ -23,7 +27,7 @@ const registerDriver = async (userId, data) => {
   );
 
   if (licenseExists) {
-    throw new Error("License number already exists.");
+    throw new BadRequestError("License number already exists.");
   }
 
   const aadharExists = await getDriverByAadharNumber(
@@ -31,7 +35,7 @@ const registerDriver = async (userId, data) => {
   );
 
   if (aadharExists) {
-    throw new Error("Aadhar number already exists.");
+    throw new BadRequestError("Aadhar number already exists.");
   }
 
   return await createDriver({
@@ -46,7 +50,7 @@ const getDriverProfile = async (userId) => {
   const driver = await getDriverByUserId(userId);
 
   if (!driver) {
-    throw new Error("Driver profile not found.");
+    throw new NotFoundError("Driver profile not found.");
   }
 
   return driver;
@@ -57,7 +61,7 @@ const updateDriverProfile = async (userId, data) => {
   const driver = await getDriverByUserId(userId);
 
   if (!driver) {
-    throw new Error("Driver profile not found.");
+    throw new NotFoundError("Driver profile not found.");
   }
 
   // Update driver
@@ -69,11 +73,35 @@ const updateAvailability = async (userId, availability) => {
   const driver = await getDriverByUserId(userId);
 
   if (!driver) {
-    throw new Error("Driver profile not found.");
+    throw new NotFoundError("Driver profile not found.");
   }
 
-  // Update availability
-  return await updateDriverAvailability(userId, availability);
+  // Update availability using Driver ID
+  return await updateDriverAvailability(driver.id, availability);
+};
+/**
+ * Approve / Reject Driver
+ */
+const approveDriver = async (driverId, status) => {
+  const driver = await getDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  const allowedStatuses = ["APPROVED", "REJECTED"];
+
+  if (!allowedStatuses.includes(status)) {
+    throw new BadRequestError("Status must be either APPROVED or REJECTED.");
+  }
+
+  if (driver.status !== "PENDING") {
+    throw new BadRequestError(
+      `Driver is already ${driver.status.toLowerCase()}.`,
+    );
+  }
+
+  return updateDriverStatus(driverId, status);
 };
 
 module.exports = {
@@ -81,4 +109,5 @@ module.exports = {
   getDriverProfile,
   updateDriverProfile,
   updateAvailability,
+  approveDriver,
 };

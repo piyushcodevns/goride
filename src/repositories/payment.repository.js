@@ -1,8 +1,5 @@
 const prisma = require("../config/prisma");
 
-/**
- * Create Payment
- */
 const createPayment = (data) => {
   return prisma.payment.create({
     data,
@@ -28,7 +25,17 @@ const getPaymentById = (id) => {
     where: { id },
     include: {
       ride: true,
-      user: true,
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          role: true,
+          profileImage: true,
+          isVerified: true,
+        },
+      },
     },
   });
 };
@@ -41,7 +48,28 @@ const getPaymentByRideId = (rideId) => {
     where: { rideId },
     include: {
       ride: true,
-      user: true,
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          role: true,
+          profileImage: true,
+          isVerified: true,
+        },
+      },
+    },
+  });
+};
+
+/**
+ * Get Payment by Transaction ID
+ */
+const getPaymentByTransactionId = (transactionId) => {
+  return prisma.payment.findUnique({
+    where: {
+      transactionId,
     },
   });
 };
@@ -75,6 +103,7 @@ module.exports = {
   createPayment,
   getPaymentById,
   getPaymentByRideId,
+  getPaymentByTransactionId,
   updatePaymentStatus,
   getUserPayments,
 };

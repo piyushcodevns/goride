@@ -30,6 +30,7 @@ enum VehicleType {
   BIKE
   AUTO
   CAR
+  SUV
 }
 
 enum DriverAvailability {
@@ -170,7 +171,8 @@ model Ride {
   routeGeometry Json?
 
   // Pricing
-  fare Float
+  fare          Float
+  fareBreakdown Json?
 
   // Scheduled Ride
   isScheduled  Boolean   @default(false)

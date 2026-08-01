@@ -6,10 +6,17 @@ const {
   getProfile,
   updateProfile,
   updateAvailabilityController,
+  approveDriverController,
 } = require("../controllers/driver.controller");
 
 const { authenticate } = require("../middleware/auth.middleware");
+const { authorize } = require("../middleware/authorize.middleware");
+const { validate } = require("../middleware/validate.middleware");
 
+const {
+  registerDriverSchema,
+  approveDriverSchema,
+} = require("../validators/driver.validator");
 /**
  * @swagger
  * tags:
@@ -195,8 +202,63 @@ const { authenticate } = require("../middleware/auth.middleware");
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 
+/**
+ * @swagger
+ * /api/driver/{driverId}/status:
+ *   patch:
+ *     summary: Approve or Reject Driver
+ *     description: Allows an admin to approve or reject a pending driver registration.
+ *     tags: [Driver]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: driverId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum:
+ *                   - APPROVED
+ *                   - REJECTED
+ *                 example: APPROVED
+ *     responses:
+ *       200:
+ *         description: Driver status updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Invalid request or invalid status transition.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden.
+ *       404:
+ *         description: Driver not found.
+ *       500:
+ *         description: Internal server error.
+ */
+
 // Driver Registration
-router.post("/register", authenticate, register);
+router.post(
+  "/register",
+  authenticate,
+  validate(registerDriverSchema),
+  register
+);
 
 // Driver Profile
 router.get("/profile", authenticate, getProfile);
@@ -206,5 +268,16 @@ router.patch("/profile", authenticate, updateProfile);
 
 // Update Driver Availability
 router.patch("/availability", authenticate, updateAvailabilityController);
+
+/**
+ * Approve / Reject Driver (Admin Only)
+ */
+router.patch(
+  "/:driverId/status",
+  authenticate,
+  authorize("ADMIN"),
+  validate(approveDriverSchema),
+  approveDriverController
+);
 
 module.exports = router;

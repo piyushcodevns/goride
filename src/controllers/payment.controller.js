@@ -25,22 +25,22 @@ const createPayment = async (req, res, next) => {
 /**
  * Get Payment By Ride
  */
-const getPaymentByRide = async (rideId, userId) => {
-  const payment = await paymentRepository.getPaymentByRideId(rideId);
-
-  if (!payment) {
-    throw new AppError("Payment not found.", 404);
-  }
-
-  if (payment.userId !== userId) {
-    throw new AppError(
-      "You are not authorized to view this payment.",
-      403
+const getPaymentByRide = async (req, res, next) => {
+  try {
+    const payment = await paymentService.getPaymentByRide(
+      req.params.rideId,
+      req.user
     );
-  }
 
-  return payment;
+    return res.status(200).json({
+      success: true,
+      data: payment,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
+
 /**
  * Update Payment Status
  */
@@ -63,7 +63,7 @@ const updatePaymentStatus = async (req, res, next) => {
 };
 
 /**
- * Payment History
+ * User Payment History
  */
 const getMyPayments = async (req, res, next) => {
   try {

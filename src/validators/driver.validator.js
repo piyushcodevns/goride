@@ -24,6 +24,13 @@ const registerDriverSchema = z
   })
   .strict();
 
+const approveDriverSchema = z.object({
+  body: z.object({
+    status: z.enum(["APPROVED", "REJECTED"]),
+  }),
+});
+
 module.exports = {
   registerDriverSchema,
+  approveDriverSchema,
 };

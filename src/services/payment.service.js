@@ -1,6 +1,23 @@
 const paymentRepository = require("../repositories/payment.repository");
 const rideRepository = require("../repositories/ride.repository");
-const { AppError } = require("../utils/AppError");
+
+const {
+  NotFoundError,
+  BadRequestError,
+  ForbiddenError,
+  ConflictError,
+} = require("../utils/AppError");
+
+/**
+ * Allowed Payment Status Flow
+ */
+const PAYMENT_STATUS_FLOW = {
+  PENDING: ["PROCESSING", "FAILED"],
+  PROCESSING: ["SUCCESS", "FAILED"],
+  SUCCESS: ["REFUNDED"],
+  FAILED: [],
+  REFUNDED: [],
+};
 
 /**
  * Create Payment for Completed Ride
@@ -14,25 +31,27 @@ const createPayment = async ({
   const ride = await rideRepository.getRideById(rideId);
 
   if (!ride) {
-    throw new AppError("Ride not found.", 404);
+    throw new NotFoundError("Ride not found.");
   }
 
   if (ride.userId !== userId) {
-    throw new AppError("Unauthorized payment request.", 403);
+    throw new ForbiddenError("Unauthorized payment request.");
   }
 
   if (ride.status !== "COMPLETED") {
-    throw new AppError(
+    throw new BadRequestError(
       "Payment can only be created after ride completion.",
-      400
     );
   }
 
-  const existingPayment =
-    await paymentRepository.getPaymentByRideId(rideId);
+  const existingPayment = await paymentRepository.getPaymentByRideId(rideId);
 
   if (existingPayment) {
-    throw new AppError("Payment already exists for this ride.", 409);
+    throw new ConflictError("Payment already exists for this ride.");
+  }
+
+  if (ride.fare === null || ride.fare === undefined || Number(ride.fare) <= 0) {
+    throw new BadRequestError("Invalid ride fare. Payment cannot be created.");
   }
 
   return paymentRepository.createPayment({
@@ -47,11 +66,16 @@ const createPayment = async ({
 /**
  * Get Payment by Ride
  */
-const getPaymentByRide = async (rideId) => {
+const getPaymentByRide = async (rideId, currentUser) => {
   const payment = await paymentRepository.getPaymentByRideId(rideId);
 
   if (!payment) {
-    throw new AppError("Payment not found.", 404);
+    throw new NotFoundError("Payment not found.");
+  }
+
+  // Admin can access every payment
+  if (currentUser.role !== "ADMIN" && payment.userId !== currentUser.id) {
+    throw new ForbiddenError("You are not authorized to access this payment.");
   }
 
   return payment;
@@ -60,32 +84,53 @@ const getPaymentByRide = async (rideId) => {
 /**
  * Update Payment Status
  */
-const updatePaymentStatus = async (
-  paymentId,
-  status,
-  transactionId = null
-) => {
+const updatePaymentStatus = async (paymentId, status, transactionId = null) => {
+  const sanitizedTransactionId = transactionId?.trim() || null;
   const payment = await paymentRepository.getPaymentById(paymentId);
 
   if (!payment) {
-    throw new AppError("Payment not found.", 404);
+    throw new NotFoundError("Payment not found.");
   }
 
-  if (
-    payment.status === "SUCCESS" &&
-    status !== "REFUNDED"
-  ) {
-    throw new AppError(
-      "Successful payment cannot be modified.",
-      400
+  const allowedTransitions = PAYMENT_STATUS_FLOW[payment.status] || [];
+
+  if (!allowedTransitions.includes(status)) {
+    throw new BadRequestError(
+      `Invalid payment status transition from ${payment.status} to ${status}.`,
     );
   }
 
-  return paymentRepository.updatePaymentStatus(paymentId, {
+  // Transaction ID is mandatory only for SUCCESS
+  if (status === "SUCCESS" && !sanitizedTransactionId) {
+    throw new BadRequestError(
+      "Transaction ID is required for successful payment.",
+    );
+  }
+
+  // Prevent duplicate transaction IDs
+  if (sanitizedTransactionId) {
+    const existingTransaction =
+      await paymentRepository.getPaymentByTransactionId(sanitizedTransactionId);
+
+    if (existingTransaction && existingTransaction.id !== payment.id) {
+      throw new ConflictError("Transaction ID already exists.");
+    }
+  }
+
+  const updateData = {
     status,
-    transactionId,
-    paidAt: status === "SUCCESS" ? new Date() : payment.paidAt,
-  });
+  };
+
+  // Preserve original transactionId unless a new one is explicitly provided
+  if (sanitizedTransactionId) {
+    updateData.transactionId = sanitizedTransactionId;
+  }
+
+  if (status === "SUCCESS" && !payment.paidAt) {
+    updateData.paidAt = new Date();
+  }
+
+  return paymentRepository.updatePaymentStatus(paymentId, updateData);
 };
 
 /**

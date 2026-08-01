@@ -458,6 +458,93 @@ const swaggerOptions = {
             },
           },
         },
+        Payment: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              example: "cmsa5u7dw0003wvlsdfu9tpn3",
+            },
+            rideId: {
+              type: "string",
+            },
+            userId: {
+              type: "string",
+            },
+            amount: {
+              type: "number",
+              example: 114.45,
+            },
+            paymentMethod: {
+              type: "string",
+              enum: ["CASH", "UPI", "CARD", "WALLET"],
+              example: "UPI",
+            },
+            status: {
+              type: "string",
+              enum: ["PENDING", "PROCESSING", "SUCCESS", "FAILED", "REFUNDED"],
+              example: "PENDING",
+            },
+            gateway: {
+              type: "string",
+              example: "RAZORPAY",
+            },
+            transactionId: {
+              type: "string",
+              nullable: true,
+              example: "pay_xxxxxxxxx",
+            },
+            paidAt: {
+              type: "string",
+              format: "date-time",
+              nullable: true,
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+            },
+          },
+        },
+
+        CreatePaymentRequest: {
+          type: "object",
+          required: ["rideId", "paymentMethod"],
+          properties: {
+            rideId: {
+              type: "string",
+              example: "cms9yytcd0001wvlsu42lgydr",
+            },
+            paymentMethod: {
+              type: "string",
+              enum: ["CASH", "UPI", "CARD", "WALLET"],
+              example: "UPI",
+            },
+            gateway: {
+              type: "string",
+              example: "RAZORPAY",
+            },
+          },
+        },
+
+        UpdatePaymentStatusRequest: {
+          type: "object",
+          required: ["status"],
+          properties: {
+            status: {
+              type: "string",
+              enum: ["PROCESSING", "SUCCESS", "FAILED", "REFUNDED"],
+              example: "SUCCESS",
+            },
+            transactionId: {
+              type: "string",
+              example: "pay_xxxxxxxxx",
+            },
+          },
+        },
       },
     },
   },

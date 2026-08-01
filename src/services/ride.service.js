@@ -136,7 +136,11 @@ const createRide = async (rideData) => {
   /**
    * Calculate Fare
    */
-  const fareDetails = calculateFare(vehicleType, routeDetails.distance);
+  const fareDetails = calculateFare(
+    vehicleType,
+    routeDetails.distance,
+    routeDetails.duration,
+  );
 
   /**
    * ETA
@@ -171,6 +175,8 @@ const createRide = async (rideData) => {
     routeGeometry: routeDetails.geometry,
 
     fare: fareDetails.totalFare,
+
+    fareBreakdown: fareDetails,
 
     isScheduled,
     scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
@@ -254,18 +260,16 @@ const assignDriver = async (rideId, driverId) => {
       throw new BadRequestError("Vehicle registration required.");
     }
 
-    const activeRide =
-      await rideRepository.getActiveRideByDriverId(driverId, tx);
+    const activeRide = await rideRepository.getActiveRideByDriverId(
+      driverId,
+      tx,
+    );
 
     if (activeRide) {
       throw new ConflictError("Driver already has an active ride.");
     }
 
-    const updatedRide = await rideRepository.assignDriver(
-      rideId,
-      driverId,
-      tx,
-    );
+    const updatedRide = await rideRepository.assignDriver(rideId, driverId, tx);
 
     await updateDriverAvailability(driverId, "BUSY", tx);
 
