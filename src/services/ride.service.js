@@ -1,5 +1,6 @@
 const rideRepository = require("../repositories/ride.repository");
 const prisma = require("../config/prisma");
+const { createFareAudit } = require("../repositories/fareAudit.repository");
 
 const {
   getDriverById,
@@ -55,6 +56,17 @@ const createRide = async (rideData) => {
     destinationLatitude,
     destinationLongitude,
     vehicleType,
+
+    city = "DEFAULT",
+    waitingMinutes = 0,
+    tollCharge = 0,
+    isAirportRide = false,
+    isPeakHour = false,
+    isNightRide = false,
+    isRaining = false,
+    isEventRide = false,
+    discountAmount = 0,
+
     isScheduled = false,
     scheduledFor = null,
   } = rideData;
@@ -134,13 +146,33 @@ const createRide = async (rideData) => {
   );
 
   /**
-   * Calculate Fare
+   * Calculate Enterprise Fare
    */
-  const fareDetails = calculateFare(
+  const fareDetails = await calculateFare({
+    city,
+
     vehicleType,
-    routeDetails.distance,
-    routeDetails.duration,
-  );
+
+    distanceKm: routeDetails.distance,
+
+    durationMinutes: routeDetails.duration,
+
+    waitingMinutes,
+
+    tollCharge,
+
+    isAirportRide,
+
+    isPeakHour,
+
+    isNightRide,
+
+    isRaining,
+
+    isEventRide,
+
+    discountAmount,
+  });
 
   /**
    * ETA
@@ -151,37 +183,139 @@ const createRide = async (rideData) => {
     rideStartTime.getTime() + routeDetails.duration * 60 * 1000,
   );
 
-  return await rideRepository.createRide({
-    userId,
+  return await prisma.$transaction(async (tx) => {
+    const ride = await rideRepository.createRide(
+      {
+        userId,
 
-    pickup: pickup.trim(),
+        pickup: pickup.trim(),
+        pickupLatitude,
+        pickupLongitude,
 
-    pickupLatitude,
+        destination: destination.trim(),
+        destinationLatitude,
+        destinationLongitude,
 
-    pickupLongitude,
+        distance: routeDetails.distance,
+        duration: routeDetails.duration,
 
-    destination: destination.trim(),
+        estimatedArrival,
 
-    destinationLatitude,
+        routeGeometry: routeDetails.geometry,
 
-    destinationLongitude,
+        estimatedFare: fareDetails.estimatedFare,
 
-    distance: routeDetails.distance,
+        baseFare: fareDetails.baseFare,
+        distanceFare: fareDetails.distanceFare,
+        durationFare: fareDetails.durationFare,
 
-    duration: routeDetails.duration,
+        platformFee: fareDetails.platformFee,
+        bookingFee: fareDetails.bookingFee,
 
-    estimatedArrival,
+        gstAmount: fareDetails.gstAmount,
 
-    routeGeometry: routeDetails.geometry,
+        waitingCharge: fareDetails.waitingCharge,
+        airportCharge: fareDetails.airportCharge,
+        tollCharge: fareDetails.tollCharge,
 
-    fare: fareDetails.totalFare,
+        surgeMultiplier: fareDetails.surgeMultiplier,
+        surgeAmount: fareDetails.surgeAmount,
 
-    fareBreakdown: fareDetails,
+        fareBreakdown: fareDetails.fareBreakdown,
 
-    isScheduled,
-    scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
+        discountAmount: fareDetails.discountAmount,
 
-    vehicleType,
+        finalFare: fareDetails.finalFare,
+
+        isScheduled,
+        scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
+
+        vehicleType,
+      },
+      tx,
+    );
+
+    await createFareAudit(
+      {
+        rideId: ride.id,
+        pricingConfigId: fareDetails.pricingConfigId,
+
+        baseFare: fareDetails.baseFare,
+        distanceFare: fareDetails.distanceFare,
+        durationFare: fareDetails.durationFare,
+
+        surgeAmount: fareDetails.surgeAmount,
+        discountAmount: fareDetails.discountAmount,
+        platformFee: fareDetails.platformFee,
+
+        finalFare: fareDetails.finalFare,
+
+        breakdown: {
+          ...fareDetails.fareBreakdown,
+
+          pricingRules: fareDetails.pricingRules,
+
+          inputSnapshot: {
+            city,
+            vehicleType,
+
+            distanceKm: routeDetails.distance,
+            durationMinutes: routeDetails.duration,
+
+            waitingMinutes,
+            tollCharge,
+
+            isAirportRide,
+            isPeakHour,
+            isNightRide,
+            isRaining,
+            isEventRide,
+          },
+
+          discountSnapshot: {
+            requestedDiscount: discountAmount,
+            appliedDiscount: fareDetails.discountAmount,
+          },
+
+          pricingSnapshot: {
+            pricingConfigId: fareDetails.pricingConfigId,
+
+            baseFare: fareDetails.baseFare,
+            pricePerKm: fareDetails.fareBreakdown?.pricePerKm ?? null,
+            pricePerMinute: fareDetails.fareBreakdown?.pricePerMinute ?? null,
+
+            gstPercentage: fareDetails.fareBreakdown.gstPercentage,
+            minimumFare: fareDetails.fareBreakdown.minimumFare,
+          },
+        },
+      },
+      tx,
+    );
+
+    return {
+      ...ride,
+
+      baseFare: Number(ride.baseFare),
+      distanceFare: Number(ride.distanceFare),
+      durationFare: Number(ride.durationFare),
+
+      bookingFee: Number(ride.bookingFee),
+      platformFee: Number(ride.platformFee),
+
+      surgeAmount: Number(ride.surgeAmount),
+      surgeMultiplier: Number(ride.surgeMultiplier),
+
+      airportCharge: Number(ride.airportCharge),
+      tollCharge: Number(ride.tollCharge),
+      waitingCharge: Number(ride.waitingCharge),
+
+      gstAmount: Number(ride.gstAmount),
+
+      discountAmount: Number(ride.discountAmount),
+
+      estimatedFare: Number(ride.estimatedFare),
+      finalFare: Number(ride.finalFare),
+    };
   });
 };
 

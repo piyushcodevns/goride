@@ -17,6 +17,7 @@ const createRideReviewSchema = z
       })
       .trim()
       .max(500, "Review cannot exceed 500 characters.")
+      .transform((value) => (value === "" ? undefined : value))
       .optional(),
   })
   .strict();

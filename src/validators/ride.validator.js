@@ -47,6 +47,57 @@ const createRideSchema = z
       required_error: "Vehicle type is required.",
       invalid_type_error: "Invalid vehicle type.",
     }),
+
+    city: z
+      .string()
+      .trim()
+      .max(100)
+      .optional()
+      .default("DEFAULT"),
+
+    waitingMinutes: z
+      .number()
+      .min(0)
+      .optional()
+      .default(0),
+
+    tollCharge: z
+      .number()
+      .min(0)
+      .optional()
+      .default(0),
+
+    isAirportRide: z
+      .boolean()
+      .optional()
+      .default(false),
+
+    isPeakHour: z
+      .boolean()
+      .optional()
+      .default(false),
+
+    isNightRide: z
+      .boolean()
+      .optional()
+      .default(false),
+
+    isRaining: z
+      .boolean()
+      .optional()
+      .default(false),
+
+    isEventRide: z
+      .boolean()
+      .optional()
+      .default(false),
+
+    discountAmount: z
+      .number()
+      .min(0)
+      .optional()
+      .default(0),
+
     isScheduled: z.boolean().optional().default(false),
 
     scheduledFor: z.string().datetime().optional().nullable(),
@@ -56,3 +107,4 @@ const createRideSchema = z
 module.exports = {
   createRideSchema,
 };
+  

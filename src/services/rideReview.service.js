@@ -25,43 +25,39 @@ const createReview = async ({ rideId, userId, rating, review }) => {
   }
 
   if (ride.status !== "COMPLETED") {
-    throw new BadRequestError(
-      "Only completed rides can be reviewed.",
-    );
+    throw new BadRequestError("Only completed rides can be reviewed.");
   }
 
-  const existingReview =
-    await rideReviewRepository.getReviewByRideId(rideId);
+  if (!ride.driverId) {
+    throw new BadRequestError("Driver not assigned to this ride.");
+  }
+
+  const existingReview = await rideReviewRepository.getReviewByRideId(rideId);
 
   if (existingReview) {
-    throw new ConflictError(
-      "Review already submitted for this ride.",
-    );
+    throw new ConflictError("Review already submitted for this ride.");
   }
 
   if (rating < 1 || rating > 5) {
-    throw new BadRequestError(
-      "Rating must be between 1 and 5.",
-    );
+    throw new BadRequestError("Rating must be between 1 and 5.");
   }
 
   return prisma.$transaction(async (tx) => {
-    const createdReview =
-      await rideReviewRepository.createReview(
-        {
-          rideId,
-          userId,
-          driverId: ride.driverId,
-          rating,
-          review: review?.trim() || null,
-        },
-        tx,
-      );
+    const createdReview = await rideReviewRepository.createReview(
+      {
+        rideId,
+        userId,
+        driverId: ride.driverId,
+        rating,
+        review: review?.trim() || null,
+      },
+      tx,
+    );
 
-    const stats =
-      await rideReviewRepository.getDriverRatingStats(
-        ride.driverId,
-      );
+    const stats = await rideReviewRepository.getDriverRatingStats(
+      ride.driverId,
+      tx,
+    );
 
     await rideReviewRepository.updateDriverRating(
       ride.driverId,

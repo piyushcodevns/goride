@@ -1,262 +1,458 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-enum UserRole {
-  USER
-  DRIVER
-  ADMIN
-}
-
-enum Gender {
-  MALE
-  FEMALE
-  OTHER
-}
-
-enum DriverStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  SUSPENDED
-}
-
-enum VehicleType {
-  BIKE
-  AUTO
-  CAR
-  SUV
-}
-
-enum DriverAvailability {
-  OFFLINE
-  AVAILABLE
-  BUSY
-}
-
-enum RideStatus {
-  REQUESTED
-  ACCEPTED
-  ARRIVED
-  STARTED
-  COMPLETED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  PENDING
-  PROCESSING
-  SUCCESS
-  FAILED
-  REFUNDED
-}
-
-enum PaymentMethod {
-  CASH
-  UPI
-  CARD
-  WALLET
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model User {
-  id       String @id @default(cuid())
-  fullName String
-  email    String @unique
-  phone    String @unique
-  password String
+    id       String   @id @default(cuid())
+    fullName String
+    email    String   @unique
+    phone    String   @unique
+    password String
+    role     UserRole @default(USER)
 
-  passwordResetToken   String?
-  passwordResetExpires DateTime?
+    gender       Gender?
+    profileImage String?
 
-  emailVerified            Boolean   @default(false)
-  emailVerificationToken   String?
-  emailVerificationExpires DateTime?
-  role                     UserRole  @default(USER)
-  gender                   Gender?
-  profileImage             String?
-  isVerified               Boolean   @default(false)
-  isActive                 Boolean   @default(true)
+    isVerified               Boolean   @default(false)
+    isActive                 Boolean   @default(true)
+    emailVerified            Boolean   @default(false)
+    emailVerificationToken   String?
+    emailVerificationExpires DateTime?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    passwordResetToken   String?
+    passwordResetExpires DateTime?
 
-  driver      Driver?
-  rides       Ride[]
-  rideReviews RideReview[]
-  payments    Payment[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    driver         Driver?
+    rides          Ride[]
+    payments       Payment[]
+    couponsCreated Coupon[]
+    couponUsages   CouponUsage[]
+    rideReviews    RideReview[]
 }
 
 model Driver {
-  id String @id @default(cuid())
+    id String @id @default(cuid())
 
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId String @unique
 
-  licenseNumber String @unique
-  aadharNumber  String @unique
+    licenseNumber String @unique
+    aadharNumber  String @unique
 
-  experience Int
+    status       DriverStatus       @default(PENDING)
+    availability DriverAvailability @default(OFFLINE)
 
-  status       DriverStatus       @default(PENDING)
-  availability DriverAvailability @default(OFFLINE)
+    experience Int
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    averageRating Float @default(0)
+    totalRatings  Int   @default(0)
 
-  vehicle Vehicle?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  rides         Ride[]
-  RideReject    RideReject[]
-  averageRating Float        @default(0)
-  totalRatings  Int          @default(0)
-  rideReviews   RideReview[]
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([status])
-  @@index([availability])
+    rides       Ride[]
+    rideRejects RideReject[]
+    rideReviews RideReview[]
+
+    vehicle Vehicle?
+
+    @@index([status])
+    @@index([availability])
 }
 
 model Vehicle {
-  id String @id @default(cuid())
+    id String @id @default(cuid())
 
-  driverId String @unique
-  driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+    driverId String @unique
 
-  vehicleType VehicleType
+    vehicleType VehicleType
 
-  brand String
-  model String
+    brand String
+    model String
+    color String
 
-  color String
-  seats Int
+    vehicleNumber String @unique
 
-  vehicleNumber String @unique
+    seats Int
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  @@index([vehicleType])
+    driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+    @@index([vehicleType])
 }
 
 model Ride {
-  id String @id @default(cuid())
+    id String @id @default(cuid())
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId   String
+    driverId String?
 
-  driverId String?
-  driver   Driver? @relation(fields: [driverId], references: [id], onDelete: SetNull)
+    pickup      String
+    destination String
 
-  // Pickup Details
-  pickup          String
-  pickupLatitude  Float?
-  pickupLongitude Float?
+    pickupLatitude  Float?
+    pickupLongitude Float?
 
-  // Destination Details
-  destination          String
-  destinationLatitude  Float?
-  destinationLongitude Float?
+    destinationLatitude  Float?
+    destinationLongitude Float?
 
-  // Route Details
-  distance Float
-  duration Float?
+    distance Float
+    duration Float?
 
-  estimatedArrival DateTime?
+    routeGeometry Json?
+    fareBreakdown Json?
 
-  // Encoded Route / Geometry
-  routeGeometry Json?
+    vehicleType VehicleType
 
-  // Pricing
-  fare          Float
-  fareBreakdown Json?
+    status RideStatus @default(REQUESTED)
 
-  // Scheduled Ride
-  isScheduled  Boolean   @default(false)
-  scheduledFor DateTime?
+    isScheduled  Boolean   @default(false)
+    scheduledFor DateTime?
 
-  // Ride Information
-  vehicleType VehicleType
-  status      RideStatus  @default(REQUESTED)
+    baseFare     Decimal @default(0) @db.Decimal(10, 2)
+    distanceFare Decimal @default(0) @db.Decimal(10, 2)
+    durationFare Decimal @default(0) @db.Decimal(10, 2)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    bookingFee  Decimal @default(0) @db.Decimal(10, 2)
+    platformFee Decimal @default(0) @db.Decimal(10, 2)
 
-  RideReject RideReject[]
-  rideReview RideReview?
+    surgeAmount     Decimal @default(0) @db.Decimal(10, 2)
+    surgeMultiplier Decimal @default(1.0) @db.Decimal(4, 2)
 
-  payment Payment?
+    airportCharge Decimal @default(0) @db.Decimal(10, 2)
+    tollCharge    Decimal @default(0) @db.Decimal(10, 2)
+    waitingCharge Decimal @default(0) @db.Decimal(10, 2)
 
-  @@index([userId])
-  @@index([driverId])
-  @@index([status])
-  @@index([vehicleType])
+    gstAmount Decimal @default(0) @db.Decimal(10, 2)
+
+    discountAmount Decimal  @default(0) @db.Decimal(10, 2)
+    estimatedFare  Decimal  @default(0) @db.Decimal(10, 2)
+    finalFare      Decimal? @db.Decimal(10, 2)
+
+    couponId String?
+
+    estimatedArrival DateTime?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    driver Driver? @relation(fields: [driverId], references: [id], onDelete: SetNull)
+    coupon Coupon? @relation(fields: [couponId], references: [id], onDelete: SetNull)
+
+    payment Payment?
+
+    rideRejects RideReject[]
+
+    rideReview RideReview?
+
+    couponUsage CouponUsage?
+
+    fareAudit FareAudit?
+
+    @@index([userId])
+    @@index([driverId])
+    @@index([status])
+    @@index([vehicleType])
+    @@index([couponId])
+    @@index([createdAt])
 }
 
 model RideReject {
-  id String @id @default(cuid())
+    id String @id @default(cuid())
 
-  rideId String
-  ride   Ride   @relation(fields: [rideId], references: [id], onDelete: Cascade)
+    rideId   String
+    driverId String
 
-  driverId String
-  driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
 
-  createdAt DateTime @default(now())
+    ride Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
 
-  @@unique([rideId, driverId])
-  @@index([rideId])
-  @@index([driverId])
+    driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+    @@unique([rideId, driverId])
+    @@index([rideId])
+    @@index([driverId])
 }
 
 model RideReview {
-  id String @id @default(cuid())
+    id String @id @default(cuid())
 
-  rideId String @unique
-  ride   Ride   @relation(fields: [rideId], references: [id], onDelete: Cascade)
+    rideId String @unique
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId String
 
-  driverId String
-  driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+    driverId String
 
-  rating Int
+    rating Int
 
-  review String?
+    review String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
 
-  @@index([driverId])
-  @@index([userId])
+    updatedAt DateTime @updatedAt
+
+    ride Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+    @@index([driverId])
+    @@index([userId])
+    @@index([createdAt])
 }
 
 model Payment {
+    id String @id @default(cuid())
+
+    rideId String @unique
+
+    userId String
+
+    amount Decimal @db.Decimal(10, 2)
+
+    paymentMethod PaymentMethod
+
+    status PaymentStatus @default(PENDING)
+
+    gateway String?
+
+    transactionId String? @unique
+
+    paidAt DateTime?
+
+    createdAt DateTime @default(now())
+
+    updatedAt DateTime @updatedAt
+
+    ride Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([status])
+}
+
+model Coupon {
+    id String @id @default(cuid())
+
+    code String @unique
+
+    description String?
+
+    type CouponType
+
+    discountValue Decimal @db.Decimal(10, 2)
+
+    minimumRideFare Decimal @default(0) @db.Decimal(10, 2)
+
+    maximumDiscount Decimal? @db.Decimal(10, 2)
+
+    usageLimit Int?
+
+    perUserUsageLimit Int @default(1)
+
+    usedCount Int @default(0)
+
+    validFrom DateTime
+
+    validUntil DateTime
+
+    isActive Boolean @default(true)
+
+    createdById String
+
+    createdAt DateTime @default(now())
+
+    updatedAt DateTime @updatedAt
+
+    createdBy User @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+    couponUsages CouponUsage[]
+
+    rides Ride[]
+
+    @@index([code])
+    @@index([createdById])
+    @@index([isActive])
+    @@index([validFrom])
+    @@index([validUntil])
+}
+
+model CouponUsage {
+    id String @id @default(cuid())
+
+    couponId String
+
+    userId String
+
+    rideId String @unique
+
+    discountAmount Decimal @db.Decimal(10, 2)
+
+    usedAt DateTime @default(now())
+
+    coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    ride Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
+
+    @@unique([couponId, userId, rideId])
+    @@index([couponId])
+    @@index([userId])
+    @@index([usedAt])
+}
+
+model PricingConfig {
+    id String @id @default(cuid())
+
+    city String @default("DEFAULT")
+
+    vehicleType VehicleType
+
+    baseFare Decimal @db.Decimal(10, 2)
+
+    pricePerKm Decimal @db.Decimal(10, 2)
+
+    pricePerMinute Decimal @db.Decimal(10, 2)
+
+    minimumFare Decimal @db.Decimal(10, 2)
+
+    platformFee Decimal @db.Decimal(10, 2)
+
+    bookingFee Decimal @db.Decimal(10, 2)
+
+    gstPercentage Decimal @db.Decimal(5, 2)
+
+    waitingChargePerMinute Decimal @db.Decimal(10, 2)
+
+    airportCharge Decimal @db.Decimal(10, 2)
+
+    peakMultiplier Decimal @default(1.0) @db.Decimal(4, 2)
+
+    nightMultiplier Decimal @default(1.0) @db.Decimal(4, 2)
+
+    rainMultiplier Decimal @default(1.0) @db.Decimal(4, 2)
+
+    eventMultiplier Decimal @default(1.0) @db.Decimal(4, 2)
+
+    maxSurgeMultiplier Decimal @default(3.00) @db.Decimal(4,2)
+
+    currency Currency @default(INR)
+
+    isActive Boolean @default(true)
+
+    createdAt DateTime @default(now())
+
+    updatedAt DateTime @updatedAt
+
+    @@unique([city, vehicleType])
+    @@index([isActive])
+    @@index([vehicleType])
+}
+
+model FareAudit {
   id String @id @default(cuid())
 
   rideId String @unique
-  ride   Ride   @relation(fields: [rideId], references: [id], onDelete: Cascade)
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pricingConfigId String?
 
-  amount Float
+  baseFare Decimal @db.Decimal(10, 2)
+  distanceFare Decimal @db.Decimal(10, 2)
+  durationFare Decimal @db.Decimal(10, 2)
 
-  paymentMethod PaymentMethod
-  status        PaymentStatus @default(PENDING)
+  surgeAmount Decimal @db.Decimal(10, 2)
+  discountAmount Decimal @db.Decimal(10, 2)
+  platformFee Decimal @db.Decimal(10, 2)
 
-  gateway       String?
-  transactionId String? @unique
+  finalFare Decimal @db.Decimal(10, 2)
 
-  paidAt DateTime?
+  breakdown Json
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  @@index([userId])
-  @@index([status])
+  ride Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
+
+  @@index([rideId])
+  @@index([createdAt])
+}
+
+enum UserRole {
+    USER
+    DRIVER
+    ADMIN
+}
+
+enum Gender {
+    MALE
+    FEMALE
+    OTHER
+}
+
+enum DriverStatus {
+    PENDING
+    APPROVED
+    REJECTED
+    SUSPENDED
+}
+
+enum VehicleType {
+    BIKE
+    AUTO
+    CAR
+    SUV
+}
+
+enum DriverAvailability {
+    OFFLINE
+    AVAILABLE
+    BUSY
+}
+
+enum RideStatus {
+    REQUESTED
+    ACCEPTED
+    ARRIVED
+    STARTED
+    COMPLETED
+    CANCELLED
+}
+
+enum PaymentStatus {
+    PENDING
+    PROCESSING
+    SUCCESS
+    FAILED
+    REFUNDED
+}
+
+enum PaymentMethod {
+    CASH
+    UPI
+    CARD
+    WALLET
+}
+
+enum CouponType {
+    FLAT
+    PERCENTAGE
+}
+
+enum Currency {
+    INR
 }

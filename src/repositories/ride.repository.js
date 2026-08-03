@@ -10,7 +10,7 @@ const createRide = async (data, db = prisma) => {
   });
 };
 
-/**
+/** 
  * Get ride by ID
  */
 const getRideById = async (rideId, db = prisma) => {
@@ -115,6 +115,38 @@ const updateRideStatus = async (rideId, status, db = prisma) => {
   });
 
   return getRideById(rideId, db);
+};
+
+/**
+ * Update Ride
+ */
+const updateRide = async (rideId, data, db = prisma) => {
+  await db.ride.update({
+    where: {
+      id: rideId,
+    },
+    data,
+  });
+
+  return getRideById(rideId, db);
+};
+
+/**
+ * Get Ride For Coupon
+ */
+const getRideForCoupon = async (rideId, db = prisma) => {
+  return db.ride.findUnique({
+    where: {
+      id: rideId,
+    },
+    select: {
+      id: true,
+      userId: true,
+      finalFare: true,
+      status: true,
+      couponId: true,
+    },
+  });
 };
 
 /**
@@ -281,6 +313,8 @@ module.exports = {
   getUserRides,
   assignDriver,
   updateRideStatus,
+  updateRide,
+  getRideForCoupon,
   getActiveRideByUserId,
   getActiveRideByDriverId,
   getAvailableRides,

@@ -545,6 +545,196 @@ const swaggerOptions = {
             },
           },
         },
+        Coupon: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              example: "cmsal95ab0001wva8f7ds87xx",
+            },
+            code: {
+              type: "string",
+              example: "SAVE200",
+            },
+            description: {
+              type: "string",
+              example: "Flat ₹200 off",
+              nullable: true,
+            },
+            type: {
+              type: "string",
+              enum: ["FLAT", "PERCENTAGE"],
+              example: "FLAT",
+            },
+            discountValue: {
+              type: "number",
+              example: 200,
+            },
+            minimumRideFare: {
+              type: "number",
+              example: 500,
+            },
+            maximumDiscount: {
+              type: "number",
+              nullable: true,
+              example: null,
+            },
+            usageLimit: {
+              type: "integer",
+              example: 1000,
+            },
+            perUserUsageLimit: {
+              type: "integer",
+              example: 1,
+            },
+            usedCount: {
+              type: "integer",
+              example: 0,
+            },
+            validFrom: {
+              type: "string",
+              format: "date-time",
+            },
+            validUntil: {
+              type: "string",
+              format: "date-time",
+            },
+            isActive: {
+              type: "boolean",
+              example: true,
+            },
+          },
+        },
+
+        CreateCouponRequest: {
+          type: "object",
+          required: [
+            "code",
+            "type",
+            "discountValue",
+            "validFrom",
+            "validUntil",
+          ],
+          properties: {
+            code: {
+              type: "string",
+              example: "SAVE200",
+            },
+            description: {
+              type: "string",
+              example: "Flat ₹200 off",
+            },
+            type: {
+              type: "string",
+              enum: ["FLAT", "PERCENTAGE"],
+              example: "FLAT",
+            },
+            discountValue: {
+              type: "number",
+              example: 200,
+            },
+            minimumRideFare: {
+              type: "number",
+              example: 500,
+            },
+            maximumDiscount: {
+              type: "number",
+              nullable: true,
+              example: null,
+            },
+            usageLimit: {
+              type: "integer",
+              example: 1000,
+            },
+            perUserUsageLimit: {
+              type: "integer",
+              example: 1,
+            },
+            validFrom: {
+              type: "string",
+              format: "date-time",
+              example: "2026-08-01T00:00:00.000Z",
+            },
+            validUntil: {
+              type: "string",
+              format: "date-time",
+              example: "2026-12-31T23:59:59.000Z",
+            },
+            isActive: {
+              type: "boolean",
+              example: true,
+            },
+          },
+        },
+
+        UpdateCouponRequest: {
+          type: "object",
+          properties: {
+            code: {
+              type: "string",
+              example: "NEW200",
+            },
+            description: {
+              type: "string",
+              example: "Updated coupon",
+            },
+            discountValue: {
+              type: "number",
+              example: 250,
+            },
+            minimumRideFare: {
+              type: "number",
+              example: 600,
+            },
+            maximumDiscount: {
+              type: "number",
+              nullable: true,
+              example: null,
+            },
+            usageLimit: {
+              type: "integer",
+              example: 2000,
+            },
+            perUserUsageLimit: {
+              type: "integer",
+              example: 2,
+            },
+            isActive: {
+              type: "boolean",
+              example: true,
+            },
+          },
+        },
+
+        ValidateCouponRequest: {
+          type: "object",
+          required: ["code", "rideFare"],
+          properties: {
+            code: {
+              type: "string",
+              example: "SAVE200",
+            },
+            rideFare: {
+              type: "number",
+              example: 800,
+            },
+          },
+        },
+
+        ApplyCouponRequest: {
+          type: "object",
+          required: ["code", "rideId"],
+          properties: {
+            code: {
+              type: "string",
+              example: "SAVE200",
+            },
+            rideId: {
+              type: "string",
+              example: "cms9yytcd0001wvlsu42lgydr",
+            },
+          },
+        },
       },
     },
   },

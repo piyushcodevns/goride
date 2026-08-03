@@ -21,6 +21,17 @@ const getReviewByRideId = async (rideId) => {
 };
 
 /**
+ * Get Review By ID
+ */
+const getReviewById = async (id) => {
+  return prisma.rideReview.findUnique({
+    where: {
+      id,
+    },
+  });
+};
+
+/**
  * Get Reviews By Driver ID
  */
 const getDriverReviews = async (driverId) => {
@@ -54,10 +65,7 @@ const getDriverReviews = async (driverId) => {
 /**
  * Calculate Driver Rating
  */
-const getDriverRatingStats = async (
-  driverId,
-  db = prisma,
-) => {
+const getDriverRatingStats = async (driverId, db = prisma) => {
   const stats = await db.rideReview.aggregate({
     where: {
       driverId,
@@ -96,10 +104,23 @@ const updateDriverRating = async (
   });
 };
 
+/**
+ * Delete Review
+ */
+const deleteReview = async (id, db = prisma) => {
+  return db.rideReview.delete({
+    where: {
+      id,
+    },
+  });
+};
+
 module.exports = {
   createReview,
   getReviewByRideId,
+  getReviewById,
   getDriverReviews,
   getDriverRatingStats,
   updateDriverRating,
+  deleteReview,
 };

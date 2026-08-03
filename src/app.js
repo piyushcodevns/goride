@@ -19,9 +19,11 @@ const vehicleRoutes = require("./routes/vehicle.routes");
 const rideRoutes = require("./routes/ride.routes");
 const rideReviewRoutes = require("./routes/rideReview.routes");
 const paymentRoutes = require("./routes/payment.routes");
+const couponRoutes = require("./routes/coupon.routes");
+const fareRoutes = require("./routes/fare.routes");
+const fareAuditRoutes = require("./routes/fareAudit.routes");
 
 const { apiLimiter } = require("./middleware/rateLimit.middleware");
-
 
 /* ===========================
    Security & Middleware
@@ -75,6 +77,12 @@ app.use("/api/rides", rideRoutes);
 app.use("/api/ride-reviews", rideReviewRoutes);
 
 app.use("/api/payments", paymentRoutes);
+
+app.use("/api/coupons", couponRoutes);
+
+app.use("/api/fare", fareRoutes);
+
+app.use("/api/fare-audit", fareAuditRoutes);
 
 /* ===========================
    Health Check

@@ -75,3 +75,4 @@ __pycache__/
 *.pid.lock
 
 .env
+/src/generated/prisma
