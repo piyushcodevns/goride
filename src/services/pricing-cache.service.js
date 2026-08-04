@@ -1,21 +1,30 @@
 const pricingRepository = require("../repositories/pricing.repository");
-
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 Minutes
-
-const cache = new Map();
+const CacheService = require("./cache.service");
 
 class PricingCacheService {
-  static getCacheKey(city, vehicleType) {
-    return `${city}:${vehicleType}`;
+  /**
+   * -----------------------------
+   * Pricing Cache Key
+   * -----------------------------
+   */
+
+  static getPricingCacheKey(city, vehicleType) {
+    return `pricing:${city}:${vehicleType}`;
   }
 
+  /**
+   * -----------------------------
+   * Pricing Wrapper
+   * -----------------------------
+   */
+
   static async getPricingConfig(city, vehicleType) {
-    const cacheKey = this.getCacheKey(city, vehicleType);
+    const key = this.getPricingCacheKey(city, vehicleType);
 
-    const cached = cache.get(cacheKey);
+    const cached = CacheService.get(key);
 
-    if (cached && cached.expiresAt > Date.now()) {
-      return cached.data;
+    if (cached) {
+      return cached;
     }
 
     const pricing =
@@ -28,34 +37,36 @@ class PricingCacheService {
       return null;
     }
 
-    cache.set(cacheKey, {
-      data: pricing,
-      expiresAt: Date.now() + CACHE_TTL_MS,
-    });
+    CacheService.set(key, pricing);
 
     return pricing;
   }
 
+  /**
+   * -----------------------------
+   * Clear Pricing Cache
+   * -----------------------------
+   */
+
   static clear(city, vehicleType) {
     if (!city && !vehicleType) {
-      cache.clear();
+      CacheService.clearAll();
       return;
     }
 
-    const cacheKey = this.getCacheKey(city, vehicleType);
-
-    cache.delete(cacheKey);
+    CacheService.delete(
+      this.getPricingCacheKey(city, vehicleType)
+    );
   }
 
-  static clearAll() {
-    cache.clear();
-  }
+  /**
+   * -----------------------------
+   * Cache Stats
+   * -----------------------------
+   */
 
   static getStats() {
-    return {
-      entries: cache.size,
-      ttl: CACHE_TTL_MS,
-    };
+    return CacheService.getStats();
   }
 }
 

@@ -22,6 +22,7 @@ const paymentRoutes = require("./routes/payment.routes");
 const couponRoutes = require("./routes/coupon.routes");
 const fareRoutes = require("./routes/fare.routes");
 const fareAuditRoutes = require("./routes/fareAudit.routes");
+const mapsRoutes = require("./routes/maps.routes");
 
 const { apiLimiter } = require("./middleware/rateLimit.middleware");
 
@@ -83,6 +84,8 @@ app.use("/api/coupons", couponRoutes);
 app.use("/api/fare", fareRoutes);
 
 app.use("/api/fare-audit", fareAuditRoutes);
+
+app.use("/api/maps", mapsRoutes);
 
 /* ===========================
    Health Check

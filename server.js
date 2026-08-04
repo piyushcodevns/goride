@@ -3,6 +3,20 @@ require("dotenv").config();
 const logger = require("./src/utils/logger");
 
 // ===============================
+// Environment Validation
+// ===============================
+
+const requiredEnv = ["OPENROUTESERVICE_API_KEY"];
+
+requiredEnv.forEach((key) => {
+  if (!process.env[key]) {
+    logger.error(`Missing required environment variable: ${key}`);
+
+    process.exit(1);
+  }
+});
+
+// ===============================
 // Uncaught Exception
 // ===============================
 
@@ -24,9 +38,7 @@ const server = app.listen(PORT, () => {
   logger.info("=================================");
   logger.info("🚀 GoRide Backend Started");
   logger.info(`🌐 Server : http://localhost:${PORT}`);
-  logger.info(
-    `📦 Environment : ${process.env.NODE_ENV || "development"}`
-  );
+  logger.info(`📦 Environment : ${process.env.NODE_ENV || "development"}`);
   logger.info("=================================");
 });
 
