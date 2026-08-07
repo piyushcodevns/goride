@@ -7,6 +7,9 @@ const {
   ConflictError,
 } = require("../utils/AppError");
 
+const notificationService = require("./notification.service");
+const NotificationFactory = require("../factories/notification.factory");
+
 /**
  * ============================================================
  * Helpers
@@ -33,6 +36,16 @@ const getExistingCouponOrThrow = async (id) => {
   }
 
   return coupon;
+};
+
+const normalizeRideFare = (fare) => {
+  const numericFare = Number(fare);
+
+  if (!Number.isFinite(numericFare) || numericFare < 0) {
+    return 0;
+  }
+
+  return numericFare;
 };
 
 /**
@@ -210,27 +223,30 @@ const validateCouponEligibility = async (coupon, userId, rideFare) => {
 };
 
 const calculateDiscount = (coupon, rideFare) => {
+  const normalizedFare = normalizeRideFare(rideFare);
   let discount = 0;
 
   if (coupon.type === "FLAT") {
-    discount = coupon.discountValue;
+    discount = normalizeRideFare(coupon.discountValue);
   } else {
-    discount = (rideFare * coupon.discountValue) / 100;
+    discount = (normalizedFare * normalizeRideFare(coupon.discountValue)) / 100;
 
     if (coupon.maximumDiscount !== null && discount > coupon.maximumDiscount) {
       discount = coupon.maximumDiscount;
     }
   }
 
-  // Never allow discount greater than fare
-  if (discount > rideFare) {
-    discount = rideFare;
+  if (discount > normalizedFare) {
+    discount = normalizedFare;
   }
 
+  const discountAmount = Number(discount.toFixed(2));
+  const finalFare = Math.max(normalizedFare - discountAmount, 0);
+
   return {
-    originalFare: rideFare,
-    discountAmount: Number(discount.toFixed(2)),
-    finalFare: Number((rideFare - discount).toFixed(2)),
+    originalFare: normalizedFare,
+    discountAmount,
+    finalFare: Number(finalFare.toFixed(2)),
   };
 };
 
@@ -302,11 +318,15 @@ const applyCoupon = async ({ code, rideId, userId }) => {
     throw new NotFoundError("Coupon not found.");
   }
 
-  await validateCouponEligibility(coupon, userId, ride.fare);
+  const rideFare = normalizeRideFare(ride.finalFare) || normalizeRideFare(ride.estimatedFare);
 
-  const discount = calculateDiscount(coupon, ride.fare);
+  await validateCouponEligibility(coupon, userId, rideFare);
+
+  const discount = calculateDiscount(coupon, rideFare);
+  console.log("Discount Object:", discount);
 
   await couponRepository.executeTransaction(async (tx) => {
+    console.log("Final Fare Going To DB:", discount.finalFare);
     await couponRepository.updateRideCouponTx(
       tx,
       ride.id,
@@ -324,6 +344,15 @@ const applyCoupon = async ({ code, rideId, userId }) => {
 
     await couponRepository.incrementCouponUsageTx(tx, coupon.id);
   });
+
+  await notificationService.dispatchNotification(
+    NotificationFactory.createCouponAppliedNotification({
+      userId,
+      rideId: ride.id,
+      couponCode: coupon.code,
+      discountAmount: discount.discountAmount,
+    }),
+  );
 
   return {
     success: true,
@@ -367,4 +396,8 @@ module.exports = {
   validateCoupon,
   applyCoupon,
   getAvailableCoupons,
+
+  // Helpers
+  calculateDiscount,
+  normalizeRideFare,
 };

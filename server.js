@@ -27,8 +27,21 @@ process.on("uncaughtException", (error) => {
 });
 
 const app = require("./src/app");
+const { createWorker } = require("./src/workers/notification.worker");
 
 const PORT = process.env.PORT || 5000;
+
+const notificationWorkers = [];
+
+try {
+  notificationWorkers.push(createWorker('notification'));
+  notificationWorkers.push(createWorker('notification-retry'));
+  notificationWorkers.push(createWorker('notification-scheduled'));
+} catch (error) {
+  logger.warn("Notification workers could not be started.", {
+    error: error.message,
+  });
+}
 
 // ===============================
 // Start Server
@@ -58,8 +71,10 @@ process.on("unhandledRejection", (error) => {
 // Graceful Shutdown
 // ===============================
 
-process.on("SIGTERM", () => {
+process.on("SIGTERM", async () => {
   logger.info("SIGTERM received. Shutting down server...");
+
+  await Promise.allSettled(notificationWorkers.map((worker) => worker.close()));
 
   server.close(() => {
     logger.info("Server closed successfully.");

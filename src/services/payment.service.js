@@ -1,5 +1,7 @@
 const paymentRepository = require("../repositories/payment.repository");
 const rideRepository = require("../repositories/ride.repository");
+const notificationService = require("./notification.service");
+const NotificationFactory = require("../factories/notification.factory");
 
 const {
   NotFoundError,
@@ -50,14 +52,18 @@ const createPayment = async ({
     throw new ConflictError("Payment already exists for this ride.");
   }
 
-  if (ride.fare === null || ride.fare === undefined || Number(ride.fare) <= 0) {
+  if (
+    ride.finalFare === null ||
+    ride.finalFare === undefined ||
+    Number(ride.finalFare) <= 0
+  ) {
     throw new BadRequestError("Invalid ride fare. Payment cannot be created.");
   }
 
   return paymentRepository.createPayment({
     rideId,
     userId,
-    amount: ride.fare,
+    amount: ride.finalFare,
     paymentMethod,
     gateway,
   });
@@ -130,7 +136,24 @@ const updatePaymentStatus = async (paymentId, status, transactionId = null) => {
     updateData.paidAt = new Date();
   }
 
-  return paymentRepository.updatePaymentStatus(paymentId, updateData);
+  const updatedPayment = await paymentRepository.updatePaymentStatus(
+    paymentId,
+    updateData,
+  );
+
+  if (status === "SUCCESS") {
+    await notificationService.dispatchNotification(
+      NotificationFactory.createPaymentSuccessNotification(updatedPayment),
+    );
+  }
+
+  if (status === "FAILED") {
+    await notificationService.dispatchNotification(
+      NotificationFactory.createPaymentFailedNotification(updatedPayment),
+    );
+  }
+
+  return updatedPayment;
 };
 
 /**

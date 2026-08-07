@@ -278,6 +278,7 @@ router.patch(
   authorize("ADMIN"),
   validate(approveDriverSchema),
   approveDriverController
-);
+
+ );
 
 module.exports = router;

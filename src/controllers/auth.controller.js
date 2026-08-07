@@ -141,7 +141,7 @@ const sendVerificationEmailController = async (req, res) => {
 
 const verifyEmailController = async (req, res) => {
   try {
-    const result = await verifyEmail(req.body.token);
+    const result = await verifyEmail(req.body.otp);
 
     return res.status(200).json({
       success: true,

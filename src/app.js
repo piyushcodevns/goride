@@ -23,6 +23,7 @@ const couponRoutes = require("./routes/coupon.routes");
 const fareRoutes = require("./routes/fare.routes");
 const fareAuditRoutes = require("./routes/fareAudit.routes");
 const mapsRoutes = require("./routes/maps.routes");
+const notificationRoutes = require("./routes/notification.routes");
 
 const { apiLimiter } = require("./middleware/rateLimit.middleware");
 
@@ -43,7 +44,22 @@ app.use(compression());
 
 app.use(cookieParser());
 
-app.use(express.json());
+app.use((req, res, next) => {
+  const contentType = req.headers["content-type"] || "";
+
+  if (!contentType.includes("application/json")) {
+    return next();
+  }
+
+  express.json()(req, res, (err) => {
+    if (err && err.type === "entity.parse.failed") {
+      req.body = {};
+      return next();
+    }
+
+    next(err);
+  });
+});
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -86,6 +102,8 @@ app.use("/api/fare", fareRoutes);
 app.use("/api/fare-audit", fareAuditRoutes);
 
 app.use("/api/maps", mapsRoutes);
+
+app.use("/api/notifications", notificationRoutes);
 
 /* ===========================
    Health Check

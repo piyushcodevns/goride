@@ -18,6 +18,9 @@ const {
   NotFoundError,
 } = require("../utils/AppError");
 
+const notificationService = require("./notification.service");
+const NotificationFactory = require("../factories/notification.factory");
+
 /**
  * Allowed Ride Status Flow
  */
@@ -292,6 +295,16 @@ const createRide = async (rideData) => {
       tx,
     );
 
+    await notificationService.dispatchNotification(
+      NotificationFactory.createRideBookedNotification({
+        userId,
+        rideId: ride.id,
+        pickup,
+        destination,
+        status: ride.status,
+      }),
+    );
+
     return {
       ...ride,
 
@@ -407,6 +420,14 @@ const assignDriver = async (rideId, driverId) => {
 
     await updateDriverAvailability(driverId, "BUSY", tx);
 
+    await notificationService.dispatchNotification(
+      NotificationFactory.createRideAcceptedNotification({
+        userId: ride.userId,
+        rideId: ride.id,
+        driverId,
+        status: "ACCEPTED",
+      }),
+    );
     return updatedRide;
   });
 };
@@ -430,8 +451,43 @@ const updateRideStatus = async (rideId, driverId, status) => {
       tx,
     );
 
+    /**
+     * Ride Status Notifications
+     */
+
+    if (status === "ARRIVED") {
+      await notificationService.dispatchNotification(
+        NotificationFactory.createDriverArrivedNotification({
+          userId: ride.userId,
+          rideId: ride.id,
+          driverId,
+          status: "ARRIVED",
+        }),
+      );
+    }
+
+    if (status === "STARTED") {
+      await notificationService.dispatchNotification(
+        NotificationFactory.createRideStartedNotification({
+          userId: ride.userId,
+          rideId: ride.id,
+          driverId,
+          status: "STARTED",
+        }),
+      );
+    }
+
     if (status === "COMPLETED") {
       await updateDriverAvailability(driverId, "AVAILABLE", tx);
+
+      await notificationService.dispatchNotification(
+        NotificationFactory.createRideCompletedNotification({
+          userId: ride.userId,
+          rideId: ride.id,
+          driverId,
+          status: "COMPLETED",
+        }),
+      );
     }
 
     return updatedRide;
@@ -444,11 +500,23 @@ const updateRideStatus = async (rideId, driverId, status) => {
 const rejectRide = async (rideId, driverId) => {
   const ride = await getRideById(rideId);
 
+  if (!ride) {
+    throw new NotFoundError("Ride not found.");
+  }
+
   if (ride.status !== "REQUESTED") {
     throw new ConflictError("Only requested rides can be rejected.");
   }
 
   await rideRepository.createRideReject(rideId, driverId);
+
+  await notificationService.dispatchNotification(
+    NotificationFactory.createRideRejectedNotification({
+      userId: ride.userId,
+      rideId: ride.id,
+      driverId,
+    }),
+  );
 
   return {
     message: "Ride rejected successfully.",
@@ -476,6 +544,16 @@ const cancelRide = async (rideId, userId) => {
     if (ride.driverId) {
       await updateDriverAvailability(ride.driverId, "AVAILABLE", tx);
     }
+
+    await notificationService.dispatchNotification(
+      NotificationFactory.createRideCancelledNotification({
+        userId: ride.userId,
+        rideId: ride.id,
+        pickup: ride.pickup,
+        destination: ride.destination,
+        status: "CANCELLED",
+      }),
+    );
 
     return cancelledRide;
   });

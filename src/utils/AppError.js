@@ -3,9 +3,7 @@ class AppError extends Error {
     super(message);
 
     this.statusCode = statusCode;
-    this.status = `${statusCode}`.startsWith("4")
-      ? "fail"
-      : "error";
+    this.status = `${statusCode}`.startsWith("4") ? "fail" : "error";
 
     this.isOperational = true;
 
@@ -49,6 +47,42 @@ class ValidationError extends AppError {
   }
 }
 
+class NotificationNotFoundError extends NotFoundError {
+  constructor(message = "Notification not found") {
+    super(message);
+  }
+}
+
+class NotificationDeliveryFailedError extends AppError {
+  constructor(message = "Notification delivery failed") {
+    super(message, 500);
+  }
+}
+
+class InvalidNotificationChannelError extends BadRequestError {
+  constructor(message = "Invalid notification channel") {
+    super(message);
+  }
+}
+
+class InvalidNotificationTypeError extends BadRequestError {
+  constructor(message = "Invalid notification type") {
+    super(message);
+  }
+}
+
+class EmailProviderError extends AppError {
+  constructor(message = "Email provider error") {
+    super(message, 502);
+  }
+}
+
+class RetryLimitExceededError extends AppError {
+  constructor(message = "Retry limit exceeded") {
+    super(message, 500);
+  }
+}
+
 module.exports = {
   AppError,
   BadRequestError,
@@ -57,4 +91,10 @@ module.exports = {
   NotFoundError,
   ConflictError,
   ValidationError,
+  NotificationNotFoundError,
+  NotificationDeliveryFailedError,
+  InvalidNotificationChannelError,
+  InvalidNotificationTypeError,
+  EmailProviderError,
+  RetryLimitExceededError,
 };

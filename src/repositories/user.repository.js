@@ -1,5 +1,6 @@
 const prisma = require("../config/prisma");
 
+
 /**
  * Get user by ID
  */

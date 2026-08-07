@@ -14,7 +14,10 @@ const { NotFoundError, BadRequestError } = require("../utils/AppError");
 const { registerDriverSchema } = require("../validators/driver.validator");
 
 const registerDriver = async (userId, data) => {
-  const validatedData = registerDriverSchema.parse(data);
+  const validatedData = data;
+  validatedData.licenseNumber;
+  validatedData.aadharNumber;
+  validatedData.experience;
 
   const existingDriver = await getDriverByUserId(userId);
 

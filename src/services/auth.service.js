@@ -1,5 +1,25 @@
 const bcrypt = require("bcrypt");
 // const prisma = require("../config/prisma");
+const notificationService = require("./notification.service");
+const NotificationFactory = require("../factories/notification.factory");
+const { welcomeTemplate } = require("../templates/email/welcome.template");
+
+const {
+  passwordResetTemplate,
+} = require("../templates/email/password-reset.template");
+
+const {
+  emailVerificationTemplate,
+} = require("../templates/email/email-verification.template");
+
+const logger = require("../utils/logger");
+
+const {
+  BadRequestError,
+  UnauthorizedError,
+  NotFoundError,
+  ConflictError,
+} = require("../utils/AppError");
 
 const {
   findUserByEmail,
@@ -24,10 +44,12 @@ const generateOTP = require("../utils/generateOTP");
 const { generateToken } = require("../utils/jwt");
 const { sendEmail } = require("./email.service");
 
-const { 
+const {
   registerSchema,
   passwordSchema,
 } = require("../validators/auth.validator");
+
+const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS) || 12;
 
 // ================= REGISTER =================
 
@@ -37,22 +59,34 @@ const registerUser = async (userData) => {
   const emailExists = await findUserByEmail(validatedData.email);
 
   if (emailExists) {
-    throw new Error("Email already registered.");
+    throw new ConflictError("Email already registered.");
   }
 
   const phoneExists = await findUserByPhone(validatedData.phone);
 
   if (phoneExists) {
-    throw new Error("Phone number already registered.");
+    throw new ConflictError("Phone number already registered.");
   }
 
-  const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+  const hashedPassword = await bcrypt.hash(validatedData.password, SALT_ROUNDS);
 
   const user = await createUser({
     fullName: validatedData.fullName,
     email: validatedData.email,
     phone: validatedData.phone,
     password: hashedPassword,
+  });
+
+  await notificationService.dispatchNotification(
+    NotificationFactory.createWelcomeNotification(user),
+  );
+
+  await sendEmail({
+    to: user.email,
+    subject: "Welcome to GoRide",
+    html: welcomeTemplate({
+      fullName: user.fullName,
+    }),
   });
 
   const token = generateToken({
@@ -79,13 +113,13 @@ const loginUser = async ({ email, password }) => {
   const user = await findUserByEmailWithPassword(email);
 
   if (!user) {
-    throw new Error("Invalid email or password.");
+    throw new UnauthorizedError("Invalid email or password.");
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
-    throw new Error("Invalid email or password.");
+    throw new UnauthorizedError("Invalid email or password.");
   }
 
   const token = generateToken({
@@ -112,7 +146,7 @@ const forgotPassword = async ({ email }) => {
   const user = await findUserByEmail(email);
 
   if (!user) {
-    throw new Error("No account found with this email.");
+    throw new NotFoundError("No account found with this email.");
   }
 
   const resetToken = generateResetToken();
@@ -125,17 +159,15 @@ const forgotPassword = async ({ email }) => {
   await sendEmail({
     to: user.email,
     subject: "GoRide Password Reset",
-    html: `
-      <h2>Password Reset</h2>
-      <p>Your password reset token is:</p>
-      <h3>${resetToken}</h3>
-      <p>This token will expire in 15 minutes.</p>
-    `,
+    html: passwordResetTemplate({
+      token: resetToken,
+    }),
   });
 
-  console.log("=================================");
-  console.log("PASSWORD RESET TOKEN:", resetToken);
-  console.log("=================================");
+  logger.info("Password reset email sent successfully.", {
+    userId: user.id,
+    email: user.email,
+  });
 
   return {
     message: "Password reset email sent successfully.",
@@ -151,12 +183,15 @@ const resetPassword = async ({ token, password }) => {
   const user = await findUserByResetToken(hashedToken);
 
   if (!user) {
-    throw new Error("Invalid or expired reset token.");
+    throw new BadRequestError("Invalid or expired reset token.");
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-
+  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
   await updatePassword(user.id, hashedPassword);
+
+  await notificationService.dispatchNotification(
+    NotificationFactory.createPasswordResetNotification(user),
+  );
 
   return {
     message: "Password reset successfully.",
@@ -175,26 +210,30 @@ const changePassword = async (
   const user = await findUserByIdWithPassword(userId);
 
   if (!user) {
-    throw new Error("User not found.");
+    throw new NotFoundError("User not found.");
   }
 
   const isMatch = await bcrypt.compare(currentPassword, user.password);
 
   if (!isMatch) {
-    throw new Error("Current password is incorrect.");
+    throw new UnauthorizedError("Current password is incorrect.");
   }
 
   if (newPassword !== confirmPassword) {
-    throw new Error("New password and confirm password do not match.");
+    throw new BadRequestError(
+      "New password and confirm password do not match.",
+    );
   }
 
   const isSamePassword = await bcrypt.compare(newPassword, user.password);
 
   if (isSamePassword) {
-    throw new Error("New password must be different from current password.");
+    throw new BadRequestError(
+      "New password must be different from current password.",
+    );
   }
 
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
 
   await changeUserPassword(userId, hashedPassword);
 
@@ -209,11 +248,11 @@ const sendVerificationEmail = async (userId) => {
   const user = await findUserByIdWithPassword(userId);
 
   if (!user) {
-    throw new Error("User not found.");
+    throw new NotFoundError("User not found.");
   }
 
   if (user.emailVerified) {
-    throw new Error("Email is already verified.");
+    throw new ConflictError("Email is already verified.");
   }
 
   // Generate 6 digit OTP
@@ -222,30 +261,26 @@ const sendVerificationEmail = async (userId) => {
   // Hash OTP before saving in database
   const hashedToken = hashToken(verificationOTP);
 
-  const emailVerificationExpires = new Date(
-    Date.now() + 15 * 60 * 1000
-  );
+  const emailVerificationExpires = new Date(Date.now() + 15 * 60 * 1000);
 
   await saveEmailVerificationToken(
     user.id,
     hashedToken,
-    emailVerificationExpires
+    emailVerificationExpires,
   );
 
   await sendEmail({
     to: user.email,
     subject: "GoRide Email Verification",
-    html: `
-      <h2>GoRide Email Verification</h2>
-      <p>Your verification code is:</p>
-      <h1>${verificationOTP}</h1>
-      <p>This code will expire in 15 minutes.</p>
-    `,
+    html: emailVerificationTemplate({
+      otp: verificationOTP,
+    }),
   });
 
-  console.log("=================================");
-  console.log("EMAIL VERIFICATION OTP:", verificationOTP);
-  console.log("=================================");
+  logger.info("Email verification email sent successfully.", {
+    userId: user.id,
+    email: user.email,
+  });
 
   return {
     message: "Verification email sent successfully.",
@@ -260,7 +295,7 @@ const verifyEmail = async (otp) => {
   const user = await findUserByEmailVerificationToken(hashedToken);
 
   if (!user) {
-    throw new Error("Invalid or expired verification token.");
+    throw new BadRequestError("Invalid or expired verification token.");
   }
 
   await verifyUserEmail(user.id);
