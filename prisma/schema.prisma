@@ -8,12 +8,21 @@ datasource db {
 }
 
 model User {
-  id       String   @id @default(cuid())
-  fullName String
-  email    String   @unique
-  phone    String   @unique
-  password String
-  role     UserRole @default(USER)
+  id          String    @id @default(cuid())
+  fullName    String
+  email       String    @unique
+  phone       String    @unique
+  password    String
+  role        UserRole  @default(USER)
+  lastLoginAt DateTime?
+
+  failedLoginAttempts Int @default(0)
+
+  accountLockedUntil DateTime?
+
+  passwordChangedAt DateTime?
+
+  lastPasswordResetAt DateTime?
 
   gender       Gender?
   profileImage String?
@@ -37,6 +46,10 @@ model User {
   couponUsages   CouponUsage[]
   rideReviews    RideReview[]
   Notification   Notification[]
+
+  adminSessions     AdminSession[]
+  adminLoginHistory AdminLoginHistory[]
+  auditLogs         AuditLog[]
 }
 
 model Driver {
@@ -433,10 +446,99 @@ model Notification {
   @@index([createdAt])
 }
 
+model AdminSession {
+  id String @id @default(cuid())
+
+  userId String
+
+  refreshTokenHash String @unique
+
+  ipAddress String?
+
+  userAgent String?
+
+  deviceName String?
+
+  isRevoked Boolean @default(false)
+
+  expiresAt DateTime
+
+  lastActiveAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRevoked])
+  @@index([expiresAt])
+  @@index([refreshTokenHash])
+}
+
+model AdminLoginHistory {
+  id String @id @default(cuid())
+
+  userId String?
+
+  email String
+
+  ipAddress String?
+
+  userAgent String?
+
+  status LoginStatus
+
+  failureReason String?
+
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id String @id @default(cuid())
+
+  adminId String
+
+  action AuditAction
+
+  entity AuditEntity
+
+  entityId String?
+
+  metadata Json?
+
+  ipAddress String?
+
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+}
+
 enum UserRole {
   USER
   DRIVER
+
+  SUPER_ADMIN
   ADMIN
+
+  OPERATIONS_MANAGER
+  FINANCE_MANAGER
+  SUPPORT_EXECUTIVE
+  DRIVER_MANAGER
+  MARKETING_MANAGER
 }
 
 enum Gender {
@@ -526,4 +628,39 @@ enum NotificationPriority {
   NORMAL
   HIGH
   URGENT
+}
+
+enum LoginStatus {
+  SUCCESS
+  FAILED
+  LOCKED
+  LOGOUT
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  APPROVE
+  REJECT
+  SUSPEND
+  ACTIVATE
+  CANCEL
+  REFUND
+}
+
+enum AuditEntity {
+  ADMIN
+
+  USER
+  DRIVER
+  VEHICLE
+  RIDE
+  PAYMENT
+  COUPON
+  PRICING
+  NOTIFICATION
+  SETTINGS
 }

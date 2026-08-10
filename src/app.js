@@ -24,6 +24,9 @@ const fareRoutes = require("./routes/fare.routes");
 const fareAuditRoutes = require("./routes/fareAudit.routes");
 const mapsRoutes = require("./routes/maps.routes");
 const notificationRoutes = require("./routes/notification.routes");
+const adminAuthRoutes = require("./routes/admin/adminAuth.routes");
+const adminDashboardRoutes = require("./routes/admin/adminDashboard.routes.js");
+const adminUserRoutes = require("./routes/admin/adminUser.routes");
 
 const { apiLimiter } = require("./middleware/rateLimit.middleware");
 
@@ -104,6 +107,12 @@ app.use("/api/fare-audit", fareAuditRoutes);
 app.use("/api/maps", mapsRoutes);
 
 app.use("/api/notifications", notificationRoutes);
+
+app.use("/api/admin/auth", adminAuthRoutes);
+
+app.use("/api/admin/dashboard", adminDashboardRoutes);
+
+app.use("/api/admin/users", adminUserRoutes);
 
 /* ===========================
    Health Check

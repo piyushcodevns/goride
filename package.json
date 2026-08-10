@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.14",
-    "prisma": "^6.16.2"
+    "prisma": "^6.19.3"
   },
   "allowScripts": {
     "@prisma/client@6.16.2": true,
