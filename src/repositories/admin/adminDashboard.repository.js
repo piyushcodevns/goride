@@ -78,6 +78,7 @@ const getRevenueStats = () => {
 
 const getTodayStats = async () => {
   const startOfToday = new Date();
+
   startOfToday.setHours(0, 0, 0, 0);
 
   const startOfTomorrow = new Date(startOfToday);

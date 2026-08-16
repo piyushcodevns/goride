@@ -1,16 +1,10 @@
 const { ZodError } = require("zod");
 
-const validate = (schema) => async (req, res, next) => {
+const validateAdminBody = (schema) => async (req, res, next) => {
   try {
-    const parsed = await schema.parseAsync({
-      ...req.body,
-      ...req.params,
-      ...req.query,
-    });
+    const parsedBody = await schema.parseAsync(req.body);
 
-    Object.assign(req.body, parsed);
-    Object.assign(req.params, parsed);
-    Object.assign(req.query, parsed);
+    req.body = parsedBody;
 
     return next();
   } catch (error) {
@@ -25,10 +19,10 @@ const validate = (schema) => async (req, res, next) => {
       });
     }
 
-    next(error);
+    return next(error);
   }
 };
 
 module.exports = {
-  validate,
+  validateAdminBody,
 };

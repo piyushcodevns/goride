@@ -32,7 +32,29 @@ const approveDriverSchema = z.object({
   }),
 });
 
+const driverDocumentSchema = z.object({
+  body: z
+    .object({
+      documentType: z.enum([
+        "LICENSE",
+        "AADHAAR",
+        "RC",
+        "INSURANCE",
+        "PERMIT",
+        "FITNESS",
+      ]),
+
+      documentNumber: z
+        .string()
+        .trim()
+        .min(1, "Document number is required.")
+        .max(100, "Document number is too long."),
+    })
+    .strict(),
+});
+
 module.exports = {
   registerDriverSchema,
   approveDriverSchema,
+  driverDocumentSchema,
 };

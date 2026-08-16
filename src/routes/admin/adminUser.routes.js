@@ -5,8 +5,7 @@ const router = express.Router();
 const adminAuthMiddleware = require("../../middleware/admin/adminAuth.middleware");
 const {
   requirePermission,
-} = require("../../middleware/admin/requirePermission.middleware");
-
+} = require("../../middleware/admin/adminRbac.middleware");
 const {
   getAllUsers,
   getUser,
@@ -22,6 +21,63 @@ const {
 // USER LIST & DETAILS
 // =====================================================
 
+/**
+ * @swagger
+ * /api/admin/users:
+ *   get:
+ *     summary: Get all users
+ *     description: Get paginated users with search and filter support.
+ *     tags:
+ *       - Admin User Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 10
+ *         description: Number of users per page.
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search users by supported user fields.
+ *       - in: query
+ *         name: isActive
+ *         schema:
+ *           type: boolean
+ *         description: Filter users by active status.
+ *       - in: query
+ *         name: isVerified
+ *         schema:
+ *           type: boolean
+ *         description: Filter users by verification status.
+ *       - in: query
+ *         name: emailVerified
+ *         schema:
+ *           type: boolean
+ *         description: Filter users by email verification status.
+ *     responses:
+ *       200:
+ *         description: Users fetched successfully.
+ *       401:
+ *         description: Unauthorized. Missing or invalid admin token.
+ *       403:
+ *         description: Forbidden. User view permission required.
+ *       400:
+ *         description: Invalid query parameters.
+ *       500:
+ *         description: Internal server error.
+ */
 router.get(
   "/",
   adminAuthMiddleware,
@@ -29,6 +85,38 @@ router.get(
   getAllUsers,
 );
 
+/**
+ * @swagger
+ * /api/admin/users/{id}:
+ *   get:
+ *     summary: Get user details
+ *     description: Get detailed information about a specific user.
+ *     tags:
+ *       - Admin User Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID.
+ *         example: clxxxxxxxxxxxxx
+ *     responses:
+ *       200:
+ *         description: User details fetched successfully.
+ *       400:
+ *         description: Invalid user ID.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. User view permission required.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal server error.
+ */
 router.get(
   "/:id",
   adminAuthMiddleware,
@@ -40,6 +128,49 @@ router.get(
 // USER HISTORY
 // =====================================================
 
+/**
+ * @swagger
+ * /api/admin/users/{id}/rides:
+ *   get:
+ *     summary: Get user ride history
+ *     description: Get paginated ride history of a specific user.
+ *     tags:
+ *       - Admin User Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: User ride history fetched successfully.
+ *       400:
+ *         description: Invalid user ID or pagination parameters.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. User view permission required.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal server error.
+ */
 router.get(
   "/:id/rides",
   adminAuthMiddleware,
@@ -47,6 +178,49 @@ router.get(
   getRideHistory,
 );
 
+/**
+ * @swagger
+ * /api/admin/users/{id}/payments:
+ *   get:
+ *     summary: Get user payment history
+ *     description: Get paginated payment history of a specific user.
+ *     tags:
+ *       - Admin User Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: User payment history fetched successfully.
+ *       400:
+ *         description: Invalid user ID or pagination parameters.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. User view permission required.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal server error.
+ */
 router.get(
   "/:id/payments",
   adminAuthMiddleware,
@@ -54,6 +228,49 @@ router.get(
   getPaymentHistory,
 );
 
+/**
+ * @swagger
+ * /api/admin/users/{id}/coupons:
+ *   get:
+ *     summary: Get user coupon history
+ *     description: Get paginated coupon usage history of a specific user.
+ *     tags:
+ *       - Admin User Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: User coupon history fetched successfully.
+ *       400:
+ *         description: Invalid user ID or pagination parameters.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. User view permission required.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal server error.
+ */
 router.get(
   "/:id/coupons",
   adminAuthMiddleware,
@@ -61,6 +278,49 @@ router.get(
   getCouponHistory,
 );
 
+/**
+ * @swagger
+ * /api/admin/users/{id}/notifications:
+ *   get:
+ *     summary: Get user notifications
+ *     description: Get paginated notifications for a specific user.
+ *     tags:
+ *       - Admin User Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: User notifications fetched successfully.
+ *       400:
+ *         description: Invalid user ID or pagination parameters.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. User view permission required.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal server error.
+ */
 router.get(
   "/:id/notifications",
   adminAuthMiddleware,
@@ -72,6 +332,39 @@ router.get(
 // USER STATUS MANAGEMENT
 // =====================================================
 
+/**
+ * @swagger
+ * /api/admin/users/{id}/activate:
+ *   patch:
+ *     summary: Activate user
+ *     description: Activate a suspended or inactive user account.
+ *     tags:
+ *       - Admin User Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID.
+ *     responses:
+ *       200:
+ *         description: User activated successfully.
+ *       400:
+ *         description: Invalid user ID or invalid user state.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. User management permission required.
+ *       404:
+ *         description: User not found.
+ *       409:
+ *         description: User cannot be activated in the current state.
+ *       500:
+ *         description: Internal server error.
+ */
 router.patch(
   "/:id/activate",
   adminAuthMiddleware,
@@ -79,6 +372,39 @@ router.patch(
   activate,
 );
 
+/**
+ * @swagger
+ * /api/admin/users/{id}/suspend:
+ *   patch:
+ *     summary: Suspend user
+ *     description: Suspend a user account.
+ *     tags:
+ *       - Admin User Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID.
+ *     responses:
+ *       200:
+ *         description: User suspended successfully.
+ *       400:
+ *         description: Invalid user ID or invalid user state.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. User management permission required.
+ *       404:
+ *         description: User not found.
+ *       409:
+ *         description: User cannot be suspended in the current state.
+ *       500:
+ *         description: Internal server error.
+ */
 router.patch(
   "/:id/suspend",
   adminAuthMiddleware,
@@ -87,3 +413,4 @@ router.patch(
 );
 
 module.exports = router;
+

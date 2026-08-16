@@ -7,15 +7,19 @@ const {
   updateProfile,
   updateAvailabilityController,
   approveDriverController,
+  uploadDocument,
+  getDocuments,
 } = require("../controllers/driver.controller");
 
 const { authenticate } = require("../middleware/auth.middleware");
 const { authorize } = require("../middleware/authorize.middleware");
 const { validate } = require("../middleware/validate.middleware");
+const upload = require("../middleware/upload.middleware");
 
 const {
   registerDriverSchema,
   approveDriverSchema,
+  driverDocumentSchema,
 } = require("../validators/driver.validator");
 /**
  * @swagger
@@ -257,7 +261,7 @@ router.post(
   "/register",
   authenticate,
   validate(registerDriverSchema),
-  register
+  register,
 );
 
 // Driver Profile
@@ -269,6 +273,16 @@ router.patch("/profile", authenticate, updateProfile);
 // Update Driver Availability
 router.patch("/availability", authenticate, updateAvailabilityController);
 
+router.post(
+  "/documents",
+  authenticate,
+  upload.single("document"),
+  validate(driverDocumentSchema),
+  uploadDocument,
+);
+
+router.get("/documents", authenticate, getDocuments);
+
 /**
  * Approve / Reject Driver (Admin Only)
  */
@@ -277,8 +291,7 @@ router.patch(
   authenticate,
   authorize("ADMIN"),
   validate(approveDriverSchema),
-  approveDriverController
-
- );
+  approveDriverController,
+);
 
 module.exports = router;

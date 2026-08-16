@@ -739,7 +739,7 @@ const swaggerOptions = {
     },
   },
 
-  apis: ["./src/routes/*.js"],
+  apis: ["./src/routes/**/*.js"],
 };
 
 module.exports = swaggerJsdoc(swaggerOptions);

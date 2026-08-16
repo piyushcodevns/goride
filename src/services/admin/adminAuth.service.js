@@ -4,8 +4,10 @@ const crypto = require("crypto");
 const {
   findAdminByEmail,
   createAdminSession,
-  findActiveAdminSessions,
+  findActiveAdminSessionById,
   revokeSession,
+  revokeSessionSafely,
+  updateSessionLastActive,
   revokeAllAdminSessions,
   updateLastLogin,
   resetFailedLoginAttempts,
@@ -26,28 +28,45 @@ const {
   BadRequestError,
   NotFoundError,
 } = require("../../utils/AppError");
+
 const { generateToken } = require("../../utils/jwt");
 const hashToken = require("../../utils/hashToken");
+
 const { sendEmail } = require("../email.service");
+
 const {
   passwordResetTemplate,
 } = require("../../templates/email/password-reset.template");
+
 const logger = require("../../utils/logger");
 const prisma = require("../../config/prisma");
 const ADMIN_ROLES = require("../../constants/adminRoles");
 
 const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS) || 12;
+
 const MAX_FAILED_LOGIN_ATTEMPTS = 5;
 const ACCOUNT_LOCK_MINUTES = 30;
+const ADMIN_SESSION_DAYS = 7;
+const PASSWORD_RESET_MINUTES = 15;
 
-const generateRefreshToken = () => {
+// =========================
+// GENERATE REFRESH SECRET
+// =========================
+
+const generateRefreshSecret = () => {
   return crypto.randomBytes(64).toString("hex");
 };
+
+// =========================
+// CREATE ADMIN
+// =========================
 
 const createAdmin = async ({ fullName, email, phone, password }) => {
   const normalizedEmail = String(email || "")
     .trim()
     .toLowerCase();
+
+  const normalizedPhone = String(phone || "").trim();
 
   const existingUser = await prisma.user.findFirst({
     where: {
@@ -56,7 +75,7 @@ const createAdmin = async ({ fullName, email, phone, password }) => {
           email: normalizedEmail,
         },
         {
-          phone: phone.trim(),
+          phone: normalizedPhone,
         },
       ],
     },
@@ -64,9 +83,7 @@ const createAdmin = async ({ fullName, email, phone, password }) => {
 
   if (existingUser) {
     if (existingUser.email === normalizedEmail) {
-      throw new ConflictError(
-        "An account with this email already exists.",
-      );
+      throw new ConflictError("An account with this email already exists.");
     }
 
     throw new ConflictError(
@@ -80,7 +97,7 @@ const createAdmin = async ({ fullName, email, phone, password }) => {
     data: {
       fullName: fullName.trim(),
       email: normalizedEmail,
-      phone: phone.trim(),
+      phone: normalizedPhone,
       password: hashedPassword,
       role: "ADMIN",
       isActive: true,
@@ -103,12 +120,20 @@ const createAdmin = async ({ fullName, email, phone, password }) => {
   };
 };
 
+// =========================
+// LOGIN ADMIN
+// =========================
+
 const loginAdmin = async ({ email, password, ipAddress, userAgent }) => {
   const normalizedEmail = String(email || "")
     .trim()
     .toLowerCase();
 
   const admin = await findAdminByEmail(normalizedEmail);
+
+  // =========================
+  // ADMIN NOT FOUND
+  // =========================
 
   if (!admin) {
     await createLoginHistory({
@@ -127,6 +152,10 @@ const loginAdmin = async ({ email, password, ipAddress, userAgent }) => {
     throw new UnauthorizedError("Invalid email or password.");
   }
 
+  // =========================
+  // ACCOUNT DISABLED
+  // =========================
+
   if (!admin.isActive) {
     await createLoginHistory({
       userId: admin.id,
@@ -139,6 +168,10 @@ const loginAdmin = async ({ email, password, ipAddress, userAgent }) => {
 
     throw new ForbiddenError("Admin account is disabled.");
   }
+
+  // =========================
+  // ACCOUNT LOCKED
+  // =========================
 
   if (
     admin.accountLockedUntil &&
@@ -158,16 +191,26 @@ const loginAdmin = async ({ email, password, ipAddress, userAgent }) => {
     );
   }
 
+  // =========================
+  // VERIFY PASSWORD
+  // =========================
+
   const isPasswordValid = await bcrypt.compare(password, admin.password);
 
   if (!isPasswordValid) {
     const updatedAdmin = await incrementFailedLogin(admin.id);
+
     const failedAttempts = updatedAdmin.failedLoginAttempts;
+
+    // =========================
+    // LOCK ACCOUNT
+    // =========================
 
     if (failedAttempts >= MAX_FAILED_LOGIN_ATTEMPTS) {
       const lockUntil = new Date(Date.now() + ACCOUNT_LOCK_MINUTES * 60 * 1000);
 
       await lockAccount(admin.id, lockUntil);
+
       await createLoginHistory({
         userId: admin.id,
         email: admin.email,
@@ -188,6 +231,10 @@ const loginAdmin = async ({ email, password, ipAddress, userAgent }) => {
       );
     }
 
+    // =========================
+    // INVALID PASSWORD
+    // =========================
+
     await createLoginHistory({
       userId: admin.id,
       email: admin.email,
@@ -207,14 +254,13 @@ const loginAdmin = async ({ email, password, ipAddress, userAgent }) => {
     throw new UnauthorizedError("Invalid email or password.");
   }
 
-  const accessToken = generateToken({
-    id: admin.id,
-    email: admin.email,
-    role: admin.role,
-  });
+  // =========================
+  // SUCCESSFUL LOGIN
+  // =========================
 
-  const refreshToken = generateRefreshToken();
-  const refreshTokenHash = await bcrypt.hash(refreshToken, SALT_ROUNDS);
+  const refreshSecret = generateRefreshSecret();
+
+  const refreshTokenHash = await bcrypt.hash(refreshSecret, SALT_ROUNDS);
 
   await resetFailedLoginAttempts(admin.id);
   await updateLastLogin(admin.id);
@@ -224,8 +270,31 @@ const loginAdmin = async ({ email, password, ipAddress, userAgent }) => {
     refreshTokenHash,
     ipAddress,
     userAgent,
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    expiresAt: new Date(Date.now() + ADMIN_SESSION_DAYS * 24 * 60 * 60 * 1000),
   });
+
+  // Refresh token contains session ID.
+  //
+  // Format:
+  // sessionId.refreshSecret
+  //
+  // This allows O(1) session lookup.
+  const refreshToken = `${session.id}.${refreshSecret}`;
+
+  // =========================
+  // ACCESS TOKEN
+  // =========================
+
+  const accessToken = generateToken({
+    id: admin.id,
+    email: admin.email,
+    role: admin.role,
+    sessionId: session.id,
+  });
+
+  // =========================
+  // LOGIN HISTORY
+  // =========================
 
   await createLoginHistory({
     userId: admin.id,
@@ -234,6 +303,10 @@ const loginAdmin = async ({ email, password, ipAddress, userAgent }) => {
     userAgent,
     status: "SUCCESS",
   });
+
+  // =========================
+  // AUDIT LOG
+  // =========================
 
   await createAuditLog({
     adminId: admin.id,
@@ -273,31 +346,58 @@ const loginAdmin = async ({ email, password, ipAddress, userAgent }) => {
 // REFRESH ADMIN TOKEN
 // =========================
 
-const refreshAdminToken = async ({ refreshToken }) => {
+const refreshAdminToken = async ({ refreshToken, ipAddress, userAgent }) => {
   if (!refreshToken) {
     throw new UnauthorizedError("Refresh token is required.");
   }
 
-  const sessions = await findActiveAdminSessions();
-  logger.info("Refresh token request received.", {
-    activeSessions: sessions.length,
-  });
+  // Expected format:
+  //
+  // sessionId.refreshSecret
+  //
 
-  let matchedSession = null;
+  const separatorIndex = refreshToken.indexOf(".");
 
-  for (const session of sessions) {
-    const isMatch = await bcrypt.compare(
-      refreshToken,
-      session.refreshTokenHash,
-    );
-
-    if (isMatch) {
-      matchedSession = session;
-      break;
-    }
+  if (separatorIndex <= 0) {
+    throw new UnauthorizedError("Invalid or expired refresh token.");
   }
 
+  const sessionId = refreshToken.slice(0, separatorIndex);
+
+  const refreshSecret = refreshToken.slice(separatorIndex + 1);
+
+  if (!sessionId || !refreshSecret) {
+    throw new UnauthorizedError("Invalid or expired refresh token.");
+  }
+
+  logger.info("Refresh token request received.", {
+    sessionId,
+  });
+
+  // =========================
+  // FIND SESSION
+  // =========================
+  //
+  // O(1) lookup.
+  // We no longer load every active session.
+  //
+
+  const matchedSession = await findActiveAdminSessionById(sessionId);
+
   if (!matchedSession) {
+    throw new UnauthorizedError("Invalid or expired refresh token.");
+  }
+
+  // =========================
+  // VERIFY REFRESH SECRET
+  // =========================
+
+  const isMatch = await bcrypt.compare(
+    refreshSecret,
+    matchedSession.refreshTokenHash,
+  );
+
+  if (!isMatch) {
     throw new UnauthorizedError("Invalid or expired refresh token.");
   }
 
@@ -307,13 +407,25 @@ const refreshAdminToken = async ({ refreshToken }) => {
     throw new UnauthorizedError("Admin account not found.");
   }
 
+  // =========================
+  // VERIFY ADMIN ROLE
+  // =========================
+
   if (!Object.values(ADMIN_ROLES).includes(admin.role)) {
     throw new ForbiddenError("Unauthorized admin role.");
   }
 
+  // =========================
+  // VERIFY ACCOUNT STATUS
+  // =========================
+
   if (!admin.isActive) {
     throw new ForbiddenError("Admin account is disabled.");
   }
+
+  // =========================
+  // VERIFY ACCOUNT LOCK
+  // =========================
 
   if (
     admin.accountLockedUntil &&
@@ -324,15 +436,92 @@ const refreshAdminToken = async ({ refreshToken }) => {
     );
   }
 
-  const accessToken = generateToken({
+  // =========================
+  // GENERATE NEW REFRESH SECRET
+  // =========================
+
+  const newRefreshSecret = generateRefreshSecret();
+
+  const newRefreshTokenHash = await bcrypt.hash(newRefreshSecret, SALT_ROUNDS);
+
+  // =========================
+  // REVOKE OLD SESSION
+  // =========================
+  //
+  // updateMany + count check prevents
+  // concurrent refresh-token replay.
+  //
+  // Only one request can successfully
+  // rotate the current session.
+  //
+
+  const revokedSession = await revokeSessionSafely(matchedSession.id);
+
+  if (revokedSession.count !== 1) {
+    throw new UnauthorizedError("Admin session is no longer active.");
+  }
+
+  // =========================
+  // CREATE NEW SESSION
+  // =========================
+
+  const newSession = await createAdminSession({
+    userId: admin.id,
+    refreshTokenHash: newRefreshTokenHash,
+    ipAddress,
+    userAgent,
+    deviceName: matchedSession.deviceName,
+    expiresAt: new Date(Date.now() + ADMIN_SESSION_DAYS * 24 * 60 * 60 * 1000),
+  });
+
+  await updateSessionLastActive(newSession.id);
+
+  // =========================
+  // GENERATE NEW ACCESS TOKEN
+  // =========================
+
+  const newAccessToken = generateToken({
     id: admin.id,
     email: admin.email,
     role: admin.role,
+    sessionId: newSession.id,
+  });
+
+  // =========================
+  // CREATE NEW REFRESH TOKEN
+  // =========================
+
+  const newRefreshToken = `${newSession.id}.${newRefreshSecret}`;
+
+  // =========================
+  // AUDIT LOG
+  // =========================
+
+  await createAuditLog({
+    adminId: admin.id,
+    action: "LOGIN",
+    entity: "ADMIN",
+    entityId: admin.id,
+    metadata: {
+      action: "REFRESH_TOKEN_ROTATED",
+      oldSessionId: matchedSession.id,
+      newSessionId: newSession.id,
+    },
+    ipAddress,
+    userAgent,
+  });
+
+  logger.info("Admin refresh token rotated successfully.", {
+    adminId: admin.id,
+    oldSessionId: matchedSession.id,
+    newSessionId: newSession.id,
+    ipAddress,
   });
 
   return {
-    accessToken,
-    sessionId: matchedSession.id,
+    accessToken: newAccessToken,
+    refreshToken: newRefreshToken,
+    sessionId: newSession.id,
   };
 };
 
@@ -349,17 +538,25 @@ const logoutAdmin = async ({ sessionId, adminId, ipAddress, userAgent }) => {
     throw new UnauthorizedError("Admin authentication required.");
   }
 
-  const sessions = await findActiveAdminSessions();
-
-  const session = sessions.find(
-    (item) => item.id === sessionId && item.userId === adminId,
-  );
+  // Find only the active, non-expired session.
+  const session = await findActiveAdminSessionById(sessionId);
 
   if (!session) {
     throw new UnauthorizedError("Invalid or inactive admin session.");
   }
 
-  await revokeSession(session.id);
+  // Prevent an admin from revoking another admin's session.
+  if (session.userId !== adminId) {
+    throw new UnauthorizedError("Invalid or inactive admin session.");
+  }
+
+  // Revoke the session safely.
+  const revokedSession = await revokeSessionSafely(session.id);
+
+  // Protect against race conditions / double logout.
+  if (revokedSession.count !== 1) {
+    throw new UnauthorizedError("Admin session is no longer active.");
+  }
 
   await createLoginHistory({
     userId: adminId,
@@ -391,6 +588,10 @@ const logoutAdmin = async ({ sessionId, adminId, ipAddress, userAgent }) => {
     sessionId: session.id,
   };
 };
+
+// =========================
+// CHANGE ADMIN PASSWORD
+// =========================
 
 const changeAdminPassword = async (
   adminId,
@@ -431,7 +632,9 @@ const changeAdminPassword = async (
   const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
 
   await updateAdminPassword(adminId, hashedPassword);
-  
+
+  // Password change invalidates
+  // all existing admin sessions.
   await revokeAllAdminSessions(adminId);
 
   return {
@@ -439,20 +642,26 @@ const changeAdminPassword = async (
   };
 };
 
+// =========================
+// FORGOT ADMIN PASSWORD
+// =========================
+
 const forgotAdminPassword = async (email) => {
   const normalizedEmail = String(email || "")
     .trim()
     .toLowerCase();
- 
+
   const admin = await findAdminByEmail(normalizedEmail);
- 
+
   // Do not reveal whether an admin account exists.
   if (admin) {
     try {
       const resetToken = crypto.randomBytes(32).toString("hex");
+
       const hashedToken = hashToken(resetToken);
+
       const passwordResetExpires = new Date(
-        Date.now() + 15 * 60 * 1000, // 15 minutes
+        Date.now() + PASSWORD_RESET_MINUTES * 60 * 1000,
       );
 
       await saveAdminPasswordResetToken(
@@ -468,7 +677,7 @@ const forgotAdminPassword = async (email) => {
           token: resetToken,
         }),
       });
- 
+
       logger.info("Admin password reset email sent.", {
         adminId: admin.id,
         email: admin.email,
@@ -478,16 +687,21 @@ const forgotAdminPassword = async (email) => {
         error,
         adminId: admin.id,
       });
-      // Do not re-throw; we still want to return the generic message.
+
+      // Keep generic response.
     }
   }
- 
-  // Always return the same generic message to prevent email enumeration.
+
+  // Same response whether account exists or not.
   return {
     message:
       "If an admin account exists with this email, a password reset link has been sent.",
   };
 };
+
+// =========================
+// RESET ADMIN PASSWORD
+// =========================
 
 const resetAdminPasswordService = async (
   resetToken,
@@ -505,15 +719,10 @@ const resetAdminPasswordService = async (
   const admin = await findAdminByPasswordResetToken(hashedToken);
 
   if (!admin) {
-    throw new BadRequestError(
-      "Invalid or expired password reset token.",
-    );
+    throw new BadRequestError("Invalid or expired password reset token.");
   }
 
-  const isSamePassword = await bcrypt.compare(
-    newPassword,
-    admin.password,
-  );
+  const isSamePassword = await bcrypt.compare(newPassword, admin.password);
 
   if (isSamePassword) {
     throw new BadRequestError(
@@ -521,19 +730,22 @@ const resetAdminPasswordService = async (
     );
   }
 
-  const hashedPassword = await bcrypt.hash(
-    newPassword,
-    SALT_ROUNDS,
-  );
+  const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
 
   await resetAdminPassword(admin.id, hashedPassword);
-  
+
+  // Password reset invalidates
+  // all existing admin sessions.
   await revokeAllAdminSessions(admin.id);
 
   return {
     message: "Admin password reset successfully.",
   };
 };
+
+// =========================
+// EXPORTS
+// =========================
 
 module.exports = {
   loginAdmin,

@@ -10,11 +10,16 @@ const logger = createLogger({
     format.errors({
       stack: true,
     }),
-    format.printf(({ level, message, timestamp, stack }) => {
+    format.printf(({ level, message, timestamp, stack, ...meta }) => {
+      const metadata =
+        Object.keys(meta).length > 0
+          ? ` ${JSON.stringify(meta)}`
+          : "";
+
       return `${timestamp} [${level.toUpperCase()}] ${
         stack || message
-      }`;
-    })
+      }${metadata}`;
+    }),
   ),
 
   transports: [

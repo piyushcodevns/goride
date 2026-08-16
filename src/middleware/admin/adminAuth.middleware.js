@@ -1,10 +1,11 @@
 const { verifyToken } = require("../../utils/jwt");
 const prisma = require("../../config/prisma");
 
+const { UnauthorizedError, ForbiddenError } = require("../../utils/AppError");
+
 const {
-  UnauthorizedError,
-  ForbiddenError,
-} = require("../../utils/AppError");
+  findActiveAdminSessionById,
+} = require("../../repositories/admin/adminAuth.repository");
 
 const ADMIN_ROLES = require("../../constants/adminRoles");
 
@@ -13,23 +14,17 @@ const adminAuthMiddleware = async (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-      throw new UnauthorizedError(
-        "Authorization header is required.",
-      );
+      throw new UnauthorizedError("Authorization header is required.");
     }
 
     if (!authHeader.startsWith("Bearer ")) {
-      throw new UnauthorizedError(
-        "Invalid authorization format.",
-      );
+      throw new UnauthorizedError("Invalid authorization format.");
     }
 
     const token = authHeader.slice(7).trim();
 
     if (!token) {
-      throw new UnauthorizedError(
-        "Access token is required.",
-      );
+      throw new UnauthorizedError("Access token is required.");
     }
 
     let decoded;
@@ -37,17 +32,25 @@ const adminAuthMiddleware = async (req, res, next) => {
     try {
       decoded = verifyToken(token);
     } catch (error) {
+      throw new UnauthorizedError("Invalid or expired access token.");
+    }
+
+    if (!decoded?.id || !decoded?.sessionId) {
+      throw new UnauthorizedError("Invalid access token payload.");
+    }
+
+    const session = await findActiveAdminSessionById(decoded.sessionId);
+
+    if (!session) {
       throw new UnauthorizedError(
-        "Invalid or expired access token.",
+        "Admin session is invalid, expired, or revoked.",
       );
     }
 
-    if (!decoded?.id) {
-      throw new UnauthorizedError(
-        "Invalid access token payload.",
-      );
+    if (session.userId !== decoded.id) {
+      throw new UnauthorizedError("Invalid admin session.");
     }
-
+    
     const admin = await prisma.user.findUnique({
       where: {
         id: decoded.id,
@@ -66,30 +69,22 @@ const adminAuthMiddleware = async (req, res, next) => {
     });
 
     if (!admin) {
-      throw new UnauthorizedError(
-        "Admin account not found.",
-      );
+      throw new UnauthorizedError("Admin account not found.");
     }
 
     if (!Object.values(ADMIN_ROLES).includes(admin.role)) {
-      throw new ForbiddenError(
-        "Admin access is required.",
-      );
+      throw new ForbiddenError("Admin access is required.");
     }
 
     if (!admin.isActive) {
-      throw new ForbiddenError(
-        "Admin account is inactive.",
-      );
+      throw new ForbiddenError("Admin account is inactive.");
     }
 
     if (
       admin.accountLockedUntil &&
       new Date(admin.accountLockedUntil) > new Date()
     ) {
-      throw new ForbiddenError(
-        "Admin account is temporarily locked.",
-      );
+      throw new ForbiddenError("Admin account is temporarily locked.");
     }
 
     req.admin = admin;

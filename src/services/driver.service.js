@@ -7,9 +7,13 @@ const {
   updateDriver,
   updateDriverAvailability,
   updateDriverStatus,
+  createDriverDocument,
+  getDriverDocumentByType,
+  getDriverDocuments: getDocumentsFromDB,
 } = require("../repositories/driver.repository");
 
 const { NotFoundError, BadRequestError } = require("../utils/AppError");
+const { uploadImage } = require("./upload.service");
 
 const { registerDriverSchema } = require("../validators/driver.validator");
 
@@ -107,10 +111,53 @@ const approveDriver = async (driverId, status) => {
   return updateDriverStatus(driverId, status);
 };
 
+const uploadDriverDocument = async (driverId, data, file) => {
+  const driver = await getDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  if (!file) {
+    throw new BadRequestError("Please upload a document.");
+  }
+
+  const existingDocument = await getDriverDocumentByType(
+    driverId,
+    data.documentType,
+  );
+
+  if (existingDocument) {
+    throw new BadRequestError(`${data.documentType} document already exists.`);
+  }
+
+  const result = await uploadImage(file, "goride/driver-documents");
+
+  return await createDriverDocument({
+    driverId,
+    documentType: data.documentType,
+    documentNumber: data.documentNumber,
+    fileUrl: result.secure_url,
+    filePublicId: result.public_id,
+  });
+};
+
+const getDriverDocuments = async (userId) => {
+  const driver = await getDriverByUserId(userId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver profile not found.");
+  }
+
+  return await getDocumentsFromDB(driver.id);
+};
+
 module.exports = {
   registerDriver,
   getDriverProfile,
   updateDriverProfile,
   updateAvailability,
   approveDriver,
+  uploadDriverDocument,
+  getDriverDocuments,
 };

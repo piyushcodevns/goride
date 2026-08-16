@@ -158,6 +158,34 @@ const updateDriverStatus = async (driverId, status) => {
   });
 };
 
+const createDriverDocument = async (data) => {
+  return prisma.driverDocument.create({
+    data,
+  });
+};
+
+const getDriverDocuments = async (driverId) => {
+  return prisma.driverDocument.findMany({
+    where: {
+      driverId,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
+};
+
+const getDriverDocumentByType = async (driverId, documentType) => {
+  return prisma.driverDocument.findUnique({
+    where: {
+      driverId_documentType: {
+        driverId,
+        documentType,
+      },
+    },
+  });
+};
+
 module.exports = {
   createDriver,
   getDriverByUserId,
@@ -167,4 +195,8 @@ module.exports = {
   updateDriver,
   updateDriverAvailability,
   updateDriverStatus,
+
+  createDriverDocument,
+  getDriverDocuments,
+  getDriverDocumentByType,
 };

@@ -79,6 +79,8 @@ const refreshToken = async (req, res) => {
   try {
     const result = await refreshAdminToken({
       refreshToken: req.body.refreshToken,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
     });
 
     return res.status(200).json({

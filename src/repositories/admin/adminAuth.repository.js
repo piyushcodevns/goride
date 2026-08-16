@@ -39,6 +39,24 @@ const createAdminSession = async (data) => {
 };
 
 // =========================
+// Find Active Admin Session By ID
+// =========================
+const findActiveAdminSessionById = async (sessionId) => {
+  return prisma.adminSession.findFirst({
+    where: {
+      id: sessionId,
+      isRevoked: false,
+      expiresAt: {
+        gt: new Date(),
+      },
+    },
+    include: {
+      user: true,
+    },
+  });
+};
+
+// =========================
 // Find Active Admin Sessions
 // =========================
 const findActiveAdminSessions = async () => {
@@ -68,6 +86,38 @@ const revokeSession = async (sessionId) => {
     },
     data: {
       isRevoked: true,
+    },
+  });
+};
+
+// =========================
+// Revoke Session Safely
+// =========================
+const revokeSessionSafely = async (sessionId) => {
+  return prisma.adminSession.updateMany({
+    where: {
+      id: sessionId,
+      isRevoked: false,
+      expiresAt: {
+        gt: new Date(),
+      },
+    },
+    data: {
+      isRevoked: true,
+    },
+  });
+};
+
+// =========================
+// Update Session Last Active
+// =========================
+const updateSessionLastActive = async (sessionId) => {
+  return prisma.adminSession.update({
+    where: {
+      id: sessionId,
+    },
+    data: {
+      lastActiveAt: new Date(),
     },
   });
 };
@@ -201,10 +251,7 @@ const findAdminByPasswordResetToken = async (passwordResetToken) => {
   });
 };
 
-const resetAdminPassword = async (
-  adminId,
-  hashedPassword,
-) => {
+const resetAdminPassword = async (adminId, hashedPassword) => {
   return prisma.user.update({
     where: { id: adminId },
     data: {
@@ -222,10 +269,13 @@ module.exports = {
   findAdminById,
 
   createAdminSession,
+  findActiveAdminSessionById,
   findActiveAdminSessions,
   revokeSession,
+  revokeSessionSafely,
   revokeAllAdminSessions,
   revokeAllSessions: revokeAllAdminSessions,
+  updateSessionLastActive,
 
   updateLastLogin,
   resetFailedLoginAttempts,

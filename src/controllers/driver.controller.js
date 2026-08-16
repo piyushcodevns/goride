@@ -4,6 +4,8 @@ const {
   updateDriverProfile,
   updateAvailability,
   approveDriver,
+  uploadDriverDocument,
+  getDriverDocuments,
 } = require("../services/driver.service");
 
 const register = async (req, res, next) => {
@@ -76,10 +78,46 @@ const approveDriverController = async (req, res, next) => {
   }
 };
 
+const uploadDocument = async (req, res, next) => {
+  try {
+    const driver = await getDriverProfile(req.user.id);
+
+    const document = await uploadDriverDocument(
+      driver.id,
+      req.body,
+      req.file,
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "Driver document uploaded successfully.",
+      data: document,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getDocuments = async (req, res, next) => {
+  try {
+    const documents = await getDriverDocuments(req.user.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver documents fetched successfully.",
+      data: documents,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   getProfile,
   updateProfile,
   updateAvailabilityController,
   approveDriverController,
+  uploadDocument,
+  getDocuments,
 };

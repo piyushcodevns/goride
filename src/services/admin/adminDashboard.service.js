@@ -131,7 +131,7 @@ const getDashboardData = async () => {
   // =========================
 
   const rideGraph = {
-    labels: rideGraphResult.map((item) => item.date),
+    labels: rideGraphResult.map((item) => item.date.toISOString().slice(0, 10)),
     datasets: [
       {
         label: "Rides",
@@ -141,7 +141,9 @@ const getDashboardData = async () => {
   };
 
   const userRegistrationGraph = {
-    labels: userRegistrationGraphResult.map((item) => item.date),
+    labels: userRegistrationGraphResult.map((item) =>
+      item.date.toISOString().slice(0, 10),
+    ),
     datasets: [
       {
         label: "User Registrations",
@@ -151,10 +153,12 @@ const getDashboardData = async () => {
   };
 
   const revenueGraph = {
-    labels: revenueGraphResult.map((item) => item.date),
+    labels: revenueGraphResult.map((item) =>
+      item.date.toISOString().slice(0, 10),
+    ),
     datasets: [
       {
-        label: "Revenue",
+        label: "Revenue", 
         data: revenueGraphResult.map((item) => item.revenue.toString()),
       },
     ],
