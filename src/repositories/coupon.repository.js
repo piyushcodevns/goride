@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const { ConflictError } = require("../utils/AppError");
 
 /**
  * ============================================================
@@ -22,25 +23,84 @@ const createCoupon = (data) => {
   });
 };
 
-const getCouponById = (id) => {
-  return prisma.coupon.findUnique({
+const getCouponById = (id, db = prisma) => {
+  return db.coupon.findUnique({
     where: { id },
   });
 };
 
-const getCouponByCode = (code) => {
-  return prisma.coupon.findUnique({
+const getCouponByCode = (code, db = prisma) => {
+  return db.coupon.findUnique({
     where: {
       code,
     },
   });
 };
 
-const getAllCoupons = () => {
-  return prisma.coupon.findMany({
-    orderBy: {
-      createdAt: "desc",
+const getAllCoupons = async (queryParams = {}) => {
+  const { page, limit, search, type, isActive } = queryParams;
+
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
+  const skip = (pageNum - 1) * limitNum;
+
+  const where = {};
+
+  if (search && typeof search === "string" && search.trim() !== "") {
+    const searchTerm = search.trim();
+    where.OR = [
+      { code: { contains: searchTerm, mode: "insensitive" } },
+      { description: { contains: searchTerm, mode: "insensitive" } },
+    ];
+  }
+
+  if (type) {
+    where.type = type;
+  }
+
+  if (isActive !== undefined && isActive !== null && isActive !== "") {
+    where.isActive =
+      typeof isActive === "boolean" ? isActive : isActive === "true";
+  }
+
+  const [coupons, total] = await Promise.all([
+    prisma.coupon.findMany({
+      where,
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take: limitNum,
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+    }),
+    prisma.coupon.count({ where }),
+  ]);
+
+  const totalPages = Math.ceil(total / limitNum);
+
+  return {
+    data: coupons,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total,
+      totalPages,
     },
+  };
+};
+
+const createAuditLog = (data, db = prisma) => {
+  return db.auditLog.create({
+    data,
   });
 };
 
@@ -87,8 +147,8 @@ const deactivateCoupon = (id) => {
  * ============================================================
  */
 
-const getUserCouponUsageCount = (couponId, userId) => {
-  return prisma.couponUsage.count({
+const getUserCouponUsageCount = (couponId, userId, db = prisma) => {
+  return db.couponUsage.count({
     where: {
       couponId,
       userId,
@@ -201,6 +261,36 @@ const getCouponUsageByRideId = (rideId) => {
   });
 };
 
+const getCouponUsagesByCouponId = (couponId) => {
+  return prisma.couponUsage.findMany({
+    where: {
+      couponId,
+    },
+    orderBy: {
+      usedAt: "desc",
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+        },
+      },
+      ride: {
+        select: {
+          id: true,
+          status: true,
+          estimatedFare: true,
+          finalFare: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+};
+
 /**
  * ============================================================
  * Transactions
@@ -228,9 +318,11 @@ module.exports = {
   decrementCouponUsage,
   getAvailableCoupons,
   getCouponUsageByRideId,
+  getCouponUsagesByCouponId,
 
   executeTransaction,
   createCouponUsageTx,
   incrementCouponUsageTx,
   updateRideCouponTx,
+  createAuditLog,
 };

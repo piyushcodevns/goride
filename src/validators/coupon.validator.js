@@ -145,6 +145,36 @@ const updateCouponSchema = z.object({
     }),
 });
 
+const getAllCouponsQuerySchema = z.object({
+  query: z.object({
+    page: z.coerce
+      .number()
+      .int()
+      .min(1, "Page must be at least 1.")
+      .default(1),
+
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1, "Limit must be at least 1.")
+      .max(100, "Limit cannot exceed 100.")
+      .default(10),
+
+    search: z
+      .string()
+      .trim()
+      .max(100, "Search cannot exceed 100 characters.")
+      .optional(),
+
+    type: z.enum(["FLAT", "PERCENTAGE"]).optional(),
+
+    isActive: z
+      .enum(["true", "false"])
+      .transform((value) => value === "true")
+      .optional(),
+  }),
+});
+
 const couponIdParamSchema = z.object({
   params: z.object({
     id: z.string().cuid("Invalid coupon ID."),
@@ -175,6 +205,7 @@ module.exports = {
   createCouponSchema,
   updateCouponSchema,
   couponIdParamSchema,
+  getAllCouponsQuerySchema,
   validateCouponSchema,
   applyCouponSchema,
 };

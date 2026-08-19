@@ -8,10 +8,7 @@ const couponService = require("../services/coupon.service");
 
 const createCoupon = async (req, res, next) => {
   try {
-    const coupon = await couponService.createCoupon(
-      req.user.id,
-      req.body
-    );
+    const coupon = await couponService.createCoupon(req.admin.id, req.body);
 
     return res.status(201).json({
       success: true,
@@ -26,8 +23,9 @@ const createCoupon = async (req, res, next) => {
 const updateCoupon = async (req, res, next) => {
   try {
     const coupon = await couponService.updateCoupon(
+      req.admin.id,
       req.params.id,
-      req.body
+      req.body,
     );
 
     return res.status(200).json({
@@ -42,7 +40,10 @@ const updateCoupon = async (req, res, next) => {
 
 const deleteCoupon = async (req, res, next) => {
   try {
-    const result = await couponService.deleteCoupon(req.params.id);
+    const result = await couponService.deleteCoupon(
+      req.admin.id,
+      req.params.id,
+    );
 
     return res.status(200).json(result);
   } catch (error) {
@@ -65,12 +66,12 @@ const getCouponById = async (req, res, next) => {
 
 const getAllCoupons = async (req, res, next) => {
   try {
-    const coupons = await couponService.getAllCoupons();
+    const result = await couponService.getAllCoupons(req.query);
 
     return res.status(200).json({
       success: true,
-      count: coupons.length,
-      data: coupons,
+      data: result.data,
+      pagination: result.pagination,
     });
   } catch (error) {
     next(error);
@@ -79,7 +80,10 @@ const getAllCoupons = async (req, res, next) => {
 
 const activateCoupon = async (req, res, next) => {
   try {
-    const coupon = await couponService.activateCoupon(req.params.id);
+    const coupon = await couponService.activateCoupon(
+      req.admin.id,
+      req.params.id,
+    );
 
     return res.status(200).json({
       success: true,
@@ -93,12 +97,29 @@ const activateCoupon = async (req, res, next) => {
 
 const deactivateCoupon = async (req, res, next) => {
   try {
-    const coupon = await couponService.deactivateCoupon(req.params.id);
+    const coupon = await couponService.deactivateCoupon(
+      req.admin.id,
+      req.params.id,
+    );
 
     return res.status(200).json({
       success: true,
       message: "Coupon deactivated successfully.",
       data: coupon,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getCouponUsages = async (req, res, next) => {
+  try {
+    const usages = await couponService.getCouponUsages(req.params.id);
+
+    return res.status(200).json({
+      success: true,
+      count: usages.length,
+      data: usages,
     });
   } catch (error) {
     next(error);
@@ -167,6 +188,7 @@ module.exports = {
   getAllCoupons,
   activateCoupon,
   deactivateCoupon,
+  getCouponUsages,
 
   validateCoupon,
   applyCoupon,

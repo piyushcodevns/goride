@@ -90,16 +90,40 @@ const createCoupon = async (adminId, payload) => {
     createdById: adminId,
   });
 
+  if (adminId) {
+    await couponRepository.createAuditLog({
+      adminId,
+      action: "CREATE",
+      entity: "COUPON",
+      entityId: coupon.id,
+      metadata: {
+        code: coupon.code,
+        type: coupon.type,
+        discountValue: coupon.discountValue,
+      },
+    });
+  }
+
   return coupon;
 };
 
-const updateCoupon = async (couponId, payload) => {
+const updateCoupon = async (adminIdOrCouponId, couponIdOrPayload, payload) => {
+  let adminId, couponId, updatePayload;
+  if (typeof couponIdOrPayload === "string") {
+    adminId = adminIdOrCouponId;
+    couponId = couponIdOrPayload;
+    updatePayload = payload || {};
+  } else {
+    couponId = adminIdOrCouponId;
+    updatePayload = couponIdOrPayload || {};
+  }
+
   const coupon = await getExistingCouponOrThrow(couponId);
 
   const updateData = {};
 
-  if (payload.code) {
-    const code = normalizeCouponCode(payload.code);
+  if (updatePayload.code) {
+    const code = normalizeCouponCode(updatePayload.code);
 
     const existingCoupon = await couponRepository.getCouponByCode(code);
 
@@ -110,32 +134,32 @@ const updateCoupon = async (couponId, payload) => {
     updateData.code = code;
   }
 
-  if (payload.description !== undefined)
-    updateData.description = payload.description;
+  if (updatePayload.description !== undefined)
+    updateData.description = updatePayload.description;
 
-  if (payload.type !== undefined) updateData.type = payload.type;
+  if (updatePayload.type !== undefined) updateData.type = updatePayload.type;
 
-  if (payload.discountValue !== undefined)
-    updateData.discountValue = payload.discountValue;
+  if (updatePayload.discountValue !== undefined)
+    updateData.discountValue = updatePayload.discountValue;
 
-  if (payload.minimumRideFare !== undefined)
-    updateData.minimumRideFare = payload.minimumRideFare;
+  if (updatePayload.minimumRideFare !== undefined)
+    updateData.minimumRideFare = updatePayload.minimumRideFare;
 
-  if (payload.maximumDiscount !== undefined)
-    updateData.maximumDiscount = payload.maximumDiscount;
+  if (updatePayload.maximumDiscount !== undefined)
+    updateData.maximumDiscount = updatePayload.maximumDiscount;
 
-  if (payload.usageLimit !== undefined)
-    updateData.usageLimit = payload.usageLimit;
+  if (updatePayload.usageLimit !== undefined)
+    updateData.usageLimit = updatePayload.usageLimit;
 
-  if (payload.perUserUsageLimit !== undefined)
-    updateData.perUserUsageLimit = payload.perUserUsageLimit;
+  if (updatePayload.perUserUsageLimit !== undefined)
+    updateData.perUserUsageLimit = updatePayload.perUserUsageLimit;
 
-  if (payload.validFrom !== undefined) updateData.validFrom = payload.validFrom;
+  if (updatePayload.validFrom !== undefined) updateData.validFrom = updatePayload.validFrom;
 
-  if (payload.validUntil !== undefined)
-    updateData.validUntil = payload.validUntil;
+  if (updatePayload.validUntil !== undefined)
+    updateData.validUntil = updatePayload.validUntil;
 
-  if (payload.isActive !== undefined) updateData.isActive = payload.isActive;
+  if (updatePayload.isActive !== undefined) updateData.isActive = updatePayload.isActive;
 
   const validFrom = updateData.validFrom ?? coupon.validFrom;
 
@@ -143,13 +167,61 @@ const updateCoupon = async (couponId, payload) => {
 
   validateCouponDates(validFrom, validUntil);
 
-  return couponRepository.updateCoupon(couponId, updateData);
+  const finalType = updateData.type ?? coupon.type;
+  const finalDiscountValue = updateData.discountValue ?? coupon.discountValue;
+  const finalMaximumDiscount =
+    updateData.maximumDiscount !== undefined
+      ? updateData.maximumDiscount
+      : coupon.maximumDiscount;
+
+  if (finalType === "PERCENTAGE") {
+    if (finalDiscountValue > 100) {
+      throw new BadRequestError("Percentage discount cannot exceed 100%.");
+    }
+    if (finalMaximumDiscount === null || finalMaximumDiscount === undefined) {
+      throw new BadRequestError(
+        "Maximum discount is required for percentage coupons.",
+      );
+    }
+  }
+
+  const updatedCoupon = await couponRepository.updateCoupon(couponId, updateData);
+
+  if (adminId) {
+    await couponRepository.createAuditLog({
+      adminId,
+      action: "UPDATE",
+      entity: "COUPON",
+      entityId: couponId,
+      metadata: updateData,
+    });
+  }
+
+  return updatedCoupon;
 };
 
-const deleteCoupon = async (couponId) => {
-  await getExistingCouponOrThrow(couponId);
+const deleteCoupon = async (adminIdOrCouponId, couponId) => {
+  let adminId, targetId;
+  if (couponId) {
+    adminId = adminIdOrCouponId;
+    targetId = couponId;
+  } else {
+    targetId = adminIdOrCouponId;
+  }
 
-  await couponRepository.deleteCoupon(couponId);
+  const coupon = await getExistingCouponOrThrow(targetId);
+
+  await couponRepository.deleteCoupon(targetId);
+
+  if (adminId) {
+    await couponRepository.createAuditLog({
+      adminId,
+      action: "DELETE",
+      entity: "COUPON",
+      entityId: targetId,
+      metadata: { code: coupon.code },
+    });
+  }
 
   return {
     success: true,
@@ -161,20 +233,66 @@ const getCouponById = async (couponId) => {
   return getExistingCouponOrThrow(couponId);
 };
 
-const getAllCoupons = async () => {
-  return couponRepository.getAllCoupons();
+const getAllCoupons = async (queryParams = {}) => {
+  return couponRepository.getAllCoupons(queryParams);
 };
 
-const activateCoupon = async (couponId) => {
-  await getExistingCouponOrThrow(couponId);
+const activateCoupon = async (adminIdOrCouponId, couponId) => {
+  let adminId, targetId;
+  if (couponId) {
+    adminId = adminIdOrCouponId;
+    targetId = couponId;
+  } else {
+    targetId = adminIdOrCouponId;
+  }
 
-  return couponRepository.activateCoupon(couponId);
+  await getExistingCouponOrThrow(targetId);
+
+  const coupon = await couponRepository.activateCoupon(targetId);
+
+  if (adminId) {
+    await couponRepository.createAuditLog({
+      adminId,
+      action: "ACTIVATE",
+      entity: "COUPON",
+      entityId: targetId,
+      metadata: { isActive: true },
+    });
+  }
+
+  return coupon;
 };
 
-const deactivateCoupon = async (couponId) => {
+const deactivateCoupon = async (adminIdOrCouponId, couponId) => {
+  let adminId, targetId;
+  if (couponId) {
+    adminId = adminIdOrCouponId;
+    targetId = couponId;
+  } else {
+    targetId = adminIdOrCouponId;
+  }
+
+  await getExistingCouponOrThrow(targetId);
+
+  const coupon = await couponRepository.deactivateCoupon(targetId);
+
+  if (adminId) {
+    await couponRepository.createAuditLog({
+      adminId,
+      action: "SUSPEND",
+      entity: "COUPON",
+      entityId: targetId,
+      metadata: { isActive: false },
+    });
+  }
+
+  return coupon;
+};
+
+const getCouponUsages = async (couponId) => {
   await getExistingCouponOrThrow(couponId);
 
-  return couponRepository.deactivateCoupon(couponId);
+  return couponRepository.getCouponUsagesByCouponId(couponId);
 };
 
 /**
@@ -183,7 +301,7 @@ const deactivateCoupon = async (couponId) => {
  * ============================================================
  */
 
-const validateCouponEligibility = async (coupon, userId, rideFare) => {
+const validateCouponEligibility = async (coupon, userId, rideFare, db) => {
   const now = new Date();
 
   if (!coupon.isActive) {
@@ -205,6 +323,7 @@ const validateCouponEligibility = async (coupon, userId, rideFare) => {
   const userUsageCount = await couponRepository.getUserCouponUsageCount(
     coupon.id,
     userId,
+    db,
   );
 
   if (userUsageCount >= coupon.perUserUsageLimit) {
@@ -318,39 +437,51 @@ const applyCoupon = async ({ code, rideId, userId }) => {
     throw new NotFoundError("Coupon not found.");
   }
 
-  const rideFare = normalizeRideFare(ride.finalFare) || normalizeRideFare(ride.estimatedFare);
+  const rideFare =
+    normalizeRideFare(ride.finalFare) ||
+    normalizeRideFare(ride.estimatedFare);
 
   await validateCouponEligibility(coupon, userId, rideFare);
 
-  const discount = calculateDiscount(coupon, rideFare);
-  console.log("Discount Object:", discount);
+  let discountResult;
+  let finalCoupon = coupon;
 
   await couponRepository.executeTransaction(async (tx) => {
-    console.log("Final Fare Going To DB:", discount.finalFare);
+    const freshCoupon = await couponRepository.getCouponById(coupon.id, tx);
+
+    if (!freshCoupon) {
+      throw new NotFoundError("Coupon not found.");
+    }
+
+    await validateCouponEligibility(freshCoupon, userId, rideFare, tx);
+
+    discountResult = calculateDiscount(freshCoupon, rideFare);
+    finalCoupon = freshCoupon;
+
     await couponRepository.updateRideCouponTx(
       tx,
       ride.id,
-      coupon.id,
-      discount.discountAmount,
-      discount.finalFare,
+      freshCoupon.id,
+      discountResult.discountAmount,
+      discountResult.finalFare,
     );
 
     await couponRepository.createCouponUsageTx(tx, {
-      couponId: coupon.id,
+      couponId: freshCoupon.id,
       rideId: ride.id,
       userId,
-      discountAmount: discount.discountAmount,
+      discountAmount: discountResult.discountAmount,
     });
 
-    await couponRepository.incrementCouponUsageTx(tx, coupon.id);
+    await couponRepository.incrementCouponUsageTx(tx, freshCoupon.id);
   });
 
   await notificationService.dispatchNotification(
     NotificationFactory.createCouponAppliedNotification({
       userId,
       rideId: ride.id,
-      couponCode: coupon.code,
-      discountAmount: discount.discountAmount,
+      couponCode: finalCoupon.code,
+      discountAmount: discountResult.discountAmount,
     }),
   );
 
@@ -358,11 +489,11 @@ const applyCoupon = async ({ code, rideId, userId }) => {
     success: true,
     message: "Coupon applied successfully.",
     coupon: {
-      id: coupon.id,
-      code: coupon.code,
-      type: coupon.type,
+      id: finalCoupon.id,
+      code: finalCoupon.code,
+      type: finalCoupon.type,
     },
-    ...discount,
+    ...discountResult,
   };
 };
 
@@ -391,6 +522,7 @@ module.exports = {
   getAllCoupons,
   activateCoupon,
   deactivateCoupon,
+  getCouponUsages,
 
   // User
   validateCoupon,

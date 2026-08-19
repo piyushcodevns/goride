@@ -3,13 +3,17 @@ const express = require("express");
 const couponController = require("../controllers/coupon.controller");
 
 const { authenticate } = require("../middleware/auth.middleware");
-const { authorize } = require("../middleware/authorize.middleware");
+const adminAuthMiddleware = require("../middleware/admin/adminAuth.middleware");
+const {
+  requirePermission,
+} = require("../middleware/admin/requirePermission.middleware");
 const { validate } = require("../middleware/validate.middleware");
 
 const {
   createCouponSchema,
   updateCouponSchema,
   couponIdParamSchema,
+  getAllCouponsQuerySchema,
   validateCouponSchema,
   applyCouponSchema,
 } = require("../validators/coupon.validator");
@@ -135,8 +139,8 @@ router.post(
 
 router.post(
   "/",
-  authenticate,
-  authorize("ADMIN"),
+  adminAuthMiddleware,
+  requirePermission("coupon:manage"),
   validate(createCouponSchema),
   couponController.createCoupon,
 );
@@ -169,9 +173,18 @@ router.post(
 
 router.get(
   "/",
-  authenticate,
-  authorize("ADMIN"),
+  adminAuthMiddleware,
+  requirePermission("coupon:view"),
+  validate(getAllCouponsQuerySchema),
   couponController.getAllCoupons,
+);
+
+router.get(
+  "/:id/usages",
+  adminAuthMiddleware,
+  requirePermission("coupon:view"),
+  validate(couponIdParamSchema),
+  couponController.getCouponUsages,
 );
 
 /**
@@ -202,8 +215,8 @@ router.get(
 
 router.get(
   "/:id",
-  authenticate,
-  authorize("ADMIN"),
+  adminAuthMiddleware,
+  requirePermission("coupon:view"),
   validate(couponIdParamSchema),
   couponController.getCouponById,
 );
@@ -230,8 +243,8 @@ router.get(
 
 router.patch(
   "/:id/activate",
-  authenticate,
-  authorize("ADMIN"),
+  adminAuthMiddleware,
+  requirePermission("coupon:manage"),
   validate(couponIdParamSchema),
   couponController.activateCoupon,
 );
@@ -258,8 +271,8 @@ router.patch(
 
 router.patch(
   "/:id/deactivate",
-  authenticate,
-  authorize("ADMIN"),
+  adminAuthMiddleware,
+  requirePermission("coupon:manage"),
   validate(couponIdParamSchema),
   couponController.deactivateCoupon,
 );
@@ -294,8 +307,8 @@ router.patch(
 
 router.put(
   "/:id",
-  authenticate,
-  authorize("ADMIN"),
+  adminAuthMiddleware,
+  requirePermission("coupon:manage"),
   validate(couponIdParamSchema),
   validate(updateCouponSchema),
   couponController.updateCoupon,
@@ -325,8 +338,8 @@ router.put(
 
 router.delete(
   "/:id",
-  authenticate,
-  authorize("ADMIN"),
+  adminAuthMiddleware,
+  requirePermission("coupon:manage"),
   validate(couponIdParamSchema),
   couponController.deleteCoupon,
 );
