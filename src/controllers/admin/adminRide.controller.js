@@ -4,14 +4,22 @@ const {
   getRideStatistics,
   getUserRides,
   getDriverRides,
+  updateRideStatus,
+  cancelRide,
 } = require("../../services/admin/adminRide.service");
+
+const {
+  getRidesQuerySchema,
+} = require("../../validators/admin/adminRide.validator");
 
 /**
  * Get all rides.
  */
 const getAllRides = async (req, res, next) => {
   try {
-    const result = await getRides(req.query);
+    const query = getRidesQuerySchema.parse(req.query);
+
+    const result = await getRides(query);
 
     return res.status(200).json({
       success: true,
@@ -91,10 +99,57 @@ const getRidesByDriver = async (req, res, next) => {
   }
 };
 
+/**
+ * Update ride status.
+ */
+const updateStatus = async (req, res, next) => {
+  try {
+    const result = await updateRideStatus({
+      rideId: req.params.id,
+      status: req.body.status,
+      adminId: req.admin.id,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Ride status updated successfully.",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Cancel ride by admin.
+ */
+const cancel = async (req, res, next) => {
+  try {
+    const result = await cancelRide({
+      rideId: req.params.id,
+      adminId: req.admin.id,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Ride cancelled successfully.",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllRides,
   getRide,
   getStatistics,
   getRidesByUser,
   getRidesByDriver,
+  updateStatus,
+  cancel,
 };

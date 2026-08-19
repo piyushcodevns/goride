@@ -13,6 +13,8 @@ const {
   getStatistics,
   getRidesByUser,
   getRidesByDriver,
+  updateStatus,
+  cancel,
 } = require("../../controllers/admin/adminRide.controller");
 
 const { validate } = require("../../middleware/validate.middleware");
@@ -23,6 +25,7 @@ const {
   driverIdParamSchema,
   paginationSchema,
   getRidesQuerySchema,
+  updateRideStatusSchema,
 } = require("../../validators/admin/adminRide.validator");
 
 // =====================================================
@@ -132,6 +135,51 @@ router.get(
   requirePermission("ride:view"),
   validate(rideIdParamSchema),
   getRide,
+);
+
+// =====================================================
+// UPDATE RIDE STATUS
+// =====================================================
+
+/**
+ * @swagger
+ * /api/admin/rides/{id}/status:
+ *   patch:
+ *     summary: Update ride status
+ *     tags:
+ *       - Admin Ride Management
+ *     security:
+ *       - bearerAuth: []
+ */
+router.patch(
+  "/:id/status",
+  adminAuthMiddleware,
+  requirePermission("ride:manage"),
+  validate(rideIdParamSchema),
+  validate(updateRideStatusSchema),
+  updateStatus,
+);
+
+// =====================================================
+// CANCEL RIDE
+// =====================================================
+
+/**
+ * @swagger
+ * /api/admin/rides/{id}/cancel:
+ *   post:
+ *     summary: Cancel ride
+ *     tags:
+ *       - Admin Ride Management
+ *     security:
+ *       - bearerAuth: []
+ */
+router.post(
+  "/:id/cancel",
+  adminAuthMiddleware,
+  requirePermission("ride:manage"),
+  validate(rideIdParamSchema),
+  cancel,
 );
 
 module.exports = router;

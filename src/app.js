@@ -30,6 +30,7 @@ const adminUserRoutes = require("./routes/admin/adminUser.routes");
 const adminDriverRoutes = require("./routes/admin/adminDriver.routes");
 const adminVehicleRoutes = require("./routes/admin/adminVehicle.routes");
 const adminRideRoutes = require("./routes/admin/adminRide.routes");
+const adminPaymentRoutes = require("./routes/admin/adminPayment.routes");
 
 const { apiLimiter } = require("./middleware/rateLimit.middleware");
 
@@ -67,6 +68,7 @@ app.use((req, res, next) => {
   });
 });
 
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use(morgan("dev"));
@@ -122,6 +124,8 @@ app.use("/api/admin/drivers", adminDriverRoutes);
 app.use("/api/admin/vehicles", adminVehicleRoutes);
 
 app.use("/api/admin/rides", adminRideRoutes);
+
+app.use("/api/admin/payments", adminPaymentRoutes);
 
 /* ===========================
    Health Check

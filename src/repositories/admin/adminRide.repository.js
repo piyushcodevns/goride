@@ -236,6 +236,9 @@ const findRideById = async (rideId, db = prisma) => {
  * Get rides by user.
  */
 const findRidesByUserId = async (userId, { page = 1, limit = 10 } = {}) => {
+  page = Number(page);
+  limit = Number(limit);
+
   const skip = (page - 1) * limit;
 
   const where = {
@@ -273,6 +276,9 @@ const findRidesByUserId = async (userId, { page = 1, limit = 10 } = {}) => {
  * Get rides by driver.
  */
 const findRidesByDriverId = async (driverId, { page = 1, limit = 10 } = {}) => {
+  page = Number(page);
+  limit = Number(limit);
+
   const skip = (page - 1) * limit;
 
   const where = {

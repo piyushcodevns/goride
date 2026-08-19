@@ -1,8 +1,12 @@
 const mapsService = require("../services/openRoute.service");
+const {
+  geocodeSchema,
+  routeCoordinateSchema,
+} = require("../validators/maps.validator");
 
 const getCoordinates = async (req, res, next) => {
   try {
-    const { address } = req.query;
+    const { address } = geocodeSchema.parse(req.query);
 
     const result = await mapsService.geocodeAddress(address);
 
@@ -18,11 +22,14 @@ const getCoordinates = async (req, res, next) => {
 
 const getAddress = async (req, res, next) => {
   try {
-    const { latitude, longitude } = req.query;
+    const parsed = routeCoordinateSchema.parse({
+      latitude: Number(req.query.latitude),
+      longitude: Number(req.query.longitude),
+    });
 
     const result = await mapsService.reverseGeocode(
-      latitude,
-      longitude
+      parsed.latitude,
+      parsed.longitude,
     );
 
     return res.status(200).json({

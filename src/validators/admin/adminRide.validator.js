@@ -72,10 +72,25 @@ const getRidesQuerySchema = paginationSchema
     }
   });
 
+/**
+ * Admin ride status update.
+ */
+const updateRideStatusSchema = z.object({
+  status: z.enum([
+    "REQUESTED",
+    "ACCEPTED",
+    "ARRIVED",
+    "STARTED",
+    "COMPLETED",
+    "CANCELLED",
+  ]),
+});
+
 module.exports = {
   rideIdParamSchema,
   userIdParamSchema,
   driverIdParamSchema,
   paginationSchema,
   getRidesQuerySchema,
+  updateRideStatusSchema,
 };
