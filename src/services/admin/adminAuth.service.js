@@ -3,6 +3,9 @@ const crypto = require("crypto");
 
 const {
   findAdminByEmail,
+  findExistingAdminAccount,
+  createAdminAccount,
+  findAdminByIdWithPassword,
   createAdminSession,
   findActiveAdminSessionById,
   revokeSession,
@@ -39,7 +42,6 @@ const {
 } = require("../../templates/email/password-reset.template");
 
 const logger = require("../../utils/logger");
-const prisma = require("../../config/prisma");
 const ADMIN_ROLES = require("../../constants/adminRoles");
 
 const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS) || 12;
@@ -61,29 +63,56 @@ const generateRefreshSecret = () => {
 // CREATE ADMIN
 // =========================
 
-const createAdmin = async ({ fullName, email, phone, password }) => {
+const createAdmin = async ({
+  fullName,
+  email,
+  phone,
+  password,
+  role,
+  createdByAdminId,
+  createdByRole,
+}) => {
   const normalizedEmail = String(email || "")
     .trim()
     .toLowerCase();
 
   const normalizedPhone = String(phone || "").trim();
 
-  const existingUser = await prisma.user.findFirst({
-    where: {
-      OR: [
-        {
-          email: normalizedEmail,
-        },
-        {
-          phone: normalizedPhone,
-        },
-      ],
-    },
-  });
+  // =========================
+  // VALIDATE ADMIN ROLE
+  // =========================
+
+  if (!Object.values(ADMIN_ROLES).includes(role)) {
+    throw new BadRequestError("Invalid admin role.");
+  }
+
+  // =========================
+  // SUPER ADMIN PROTECTION
+  // =========================
+
+  if (
+    role === ADMIN_ROLES.SUPER_ADMIN &&
+    createdByRole !== ADMIN_ROLES.SUPER_ADMIN
+  ) {
+    throw new ForbiddenError(
+      "Only a Super Admin can create another Super Admin.",
+    );
+  }
+
+  // =========================
+  // CHECK EXISTING ACCOUNT
+  // =========================
+
+  const existingUser = await findExistingAdminAccount(
+    normalizedEmail,
+    normalizedPhone,
+  );
 
   if (existingUser) {
     if (existingUser.email === normalizedEmail) {
-      throw new ConflictError("An account with this email already exists.");
+      throw new ConflictError(
+        "An account with this email already exists.",
+      );
     }
 
     throw new ConflictError(
@@ -91,24 +120,48 @@ const createAdmin = async ({ fullName, email, phone, password }) => {
     );
   }
 
+  // =========================
+  // HASH PASSWORD
+  // =========================
+
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-  const admin = await prisma.user.create({
-    data: {
-      fullName: fullName.trim(),
-      email: normalizedEmail,
-      phone: normalizedPhone,
-      password: hashedPassword,
-      role: "ADMIN",
-      isActive: true,
-      isVerified: true,
-      emailVerified: true,
+  // =========================
+  // CREATE ADMIN
+  // =========================
+
+  const admin = await createAdminAccount({
+    fullName: fullName.trim(),
+    email: normalizedEmail,
+    phone: normalizedPhone,
+    password: hashedPassword,
+    role,
+    isActive: true,
+    isVerified: true,
+    emailVerified: true,
+  });
+
+  // =========================
+  // AUDIT LOG
+  // =========================
+
+  await createAuditLog({
+    adminId: createdByAdminId,
+    action: "CREATE",
+    entity: "ADMIN",
+    entityId: admin.id,
+    metadata: {
+      role: admin.role,
+      createdByRole,
+      createdByAdminId,
     },
   });
 
   logger.info("Admin created successfully.", {
     adminId: admin.id,
     email: admin.email,
+    role: admin.role,
+    createdByRole,
   });
 
   return {
@@ -119,6 +172,7 @@ const createAdmin = async ({ fullName, email, phone, password }) => {
     role: admin.role,
   };
 };
+
 
 // =========================
 // LOGIN ADMIN
@@ -605,11 +659,7 @@ const changeAdminPassword = async (
     );
   }
 
-  const admin = await prisma.user.findUnique({
-    where: {
-      id: adminId,
-    },
-  });
+  const admin = await findAdminByIdWithPassword(adminId);
 
   if (!admin) {
     throw new NotFoundError("Admin account not found.");
@@ -637,6 +687,16 @@ const changeAdminPassword = async (
   // all existing admin sessions.
   await revokeAllAdminSessions(adminId);
 
+  await createAuditLog({
+    adminId,
+    action: "UPDATE",
+    entity: "ADMIN",
+    entityId: adminId,
+    metadata: {
+      action: "PASSWORD_CHANGED",
+    },
+  });
+
   return {
     message: "Admin password changed successfully.",
   };
@@ -656,9 +716,9 @@ const forgotAdminPassword = async (email) => {
   // Do not reveal whether an admin account exists.
   if (admin) {
     try {
-      const resetToken = crypto.randomBytes(32).toString("hex");
+      const resetOtp = crypto.randomInt(100000, 1000000).toString();
 
-      const hashedToken = hashToken(resetToken);
+      const hashedOtp = hashToken(resetOtp);
 
       const passwordResetExpires = new Date(
         Date.now() + PASSWORD_RESET_MINUTES * 60 * 1000,
@@ -666,7 +726,7 @@ const forgotAdminPassword = async (email) => {
 
       await saveAdminPasswordResetToken(
         admin.id,
-        hashedToken,
+        hashedOtp,
         passwordResetExpires,
       );
 
@@ -674,7 +734,7 @@ const forgotAdminPassword = async (email) => {
         to: admin.email,
         subject: "GoRide Admin Password Reset",
         html: passwordResetTemplate({
-          token: resetToken,
+          token: resetOtp,
         }),
       });
 
@@ -737,6 +797,16 @@ const resetAdminPasswordService = async (
   // Password reset invalidates
   // all existing admin sessions.
   await revokeAllAdminSessions(admin.id);
+
+  await createAuditLog({
+    adminId: admin.id,
+    action: "UPDATE",
+    entity: "ADMIN",
+    entityId: admin.id,
+    metadata: {
+      action: "PASSWORD_RESET",
+    },
+  });
 
   return {
     message: "Admin password reset successfully.",

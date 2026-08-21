@@ -1,10 +1,11 @@
 const { verifyToken } = require("../../utils/jwt");
-const prisma = require("../../config/prisma");
 
 const { UnauthorizedError, ForbiddenError } = require("../../utils/AppError");
 
 const {
+  findAdminById,
   findActiveAdminSessionById,
+  updateSessionLastActive,
 } = require("../../repositories/admin/adminAuth.repository");
 
 const ADMIN_ROLES = require("../../constants/adminRoles");
@@ -50,24 +51,7 @@ const adminAuthMiddleware = async (req, res, next) => {
     if (session.userId !== decoded.id) {
       throw new UnauthorizedError("Invalid admin session.");
     }
-    
-    const admin = await prisma.user.findUnique({
-      where: {
-        id: decoded.id,
-      },
-      select: {
-        id: true,
-        fullName: true,
-        email: true,
-        phone: true,
-        role: true,
-        isActive: true,
-        isVerified: true,
-        emailVerified: true,
-        accountLockedUntil: true,
-      },
-    });
-
+    const admin = await findAdminById(decoded.id);
     if (!admin) {
       throw new UnauthorizedError("Admin account not found.");
     }
@@ -86,6 +70,8 @@ const adminAuthMiddleware = async (req, res, next) => {
     ) {
       throw new ForbiddenError("Admin account is temporarily locked.");
     }
+
+    await updateSessionLastActive(session.id);
 
     req.admin = admin;
 

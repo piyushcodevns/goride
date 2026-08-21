@@ -43,6 +43,16 @@ const registerSchema = z
       .regex(/^[6-9]\d{9}$/, "Invalid Indian phone number"),
 
     password: passwordSchema,
+
+    role: z.enum([
+      "ADMIN",
+      "OPERATIONS_MANAGER",
+      "FINANCE_MANAGER",
+      "SUPPORT_EXECUTIVE",
+      "DRIVER_MANAGER",
+      "MARKETING_MANAGER",
+      "SUPER_ADMIN",
+    ]),
   })
   .strict();
 
@@ -133,7 +143,22 @@ const resetPasswordSchema = z
       .string()
       .trim()
       .min(1, "Reset token is required")
-      .max(500, "Invalid reset token"),
+      .max(500, "Invalid reset token")
+      .optional(),
+
+    resetOtp: z
+      .string()
+      .trim()
+      .min(1, "Reset OTP is required")
+      .max(500, "Invalid reset OTP")
+      .optional(),
+
+    otp: z
+      .string()
+      .trim()
+      .min(1, "OTP is required")
+      .max(500, "Invalid OTP")
+      .optional(),
 
     newPassword: passwordSchema,
 
@@ -143,6 +168,10 @@ const resetPasswordSchema = z
       .max(100, "Confirm password must not exceed 100 characters"),
   })
   .strict()
+  .refine((data) => data.resetToken || data.resetOtp || data.otp, {
+    message: "Reset token or OTP is required.",
+    path: ["resetToken"],
+  })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "New password and confirm password do not match.",
     path: ["confirmPassword"],

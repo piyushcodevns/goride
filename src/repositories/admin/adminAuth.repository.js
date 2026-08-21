@@ -26,6 +26,22 @@ const findAdminById = async (id) => {
         in: Object.values(ADMIN_ROLES),
       },
     },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      role: true,
+      isActive: true,
+      isVerified: true,
+      emailVerified: true,
+      accountLockedUntil: true,
+      lastLoginAt: true,
+      passwordChangedAt: true,
+      lastPasswordResetAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
 };
 
@@ -240,12 +256,18 @@ const saveAdminPasswordResetToken = async (
   });
 };
 
+// =========================
+// Find Admin By Password Reset Token
+// =========================
 const findAdminByPasswordResetToken = async (passwordResetToken) => {
   return prisma.user.findFirst({
     where: {
       passwordResetToken,
       passwordResetExpires: {
         gt: new Date(),
+      },
+      role: {
+        in: Object.values(ADMIN_ROLES),
       },
     },
   });
@@ -264,9 +286,65 @@ const resetAdminPassword = async (adminId, hashedPassword) => {
   });
 };
 
+// =========================
+// Find Existing Admin Account
+// =========================
+const findExistingAdminAccount = async (email, phone) => {
+  return prisma.user.findFirst({
+    where: {
+      OR: [
+        {
+          email,
+        },
+        {
+          phone,
+        },
+      ],
+    },
+  });
+};
+
+// =========================
+// Create Admin Account
+// =========================
+const createAdminAccount = async (data) => {
+  return prisma.user.create({
+    data,
+  });
+};
+
+// =========================
+// Find Admin By ID With Password
+// =========================
+const findAdminByIdWithPassword = async (id) => {
+  return prisma.user.findFirst({
+    where: {
+      id,
+      role: {
+        in: Object.values(ADMIN_ROLES),
+      },
+    },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      password: true,
+      role: true,
+      isActive: true,
+      isVerified: true,
+      emailVerified: true,
+      accountLockedUntil: true,
+    },
+  });
+};
+
 module.exports = {
   findAdminByEmail,
   findAdminById,
+  findExistingAdminAccount,
+  createAdminAccount,
+  findAdminByIdWithPassword,
 
   createAdminSession,
   findActiveAdminSessionById,

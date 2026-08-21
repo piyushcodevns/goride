@@ -49,7 +49,11 @@ const login = async (req, res) => {
 
 const createAdminController = async (req, res) => {
   try {
-    const result = await createAdmin(req.body);
+    const result = await createAdmin({
+      ...req.body,
+      createdByAdminId: req.admin.id,
+      createdByRole: req.admin.role,
+    });
 
     return res.status(201).json({
       success: true,
@@ -191,10 +195,11 @@ const forgotAdminPasswordController = async (req, res) => {
 
 const resetAdminPasswordController = async (req, res) => {
   try {
-    const { resetToken, newPassword, confirmPassword } = req.body;
+    const { resetToken, resetOtp, otp, newPassword, confirmPassword } = req.body;
+    const token = resetOtp || otp || resetToken;
 
     const result = await resetAdminPasswordService(
-      resetToken,
+      token,
       newPassword,
       confirmPassword,
     );
