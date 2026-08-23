@@ -8,6 +8,7 @@ const {
 } = require("../../middleware/admin/adminRbac.middleware");
 const {
   getAllUsers,
+  exportUsers,
   getUser,
   getRideHistory,
   getPaymentHistory,
@@ -15,6 +16,8 @@ const {
   getNotifications,
   activate,
   suspend,
+  block,
+  deleteUserController,
 } = require("../../controllers/admin/adminUser.controller");
 
 // =====================================================
@@ -83,6 +86,35 @@ router.get(
   adminAuthMiddleware,
   requirePermission("user:view"),
   getAllUsers,
+);
+
+/**
+ * @swagger
+ * /api/admin/users/export:
+ *   get:
+ *     summary: Export users as CSV
+ *     description: Export all users matching the supported list filters and sorting.
+ *     tags:
+ *       - Admin User Management
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: CSV file containing matching users.
+ *         content:
+ *           text/csv:
+ *             schema:
+ *               type: string
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. User view permission required.
+ */
+router.get(
+  "/export",
+  adminAuthMiddleware,
+  requirePermission("user:view"),
+  exportUsers,
 );
 
 /**
@@ -410,6 +442,86 @@ router.patch(
   adminAuthMiddleware,
   requirePermission("user:manage"),
   suspend,
+);
+
+/**
+ * @swagger
+ * /api/admin/users/{id}/block:
+ *   patch:
+ *     summary: Block user
+ *     description: Block a user account. Blocked users cannot log in.
+ *     tags:
+ *       - Admin User Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID.
+ *     responses:
+ *       200:
+ *         description: User blocked successfully.
+ *       400:
+ *         description: Invalid user ID or invalid user state.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. User management permission required.
+ *       404:
+ *         description: User not found.
+ *       409:
+ *         description: User is already blocked or deleted.
+ *       500:
+ *         description: Internal server error.
+ */
+router.patch(
+  "/:id/block",
+  adminAuthMiddleware,
+  requirePermission("user:manage"),
+  block,
+);
+
+/**
+ * @swagger
+ * /api/admin/users/{id}:
+ *   delete:
+ *     summary: Delete user (soft delete)
+ *     description: Soft delete a user account. Sets deletedAt timestamp and deactivates the account. Data is preserved.
+ *     tags:
+ *       - Admin User Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID.
+ *     responses:
+ *       200:
+ *         description: User deleted successfully.
+ *       400:
+ *         description: Invalid user ID or invalid user state.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. User management permission required.
+ *       404:
+ *         description: User not found.
+ *       409:
+ *         description: User is already deleted.
+ *       500:
+ *         description: Internal server error.
+ */
+router.delete(
+  "/:id",
+  adminAuthMiddleware,
+  requirePermission("user:manage"),
+  deleteUserController,
 );
 
 module.exports = router;

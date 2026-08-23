@@ -1,5 +1,7 @@
 const prisma = require("../../config/prisma");
 
+const USER_MANAGEMENT_ROLES = ["USER", "DRIVER"];
+
 /**
  * Get paginated users with search, filters and sorting.
  */
@@ -18,7 +20,7 @@ const findUsers = async ({
 
   const where = {
     role: {
-      in: ["USER", "DRIVER"],
+      in: USER_MANAGEMENT_ROLES,
     },
   };
 
@@ -62,7 +64,7 @@ const findUsers = async ({
   }
 
   // Role filter
-  if (role) {
+  if (role && USER_MANAGEMENT_ROLES.includes(role)) {
     where.role = role;
   }
 
@@ -104,11 +106,16 @@ const findUsers = async ({
 
 /**
  * Get user by ID.
+ * Only USER and DRIVER accounts are accessible
+ * through Admin User Management.
  */
 const findUserById = async (userId) => {
-  return prisma.user.findUnique({
+  return prisma.user.findFirst({
     where: {
       id: userId,
+      role: {
+        in: USER_MANAGEMENT_ROLES,
+      },
     },
     select: {
       id: true,
@@ -121,6 +128,10 @@ const findUserById = async (userId) => {
       emailVerified: true,
       isVerified: true,
       isActive: true,
+
+      isBlocked: true,
+
+      deletedAt: true,
       lastLoginAt: true,
       createdAt: true,
       updatedAt: true,
@@ -312,6 +323,68 @@ const findUserNotifications = async ({ userId, page = 1, limit = 20 }) => {
 };
 
 /**
+ * Block user.
+ *
+ * Blocking is represented by isBlocked = true.
+ * This is intentionally separate from suspend (isActive = false) and soft delete.
+ */
+const blockUser = async (userId) => {
+  return prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      isBlocked: true,
+      isActive: false,
+    },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      role: true,
+      isActive: true,
+      isBlocked: true,
+      isVerified: true,
+      emailVerified: true,
+      deletedAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+};
+
+/**
+ * Soft delete user.
+ */
+const softDeleteUser = async (userId) => {
+  return prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      deletedAt: new Date(),
+      isActive: false,
+      isBlocked: false,
+    },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      role: true,
+      isActive: true,
+      isBlocked: true,
+      isVerified: true,
+      emailVerified: true,
+      deletedAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+};
+
+/**
  * Update user active status.
  */
 const updateUserStatus = async (userId, isActive) => {
@@ -321,6 +394,7 @@ const updateUserStatus = async (userId, isActive) => {
     },
     data: {
       isActive,
+      ...(isActive ? { isBlocked: false } : {}),
     },
     select: {
       id: true,
@@ -328,20 +402,108 @@ const updateUserStatus = async (userId, isActive) => {
       email: true,
       phone: true,
       role: true,
+      isActive: true,
+      isBlocked: true,
       isVerified: true,
       emailVerified: true,
-      isActive: true,
+      deletedAt: true,
+      createdAt: true,
       updatedAt: true,
+    },
+  });
+};
+
+/**
+ * Export users as CSV-ready records.
+ * Uses the same filters and sorting rules as findUsers.
+ */
+const exportUsers = async ({
+  search,
+  isActive,
+  isVerified,
+  emailVerified,
+  role,
+  sortBy = "createdAt",
+  sortOrder = "desc",
+}) => {
+  const where = {
+    role: {
+      in: USER_MANAGEMENT_ROLES,
+    },
+  };
+
+  if (search) {
+    where.OR = [
+      {
+        fullName: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+      {
+        email: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+      {
+        phone: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+    ];
+  }
+
+  if (typeof isActive === "boolean") {
+    where.isActive = isActive;
+  }
+
+  if (typeof isVerified === "boolean") {
+    where.isVerified = isVerified;
+  }
+
+  if (typeof emailVerified === "boolean") {
+    where.emailVerified = emailVerified;
+  }
+
+  if (role && USER_MANAGEMENT_ROLES.includes(role)) {
+    where.role = role;
+  }
+
+  return prisma.user.findMany({
+    where,
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      role: true,
+      gender: true,
+      emailVerified: true,
+      isVerified: true,
+      isActive: true,
+      isBlocked: true,
+      deletedAt: true,
+      lastLoginAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    orderBy: {
+      [sortBy]: sortOrder,
     },
   });
 };
 
 module.exports = {
   findUsers,
+  exportUsers,
   findUserById,
   findUserRideHistory,
   findUserPaymentHistory,
   findUserCouponHistory,
   findUserNotifications,
   updateUserStatus,
+  blockUser,
+  softDeleteUser,
 };

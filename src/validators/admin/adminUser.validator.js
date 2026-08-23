@@ -1,5 +1,8 @@
 const { z } = require("zod");
-const USER_ROLES = require("../../constants/userRoles");
+
+// Admin User Management only manages actual users/drivers.
+// Admin accounts must never be exposed through these APIs.
+const USER_MANAGEMENT_ROLES = ["USER", "DRIVER"];
 
 const userIdParamSchema = z.object({
   id: z.string().min(1, "User ID is required."),
@@ -28,7 +31,8 @@ const getUsersQuerySchema = paginationSchema.extend({
     .transform((value) => value === "true")
     .optional(),
 
-  role: z.enum(Object.values(USER_ROLES)).optional(),
+  // Only USER and DRIVER can be managed from Admin User Management.
+  role: z.enum(USER_MANAGEMENT_ROLES).optional(),
 
   sortBy: z
     .enum([
@@ -41,9 +45,7 @@ const getUsersQuerySchema = paginationSchema.extend({
     ])
     .default("createdAt"),
 
-  sortOrder: z
-    .enum(["asc", "desc"])
-    .default("desc"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
 module.exports = {

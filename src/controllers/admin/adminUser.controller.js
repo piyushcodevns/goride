@@ -1,5 +1,6 @@
 const {
   getUsers,
+  exportUsersCsv,
   getUserDetails,
   getUserRideHistory,
   getUserPaymentHistory,
@@ -7,6 +8,8 @@ const {
   getUserNotifications,
   activateUser,
   suspendUser,
+  blockUserAccount,
+  deleteUser,
 } = require("../../services/admin/adminUser.service");
 
 const {
@@ -39,6 +42,27 @@ const getAllUsers = async (req, res, next) => {
         },
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Export users as CSV.
+ */
+const exportUsers = async (req, res, next) => {
+  try {
+    const query = getUsersQuerySchema.parse(req.query);
+    const csv = await exportUsersCsv(query);
+
+    res.status(200);
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="goride-users.csv"',
+    );
+
+    return res.send(csv);
   } catch (error) {
     next(error);
   }
@@ -223,8 +247,57 @@ const suspend = async (req, res, next) => {
   }
 };
 
+/**
+ * Block user
+ */
+const block = async (req, res, next) => {
+  try {
+    const { id } = userIdParamSchema.parse(req.params);
+
+    const user = await blockUserAccount({
+      userId: id,
+      adminId: req.admin.id,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "User blocked successfully.",
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Soft delete user
+ */
+const deleteUserController = async (req, res, next) => {
+  try {
+    const { id } = userIdParamSchema.parse(req.params);
+
+    const user = await deleteUser({
+      userId: id,
+      adminId: req.admin.id,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "User deleted successfully.",
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllUsers,
+  exportUsers,
   getUser,
   getRideHistory,
   getPaymentHistory,
@@ -232,4 +305,6 @@ module.exports = {
   getNotifications,
   activate,
   suspend,
+  block,
+  deleteUserController,
 };

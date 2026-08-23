@@ -29,12 +29,15 @@ model User {
 
   isVerified               Boolean   @default(false)
   isActive                 Boolean   @default(true)
+  isBlocked                Boolean   @default(false)
   emailVerified            Boolean   @default(false)
   emailVerificationToken   String?
   emailVerificationExpires DateTime?
 
   passwordResetToken   String?
   passwordResetExpires DateTime?
+
+  deletedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -50,6 +53,9 @@ model User {
   adminSessions     AdminSession[]
   adminLoginHistory AdminLoginHistory[]
   auditLogs         AuditLog[]
+
+  @@index([isBlocked])
+  @@index([deletedAt])
 }
 
 model Driver {
@@ -721,6 +727,7 @@ enum AuditAction {
   APPROVE
   REJECT
   SUSPEND
+  BLOCK
   ACTIVATE
   CANCEL
   REFUND
