@@ -5,28 +5,46 @@ const getDashboardData = async () => {
     [totalUsers, activeUsers, inactiveUsers, verifiedUsers],
     driverStatusCounts,
     driverAvailabilityCounts,
+    totalVehicles,
     rideStatusCounts,
     paymentStatusCounts,
     revenueResult,
+    revenuePeriodResult,
     [todayRides, todayCompletedRides, todayCancelledRides, todayRevenueResult],
+    activeRides,
+    couponsUsed,
+    notificationsSent,
     recentRides,
     recentPayments,
     revenueGraphResult,
     rideGraphResult,
     userRegistrationGraphResult,
+    peakHoursResult,
+    cityWiseRevenueResult,
+    vehicleWiseRevenueResult,
+    cancellationRate,
   ] = await Promise.all([
     dashboardRepository.getUserStats(),
     dashboardRepository.getDriverStats(),
     dashboardRepository.getDriverAvailabilityStats(),
+    dashboardRepository.getVehicleStats(),
     dashboardRepository.getRideStats(),
     dashboardRepository.getPaymentStats(),
     dashboardRepository.getRevenueStats(),
+    dashboardRepository.getRevenuePeriodStats(),
     dashboardRepository.getTodayStats(),
+    dashboardRepository.getActiveRideCount(),
+    dashboardRepository.getCouponUsageCount(),
+    dashboardRepository.getNotificationStats(),
     dashboardRepository.getRecentRides(),
     dashboardRepository.getRecentPayments(),
     dashboardRepository.getRevenueGraph(),
     dashboardRepository.getRideGraph(),
     dashboardRepository.getUserRegistrationGraph(),
+    dashboardRepository.getPeakHoursGraph(),
+    dashboardRepository.getCityWiseRevenueGraph(),
+    dashboardRepository.getVehicleWiseRevenueGraph(),
+    dashboardRepository.getCancellationRate(),
   ]);
 
   // =========================
@@ -114,7 +132,6 @@ const getDashboardData = async () => {
 
   for (const { status, _count } of paymentStatusCounts) {
     const count = _count.status;
-
     const key = status.toLowerCase();
 
     if (key === "success") {
@@ -127,7 +144,7 @@ const getDashboardData = async () => {
   }
 
   // =========================
-  // REVENUE
+  // GRAPHS
   // =========================
 
   const rideGraph = {
@@ -135,7 +152,7 @@ const getDashboardData = async () => {
     datasets: [
       {
         label: "Rides",
-        data: rideGraphResult.map((item) => item.rides),
+        data: rideGraphResult.map((item) => Number(item.rides)),
       },
     ],
   };
@@ -147,7 +164,9 @@ const getDashboardData = async () => {
     datasets: [
       {
         label: "User Registrations",
-        data: userRegistrationGraphResult.map((item) => item.registrations),
+        data: userRegistrationGraphResult.map((item) =>
+          Number(item.registrations),
+        ),
       },
     ],
   };
@@ -158,15 +177,59 @@ const getDashboardData = async () => {
     ),
     datasets: [
       {
-        label: "Revenue", 
+        label: "Revenue",
         data: revenueGraphResult.map((item) => item.revenue.toString()),
       },
     ],
   };
 
+  const peakHoursGraph = {
+    labels: peakHoursResult.map(
+      (item) => `${String(item.hour).padStart(2, "0")}:00`,
+    ),
+    datasets: [
+      {
+        label: "Rides",
+        data: peakHoursResult.map((item) => Number(item.rides)),
+      },
+    ],
+  };
+
+  const cityWiseRevenueGraph = {
+    labels: cityWiseRevenueResult.map((item) => item.city),
+    datasets: [
+      {
+        label: "Revenue",
+        data: cityWiseRevenueResult.map((item) => item.revenue.toString()),
+      },
+    ],
+  };
+
+  const vehicleWiseRevenueGraph = {
+    labels: vehicleWiseRevenueResult.map((item) => item.vehicleType),
+    datasets: [
+      {
+        label: "Revenue",
+        data: vehicleWiseRevenueResult.map((item) => item.revenue.toString()),
+      },
+    ],
+  };
+
+  // =========================
+  // REVENUE
+  // =========================
+
   const totalRevenue = (revenueResult._sum.amount || 0).toString();
 
   const todayRevenue = (todayRevenueResult._sum.amount || 0).toString();
+
+  const periodRevenue = revenuePeriodResult[0] || {};
+
+  const dailyRevenue = Number(periodRevenue.daily_revenue || 0).toString();
+
+  const weeklyRevenue = Number(periodRevenue.weekly_revenue || 0).toString();
+
+  const monthlyRevenue = Number(periodRevenue.monthly_revenue || 0).toString();
 
   // =========================
   // RECENT DATA
@@ -174,16 +237,31 @@ const getDashboardData = async () => {
 
   const formattedRecentRides = recentRides.map((ride) => ({
     id: ride.id,
+    pickup: ride.pickup,
+    destination: ride.destination,
     status: ride.status,
+    vehicleType: ride.vehicleType,
+    estimatedFare: ride.estimatedFare?.toString() ?? null,
+    finalFare: ride.finalFare?.toString() ?? null,
     createdAt: ride.createdAt,
+    user: ride.user,
+    driver: ride.driver
+      ? {
+          id: ride.driver.id,
+          fullName: ride.driver.user.fullName,
+        }
+      : null,
   }));
 
   const formattedRecentPayments = recentPayments.map((payment) => ({
     id: payment.id,
     amount: payment.amount.toString(),
     status: payment.status,
+    paymentMethod: payment.paymentMethod,
+    transactionId: payment.transactionId,
     paidAt: payment.paidAt,
     createdAt: payment.createdAt,
+    user: payment.user,
   }));
 
   // =========================
@@ -201,11 +279,19 @@ const getDashboardData = async () => {
 
     drivers: {
       ...driverStats,
+      active: driverStats.approved,
+      online: driverAvailability.available,
+      availability: driverAvailability,
       activity: driverActivity,
+    },
+
+    vehicles: {
+      total: totalVehicles,
     },
 
     rides: {
       ...rideStats,
+      active: activeRides,
       graph: rideGraph,
     },
 
@@ -213,8 +299,27 @@ const getDashboardData = async () => {
 
     revenue: {
       totalRevenue,
+      dailyRevenue,
+      weeklyRevenue,
+      monthlyRevenue,
       todayRevenue,
       graph: revenueGraph,
+    },
+
+    coupons: {
+      used: couponsUsed,
+    },
+
+    notifications: {
+      sent: notificationsSent,
+    },
+
+    analytics: {
+      peakHours: peakHoursGraph,
+      cityWiseRevenue: cityWiseRevenueGraph,
+      vehicleWiseRevenue: vehicleWiseRevenueGraph,
+      cancellationRate: cancellationRate.rate,
+      cancellation: cancellationRate,
     },
 
     today: {
