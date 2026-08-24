@@ -9,20 +9,14 @@ const {
   updateDriverStatus,
   createDriverDocument,
   getDriverDocumentByType,
+  replaceRejectedDriverDocument,
   getDriverDocuments: getDocumentsFromDB,
 } = require("../repositories/driver.repository");
 
 const { NotFoundError, BadRequestError } = require("../utils/AppError");
 const { uploadImage } = require("./upload.service");
 
-const { registerDriverSchema } = require("../validators/driver.validator");
-
 const registerDriver = async (userId, data) => {
-  const validatedData = data;
-  validatedData.licenseNumber;
-  validatedData.aadharNumber;
-  validatedData.experience;
-
   const existingDriver = await getDriverByUserId(userId);
 
   if (existingDriver) {
@@ -30,7 +24,7 @@ const registerDriver = async (userId, data) => {
   }
 
   const licenseExists = await getDriverByLicenseNumber(
-    validatedData.licenseNumber,
+    data.licenseNumber,
   );
 
   if (licenseExists) {
@@ -38,7 +32,7 @@ const registerDriver = async (userId, data) => {
   }
 
   const aadharExists = await getDriverByAadharNumber(
-    validatedData.aadharNumber,
+    data.aadharNumber,
   );
 
   if (aadharExists) {
@@ -47,9 +41,9 @@ const registerDriver = async (userId, data) => {
 
   return await createDriver({
     userId,
-    licenseNumber: validatedData.licenseNumber,
-    aadharNumber: validatedData.aadharNumber,
-    experience: validatedData.experience,
+    licenseNumber: data.licenseNumber,
+    aadharNumber: data.aadharNumber,
+    experience: data.experience,
   });
 };
 
@@ -76,14 +70,18 @@ const updateDriverProfile = async (userId, data) => {
 };
 
 const updateAvailability = async (userId, availability) => {
-  // Check driver exists
   const driver = await getDriverByUserId(userId);
 
   if (!driver) {
     throw new NotFoundError("Driver profile not found.");
   }
 
-  // Update availability using Driver ID
+  if (driver.status !== "APPROVED") {
+    throw new BadRequestError(
+      "Only an approved driver can change availability.",
+    );
+  }
+
   return await updateDriverAvailability(driver.id, availability);
 };
 /**
@@ -127,11 +125,20 @@ const uploadDriverDocument = async (driverId, data, file) => {
     data.documentType,
   );
 
-  if (existingDocument) {
+  if (existingDocument && existingDocument.status !== "REJECTED") {
     throw new BadRequestError(`${data.documentType} document already exists.`);
   }
 
   const result = await uploadImage(file, "goride/driver-documents");
+
+  if (existingDocument) {
+    return replaceRejectedDriverDocument({
+      documentId: existingDocument.id,
+      documentNumber: data.documentNumber,
+      fileUrl: result.secure_url,
+      filePublicId: result.public_id,
+    });
+  }
 
   return await createDriverDocument({
     driverId,

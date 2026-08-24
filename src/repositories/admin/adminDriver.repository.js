@@ -90,6 +90,8 @@ const findDrivers = async ({
             isVerified: true,
             emailVerified: true,
             isActive: true,
+            isBlocked: true,
+            deletedAt: true,
           },
         },
 
@@ -159,6 +161,8 @@ const findPendingDrivers = async ({ page = 1, limit = 20 }) => {
             isVerified: true,
             emailVerified: true,
             isActive: true,
+            isBlocked: true,
+            deletedAt: true,
           },
         },
 
@@ -224,6 +228,8 @@ const findDriverById = async (driverId) => {
           isVerified: true,
           emailVerified: true,
           isActive: true,
+          isBlocked: true,
+          deletedAt: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -240,6 +246,35 @@ const findDriverById = async (driverId) => {
           seats: true,
           createdAt: true,
           updatedAt: true,
+        },
+      },
+    },
+  });
+};
+
+/**
+ * Get the account and KYC state required before approving a driver.
+ */
+const findDriverApprovalEligibility = async (driverId) => {
+  return prisma.driver.findUnique({
+    where: {
+      id: driverId,
+    },
+    select: {
+      id: true,
+      status: true,
+      user: {
+        select: {
+          id: true,
+          isActive: true,
+          isBlocked: true,
+          deletedAt: true,
+        },
+      },
+      documents: {
+        select: {
+          documentType: true,
+          status: true,
         },
       },
     },
@@ -488,8 +523,29 @@ const updateDriverStatusWithAudit = async ({
   status,
   availability,
   auditLog,
+  expectedStatus,
 }) => {
   return prisma.$transaction(async (tx) => {
+    const where = {
+      id: driverId,
+      ...(expectedStatus
+        ? {
+            status: expectedStatus,
+          }
+        : {}),
+    };
+
+    const existingDriver = await tx.driver.findFirst({
+      where,
+      select: {
+        id: true,
+      },
+    });
+
+    if (!existingDriver) {
+      return null;
+    }
+
     const updatedDriver = await tx.driver.update({
       where: {
         id: driverId,
@@ -575,9 +631,10 @@ const findDriverStatistics = async (driverId) => {
     completedTrips: 0,
     cancelledTrips: 0,
     acceptedTrips: 0,
+    arrivedTrips: 0,
     startedTrips: 0,
     totalDistance: Number(completedStats._sum.distance || 0),
-    totalEarnings: Number(completedStats._sum.finalFare || 0),
+    totalGrossFare: Number(completedStats._sum.finalFare || 0),
     averageFare: Number(completedStats._avg.finalFare || 0),
     averageDistance: Number(completedStats._avg.distance || 0),
     averageDuration: Number(completedStats._avg.duration || 0),
@@ -598,6 +655,10 @@ const findDriverStatistics = async (driverId) => {
 
     if (item.status === "ACCEPTED") {
       stats.acceptedTrips = count;
+    }
+
+    if (item.status === "ARRIVED") {
+      stats.arrivedTrips = count;
     }
 
     if (item.status === "STARTED") {
@@ -744,10 +805,7 @@ const findDriverWalletTransactions = async ({
   });
 
   if (!wallet) {
-    return {
-      transactions: [],
-      total: 0,
-    };
+    return null;
   }
 
   const where = {
@@ -797,6 +855,7 @@ module.exports = {
   findDriverRatings,
   findDriverEarnings,
   findDriverKyc,
+  findDriverApprovalEligibility,
   updateDriverStatusWithAudit,
   findDriverStatistics,
 

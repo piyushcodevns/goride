@@ -186,6 +186,29 @@ const getDriverDocumentByType = async (driverId, documentType) => {
   });
 };
 
+/**
+ * Replace a rejected document and return it to the review queue.
+ */
+const replaceRejectedDriverDocument = async ({
+  documentId,
+  documentNumber,
+  fileUrl,
+  filePublicId,
+}) => {
+  return prisma.driverDocument.update({
+    where: {
+      id: documentId,
+    },
+    data: {
+      documentNumber,
+      fileUrl,
+      filePublicId,
+      status: "PENDING",
+      rejectionReason: null,
+    },
+  });
+};
+
 module.exports = {
   createDriver,
   getDriverByUserId,
@@ -199,4 +222,5 @@ module.exports = {
   createDriverDocument,
   getDriverDocuments,
   getDriverDocumentByType,
+  replaceRejectedDriverDocument,
 };

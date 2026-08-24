@@ -7,6 +7,7 @@ const {
   findDriverRatings,
   findDriverEarnings,
   findDriverKyc,
+  findDriverApprovalEligibility,
   findDriverStatistics,
   updateDriverStatusWithAudit,
 
@@ -18,6 +19,43 @@ const {
 } = require("../../repositories/admin/adminDriver.repository");
 
 const { NotFoundError, ConflictError } = require("../../utils/AppError");
+
+const REQUIRED_DRIVER_DOCUMENTS = ["LICENSE", "AADHAAR", "RC", "INSURANCE"];
+
+const assertDriverApprovalEligibility = (driver) => {
+  if (!driver.user.isActive) {
+    throw new ConflictError(
+      "Driver cannot be approved because the user account is inactive.",
+    );
+  }
+
+  if (driver.user.isBlocked) {
+    throw new ConflictError(
+      "Driver cannot be approved because the user account is blocked.",
+    );
+  }
+
+  if (driver.user.deletedAt) {
+    throw new ConflictError(
+      "Driver cannot be approved because the user account is deleted.",
+    );
+  }
+
+  const approvedDocuments = new Set(
+    driver.documents
+      .filter((document) => document.status === "APPROVED")
+      .map((document) => document.documentType),
+  );
+  const missingDocuments = REQUIRED_DRIVER_DOCUMENTS.filter(
+    (documentType) => !approvedDocuments.has(documentType),
+  );
+
+  if (missingDocuments.length > 0) {
+    throw new ConflictError(
+      `Driver cannot be approved. Required documents are not approved: ${missingDocuments.join(", ")}.`,
+    );
+  }
+};
 
 /**
  * Get paginated drivers.
@@ -140,7 +178,7 @@ const getDriverEarnings = async (driverId) => {
  * Approve driver.
  */
 const approveDriver = async ({ driverId, adminId, ipAddress, userAgent }) => {
-  const driver = await findDriverById(driverId);
+  const driver = await findDriverApprovalEligibility(driverId);
 
   if (!driver) {
     throw new NotFoundError("Driver not found.");
@@ -160,8 +198,11 @@ const approveDriver = async ({ driverId, adminId, ipAddress, userAgent }) => {
     throw new ConflictError("Rejected driver cannot be approved directly.");
   }
 
+  assertDriverApprovalEligibility(driver);
+
   const updatedDriver = await updateDriverStatusWithAudit({
     driverId,
+    expectedStatus: driver.status,
     status: "APPROVED",
     availability: "OFFLINE",
 
@@ -178,6 +219,12 @@ const approveDriver = async ({ driverId, adminId, ipAddress, userAgent }) => {
       userAgent,
     },
   });
+
+  if (!updatedDriver) {
+    throw new ConflictError(
+      "Driver status changed by another admin. Please refresh and try again.",
+    );
+  }
 
   return updatedDriver;
 };
@@ -214,6 +261,7 @@ const rejectDriver = async ({
 
   const updatedDriver = await updateDriverStatusWithAudit({
     driverId,
+    expectedStatus: driver.status,
     status: "REJECTED",
     availability: "OFFLINE",
 
@@ -231,6 +279,12 @@ const rejectDriver = async ({
       userAgent,
     },
   });
+
+  if (!updatedDriver) {
+    throw new ConflictError(
+      "Driver status changed by another admin. Please refresh and try again.",
+    );
+  }
 
   return updatedDriver;
 };
@@ -261,6 +315,7 @@ const suspendDriver = async ({
 
   const updatedDriver = await updateDriverStatusWithAudit({
     driverId,
+    expectedStatus: driver.status,
     status: "SUSPENDED",
     availability: "OFFLINE",
 
@@ -279,6 +334,12 @@ const suspendDriver = async ({
     },
   });
 
+  if (!updatedDriver) {
+    throw new ConflictError(
+      "Driver status changed by another admin. Please refresh and try again.",
+    );
+  }
+
   return updatedDriver;
 };
 
@@ -286,7 +347,7 @@ const suspendDriver = async ({
  * Activate suspended driver.
  */
 const activateDriver = async ({ driverId, adminId, ipAddress, userAgent }) => {
-  const driver = await findDriverById(driverId);
+  const driver = await findDriverApprovalEligibility(driverId);
 
   if (!driver) {
     throw new NotFoundError("Driver not found.");
@@ -300,8 +361,11 @@ const activateDriver = async ({ driverId, adminId, ipAddress, userAgent }) => {
     throw new ConflictError("Only a suspended driver can be activated.");
   }
 
+  assertDriverApprovalEligibility(driver);
+
   const updatedDriver = await updateDriverStatusWithAudit({
     driverId,
+    expectedStatus: driver.status,
     status: "APPROVED",
     availability: "OFFLINE",
 
@@ -318,6 +382,12 @@ const activateDriver = async ({ driverId, adminId, ipAddress, userAgent }) => {
       userAgent,
     },
   });
+
+  if (!updatedDriver) {
+    throw new ConflictError(
+      "Driver status changed by another admin. Please refresh and try again.",
+    );
+  }
 
   return updatedDriver;
 };
@@ -349,6 +419,12 @@ const approveDriverDocument = async ({
 
   if (document.status === "APPROVED") {
     throw new ConflictError("Driver document is already approved.");
+  }
+
+  if (document.status === "REJECTED") {
+    throw new ConflictError(
+      "Rejected driver document cannot be approved directly. Upload a new document.",
+    );
   }
 
   const updatedDocument = await updateDriverDocumentStatusWithAudit({
@@ -390,6 +466,12 @@ const rejectDriverDocument = async ({
 
   if (document.status === "REJECTED") {
     throw new ConflictError("Driver document is already rejected.");
+  }
+
+  if (document.status === "APPROVED") {
+    throw new ConflictError(
+      "Approved driver document cannot be rejected.",
+    );
   }
 
   const updatedDocument = await updateDriverDocumentStatusWithAudit({
@@ -440,10 +522,16 @@ const getDriverWalletTransactions = async (driverId, pagination) => {
     throw new NotFoundError("Driver not found.");
   }
 
-  return findDriverWalletTransactions({
+  const result = await findDriverWalletTransactions({
     driverId,
     ...pagination,
   });
+
+  if (!result) {
+    throw new NotFoundError("Driver wallet not found.");
+  }
+
+  return result;
 };
 
 module.exports = {
