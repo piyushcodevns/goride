@@ -1,6 +1,8 @@
 const { z } = require("zod");
 
 const vehicleTypes = ["BIKE", "AUTO", "CAR", "SUV"];
+const vehicleCategories = ["ECONOMY", "PREMIUM", "LUXURY"];
+const vehicleStatuses = ["PENDING", "APPROVED", "REJECTED"];
 
 const vehicleIdParamSchema = z.object({
   id: z.string().trim().min(1, "Vehicle ID is required."),
@@ -16,6 +18,14 @@ const getVehiclesQuerySchema = paginationSchema.extend({
 
   vehicleType: z
     .enum(vehicleTypes)
+    .optional(),
+
+  category: z
+    .enum(vehicleCategories)
+    .optional(),
+
+  status: z
+    .enum(vehicleStatuses)
     .optional(),
 
   sortBy: z
@@ -45,6 +55,12 @@ const updateVehicleSchema = z
     vehicleType: z
       .enum(vehicleTypes, {
         message: "Invalid vehicle type.",
+      })
+      .optional(),
+
+    category: z
+      .enum(vehicleCategories, {
+        message: "Invalid vehicle category.",
       })
       .optional(),
 
@@ -85,9 +101,20 @@ const updateVehicleSchema = z
     },
   );
 
+const rejectVehicleSchema = z
+  .object({
+    rejectionReason: z
+      .string()
+      .trim()
+      .min(3, "Rejection reason is required.")
+      .max(500, "Rejection reason is too long."),
+  })
+  .strict();
+
 module.exports = {
   vehicleIdParamSchema,
   paginationSchema,
   getVehiclesQuerySchema,
   updateVehicleSchema,
+  rejectVehicleSchema,
 };

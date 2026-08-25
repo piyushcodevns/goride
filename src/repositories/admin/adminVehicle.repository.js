@@ -1,13 +1,15 @@
 const prisma = require("../../config/prisma");
 
 /**
- * Get paginated vehicles with search and vehicle type filter.
+ * Get paginated vehicles.
  */
 const findVehicles = async ({
   page = 1,
   limit = 20,
   search,
   vehicleType,
+  category,
+  status,
   sortBy = "createdAt",
   sortOrder = "desc",
 }) => {
@@ -17,6 +19,14 @@ const findVehicles = async ({
 
   if (vehicleType) {
     where.vehicleType = vehicleType;
+  }
+
+  if (category) {
+    where.category = category;
+  }
+
+  if (status) {
+    where.status = status;
   }
 
   if (search) {
@@ -89,6 +99,9 @@ const findVehicles = async ({
         driverId: true,
         vehicleNumber: true,
         vehicleType: true,
+        category: true,
+        status: true,
+        rejectionReason: true,
         brand: true,
         model: true,
         color: true,
@@ -115,6 +128,20 @@ const findVehicles = async ({
                 isActive: true,
               },
             },
+          },
+        },
+
+        documents: {
+          select: {
+            id: true,
+            documentType: true,
+            documentNumber: true,
+            fileUrl: true,
+            filePublicId: true,
+            status: true,
+            rejectionReason: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
       },
@@ -149,6 +176,9 @@ const findVehicleById = async (vehicleId) => {
       driverId: true,
       vehicleNumber: true,
       vehicleType: true,
+      category: true,
+      status: true,
+      rejectionReason: true,
       brand: true,
       model: true,
       color: true,
@@ -181,6 +211,23 @@ const findVehicleById = async (vehicleId) => {
               createdAt: true,
             },
           },
+        },
+      },
+
+      documents: {
+        select: {
+          id: true,
+          documentType: true,
+          documentNumber: true,
+          fileUrl: true,
+          filePublicId: true,
+          status: true,
+          rejectionReason: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: {
+          createdAt: "desc",
         },
       },
     },
@@ -222,6 +269,9 @@ const updateVehicleWithAudit = async ({
         driverId: true,
         vehicleNumber: true,
         vehicleType: true,
+        category: true,
+        status: true,
+        rejectionReason: true,
         brand: true,
         model: true,
         color: true,
@@ -236,6 +286,109 @@ const updateVehicleWithAudit = async ({
     });
 
     return vehicle;
+  });
+};
+
+/**
+ * Approve vehicle with audit log atomically.
+ */
+const approveVehicleWithAudit = async ({
+  vehicleId,
+  auditLog,
+}) => {
+  return prisma.$transaction(async (tx) => {
+    const vehicle = await tx.vehicle.update({
+      where: {
+        id: vehicleId,
+      },
+
+      data: {
+        status: "APPROVED",
+        rejectionReason: null,
+      },
+
+      select: {
+        id: true,
+        driverId: true,
+        vehicleNumber: true,
+        vehicleType: true,
+        category: true,
+        status: true,
+        rejectionReason: true,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: auditLog,
+    });
+
+    return vehicle;
+  });
+};
+
+/**
+ * Reject vehicle with audit log atomically.
+ */
+const rejectVehicleWithAudit = async ({
+  vehicleId,
+  rejectionReason,
+  auditLog,
+}) => {
+  return prisma.$transaction(async (tx) => {
+    const vehicle = await tx.vehicle.update({
+      where: {
+        id: vehicleId,
+      },
+
+      data: {
+        status: "REJECTED",
+        rejectionReason,
+      },
+
+      select: {
+        id: true,
+        driverId: true,
+        vehicleNumber: true,
+        vehicleType: true,
+        category: true,
+        status: true,
+        rejectionReason: true,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: auditLog,
+    });
+
+    return vehicle;
+  });
+};
+
+/**
+ * Get vehicle documents.
+ */
+const findVehicleDocuments = async (vehicleId) => {
+  return prisma.vehicleDocument.findMany({
+    where: {
+      vehicleId,
+    },
+
+    select: {
+      id: true,
+      vehicleId: true,
+      documentType: true,
+      documentNumber: true,
+      fileUrl: true,
+      filePublicId: true,
+      status: true,
+      rejectionReason: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 };
 
@@ -257,6 +410,9 @@ const deleteVehicleWithAudit = async ({
         driverId: true,
         vehicleNumber: true,
         vehicleType: true,
+        category: true,
+        status: true,
+        rejectionReason: true,
         brand: true,
         model: true,
         color: true,
@@ -277,5 +433,8 @@ module.exports = {
   findVehicleById,
   findVehicleByNumber,
   updateVehicleWithAudit,
+  approveVehicleWithAudit,
+  rejectVehicleWithAudit,
+  findVehicleDocuments,
   deleteVehicleWithAudit,
 };

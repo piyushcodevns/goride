@@ -1,6 +1,7 @@
 const { z } = require("zod");
 
-const vehicleTypes = ["BIKE", "AUTO", "CAR"];
+const vehicleTypes = ["BIKE", "AUTO", "CAR", "SUV"];
+const vehicleCategories = ["ECONOMY", "PREMIUM", "LUXURY"];
 
 const createVehicleSchema = z
   .object({
@@ -12,6 +13,10 @@ const createVehicleSchema = z
 
     vehicleType: z.enum(vehicleTypes, {
       message: "Invalid vehicle type.",
+    }),
+
+    category: z.enum(vehicleCategories, {
+      message: "Invalid vehicle category.",
     }),
 
     brand: z
@@ -45,9 +50,22 @@ const createVehicleSchema = z
 
 const updateVehicleSchema = z
   .object({
+    vehicleNumber: z
+      .string()
+      .trim()
+      .min(6, "Vehicle number is required.")
+      .max(20, "Vehicle number is too long.")
+      .optional(),
+
     vehicleType: z
       .enum(vehicleTypes, {
         message: "Invalid vehicle type.",
+      })
+      .optional(),
+
+    category: z
+      .enum(vehicleCategories, {
+        message: "Invalid vehicle category.",
       })
       .optional(),
 
@@ -81,7 +99,13 @@ const updateVehicleSchema = z
       .max(8, "Seats cannot exceed 8.")
       .optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (data) => Object.keys(data).length > 0,
+    {
+      message: "At least one field is required for update.",
+    },
+  );
 
 module.exports = {
   createVehicleSchema,
