@@ -97,9 +97,9 @@ model Vehicle {
 
   driverId String @unique
 
-  vehicleType VehicleType
-  category    VehicleCategory
-  status      VehicleStatus   @default(PENDING)
+  vehicleType     VehicleType
+  category        VehicleCategory
+  status          VehicleStatus   @default(PENDING)
   rejectionReason String?
 
   brand String
@@ -750,6 +750,10 @@ enum AuditAction {
   ACTIVATE
   CANCEL
   REFUND
+
+  ASSIGN
+  REASSIGN
+  FORCE_COMPLETE
 }
 
 enum AuditEntity {

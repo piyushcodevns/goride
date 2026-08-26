@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const adminAuthMiddleware = require("../../middleware/admin/adminAuth.middleware");
+
 const {
   requirePermission,
 } = require("../../middleware/admin/adminRbac.middleware");
@@ -15,33 +16,27 @@ const {
   getRidesByDriver,
   updateStatus,
   cancel,
+  assign,
+  reassign,
+  forceComplete,
+  getTimeline,
+  getLogs,
 } = require("../../controllers/admin/adminRide.controller");
 
 const { validate } = require("../../middleware/validate.middleware");
 
 const {
   rideIdParamSchema,
-  userIdParamSchema,
-  driverIdParamSchema,
-  paginationSchema,
+  getUserRidesSchema,
+  getDriverRidesSchema,
   getRidesQuerySchema,
   updateRideStatusSchema,
+  assignDriverSchema,
+  reassignDriverSchema,
 } = require("../../validators/admin/adminRide.validator");
 
-// =====================================================
-// RIDE LIST
-// =====================================================
-
 /**
- * @swagger
- * /api/admin/rides:
- *   get:
- *     summary: Get all rides
- *     description: Get paginated rides with search and filter support.
- *     tags:
- *       - Admin Ride Management
- *     security:
- *       - bearerAuth: []
+ * GET /api/admin/rides
  */
 router.get(
   "/",
@@ -51,19 +46,8 @@ router.get(
   getAllRides,
 );
 
-// =====================================================
-// RIDE STATISTICS
-// =====================================================
-
 /**
- * @swagger
- * /api/admin/rides/stats:
- *   get:
- *     summary: Get ride statistics
- *     tags:
- *       - Admin Ride Management
- *     security:
- *       - bearerAuth: []
+ * GET /api/admin/rides/stats
  */
 router.get(
   "/stats",
@@ -72,62 +56,65 @@ router.get(
   getStatistics,
 );
 
-// =====================================================
-// RIDES BY USER
-// =====================================================
-
 /**
- * @swagger
- * /api/admin/rides/user/{userId}:
- *   get:
- *     summary: Get rides by user
- *     tags:
- *       - Admin Ride Management
- *     security:
- *       - bearerAuth: []
+ * GET /api/admin/rides/user/:userId
  */
 router.get(
   "/user/:userId",
   adminAuthMiddleware,
   requirePermission("ride:view"),
-  validate(userIdParamSchema.merge(paginationSchema)),
+  validate(getUserRidesSchema),
   getRidesByUser,
 );
 
-// =====================================================
-// RIDES BY DRIVER
-// =====================================================
-
 /**
- * @swagger
- * /api/admin/rides/driver/{driverId}:
- *   get:
- *     summary: Get rides by driver
- *     tags:
- *       - Admin Ride Management
- *     security:
- *       - bearerAuth: []
+ * GET /api/admin/rides/driver/:driverId
  */
 router.get(
   "/driver/:driverId",
   adminAuthMiddleware,
   requirePermission("ride:view"),
-  validate(driverIdParamSchema.merge(paginationSchema)),
+  validate(getDriverRidesSchema),
   getRidesByDriver,
 );
-// =====================================================
-// RIDE DETAILS
-// =====================================================
 
 /**
- * @swagger
- * /api/admin/rides/{id}:
- *   get:
- *     summary: Get ride details
- *     tags:
- *       - Admin Ride Management
- *     security:
- *       - bearerAuth: []
+ * POST /api/admin/rides/:id/assign
+ */
+router.post(
+  "/:id/assign",
+  adminAuthMiddleware,
+  requirePermission("ride:manage"),
+  validate(rideIdParamSchema),
+  validate(assignDriverSchema),
+  assign,
+);
+
+/**
+ * POST /api/admin/rides/:id/reassign
+ */
+router.post(
+  "/:id/reassign",
+  adminAuthMiddleware,
+  requirePermission("ride:manage"),
+  validate(rideIdParamSchema),
+  validate(reassignDriverSchema),
+  reassign,
+);
+
+/**
+ * POST /api/admin/rides/:id/force-complete
+ */
+router.post(
+  "/:id/force-complete",
+  adminAuthMiddleware,
+  requirePermission("ride:manage"),
+  validate(rideIdParamSchema),
+  forceComplete,
+);
+
+/**
+ * GET /api/admin/rides/:id
  */
 router.get(
   "/:id",
@@ -137,19 +124,8 @@ router.get(
   getRide,
 );
 
-// =====================================================
-// UPDATE RIDE STATUS
-// =====================================================
-
 /**
- * @swagger
- * /api/admin/rides/{id}/status:
- *   patch:
- *     summary: Update ride status
- *     tags:
- *       - Admin Ride Management
- *     security:
- *       - bearerAuth: []
+ * PATCH /api/admin/rides/:id/status
  */
 router.patch(
   "/:id/status",
@@ -160,19 +136,8 @@ router.patch(
   updateStatus,
 );
 
-// =====================================================
-// CANCEL RIDE
-// =====================================================
-
 /**
- * @swagger
- * /api/admin/rides/{id}/cancel:
- *   post:
- *     summary: Cancel ride
- *     tags:
- *       - Admin Ride Management
- *     security:
- *       - bearerAuth: []
+ * POST /api/admin/rides/:id/cancel
  */
 router.post(
   "/:id/cancel",
@@ -180,6 +145,28 @@ router.post(
   requirePermission("ride:manage"),
   validate(rideIdParamSchema),
   cancel,
+);
+
+/**
+ * GET /api/admin/rides/:id/timeline
+ */
+router.get(
+  "/:id/timeline",
+  adminAuthMiddleware,
+  requirePermission("ride:view"),
+  validate(rideIdParamSchema),
+  getTimeline,
+);
+
+/**
+ * GET /api/admin/rides/:id/logs
+ */
+router.get(
+  "/:id/logs",
+  adminAuthMiddleware,
+  requirePermission("ride:view"),
+  validate(rideIdParamSchema),
+  getLogs,
 );
 
 module.exports = router;

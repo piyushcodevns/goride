@@ -4,86 +4,145 @@ const { z } = require("zod");
  * Ride ID parameter.
  */
 const rideIdParamSchema = z.object({
-  id: z.string().trim().min(1, "Ride ID is required."),
+  params: z.object({
+    id: z.string().trim().min(1, "Ride ID is required."),
+  }),
 });
 
 /**
- * User ID parameter.
+ * User ID parameter + pagination.
  */
 const userIdParamSchema = z.object({
-  userId: z.string().trim().min(1, "User ID is required."),
+  params: z.object({
+    userId: z.string().trim().min(1, "User ID is required."),
+  }),
 });
 
 /**
- * Driver ID parameter.
+ * Driver ID parameter + pagination.
  */
 const driverIdParamSchema = z.object({
-  driverId: z.string().trim().min(1, "Driver ID is required."),
+  params: z.object({
+    driverId: z.string().trim().min(1, "Driver ID is required."),
+  }),
 });
 
 /**
  * Pagination.
  */
 const paginationSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  query: z.object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+  }),
+});
+
+/**
+ * User rides parameter + pagination.
+ */
+const getUserRidesSchema = z.object({
+  params: z.object({
+    userId: z.string().trim().min(1, "User ID is required."),
+  }),
+  query: z.object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+  }),
+});
+
+/**
+ * Driver rides parameter + pagination.
+ */
+const getDriverRidesSchema = z.object({
+  params: z.object({
+    driverId: z.string().trim().min(1, "Driver ID is required."),
+  }),
+  query: z.object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+  }),
 });
 
 /**
  * Admin ride list filters.
  */
-const getRidesQuerySchema = paginationSchema
-  .extend({
-    search: z.string().trim().min(1).optional(),
+const getRidesQuerySchema = z.object({
+  query: z
+    .object({
+      page: z.coerce.number().int().min(1).default(1),
+      limit: z.coerce.number().int().min(1).max(100).default(20),
 
-    status: z
-      .enum([
-        "REQUESTED",
-        "ACCEPTED",
-        "ARRIVED",
-        "STARTED",
-        "COMPLETED",
-        "CANCELLED",
-      ])
-      .optional(),
+      search: z.string().trim().min(1).optional(),
 
-    vehicleType: z.enum(["BIKE", "AUTO", "CAR", "SUV"]).optional(),
+      status: z
+        .enum([
+          "REQUESTED",
+          "ACCEPTED",
+          "ARRIVED",
+          "STARTED",
+          "COMPLETED",
+          "CANCELLED",
+        ])
+        .optional(),
 
-    isScheduled: z
-      .enum(["true", "false"])
-      .transform((value) => value === "true")
-      .optional(),
+      vehicleType: z.enum(["BIKE", "AUTO", "CAR", "SUV"]).optional(),
 
-    userId: z.string().trim().min(1).optional(),
+      isScheduled: z
+        .enum(["true", "false"])
+        .transform((value) => value === "true")
+        .optional(),
 
-    driverId: z.string().trim().min(1).optional(),
+      userId: z.string().trim().min(1).optional(),
 
-    fromDate: z.coerce.date().optional(),
+      driverId: z.string().trim().min(1).optional(),
 
-    toDate: z.coerce.date().optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.fromDate && data.toDate && data.fromDate > data.toDate) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["toDate"],
-        message: "toDate must be greater than or equal to fromDate.",
-      });
-    }
-  });
+      fromDate: z.coerce.date().optional(),
+
+      toDate: z.coerce.date().optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (data.fromDate && data.toDate && data.fromDate > data.toDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["toDate"],
+          message: "toDate must be greater than or equal to fromDate.",
+        });
+      }
+    }),
+});
 
 /**
  * Admin ride status update.
  */
 const updateRideStatusSchema = z.object({
-  status: z.enum([
-    "REQUESTED",
-    "ACCEPTED",
-    "ARRIVED",
-    "STARTED",
-    "COMPLETED",
-    "CANCELLED",
-  ]),
+  body: z.object({
+    status: z.enum([
+      "REQUESTED",
+      "ACCEPTED",
+      "ARRIVED",
+      "STARTED",
+      "COMPLETED",
+      "CANCELLED",
+    ]),
+  }),
+});
+
+/**
+ * Assign driver.
+ */
+const assignDriverSchema = z.object({
+  body: z.object({
+    driverId: z.string().trim().min(1, "Driver ID is required."),
+  }),
+});
+
+/**
+ * Reassign driver.
+ */
+const reassignDriverSchema = z.object({
+  body: z.object({
+    driverId: z.string().trim().min(1, "Driver ID is required."),
+  }),
 });
 
 module.exports = {
@@ -91,6 +150,10 @@ module.exports = {
   userIdParamSchema,
   driverIdParamSchema,
   paginationSchema,
+  getUserRidesSchema,
+  getDriverRidesSchema,
   getRidesQuerySchema,
   updateRideStatusSchema,
+  assignDriverSchema,
+  reassignDriverSchema,
 };

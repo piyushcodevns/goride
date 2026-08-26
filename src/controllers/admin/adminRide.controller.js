@@ -6,6 +6,11 @@ const {
   getDriverRides,
   updateRideStatus,
   cancelRide,
+  assignDriver,
+  reassignDriver,
+  forceCompleteRide,
+  getRideTimeline,
+  getRideLogs,
 } = require("../../services/admin/adminRide.service");
 
 const {
@@ -144,6 +149,108 @@ const cancel = async (req, res, next) => {
   }
 };
 
+/**
+ * Assign driver by admin.
+ */
+const assign = async (req, res, next) => {
+  try {
+    const result = await assignDriver({
+      rideId: req.params.id,
+      driverId: req.body.driverId,
+      adminId: req.admin.id,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver assigned successfully.",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Reassign driver by admin.
+ */
+const reassign = async (req, res, next) => {
+  try {
+    const result = await reassignDriver({
+      rideId: req.params.id,
+      driverId: req.body.driverId,
+      adminId: req.admin.id,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver reassigned successfully.",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Force complete ride by admin.
+ */
+const forceComplete = async (req, res, next) => {
+  try {
+    const result = await forceCompleteRide({
+      rideId: req.params.id,
+      adminId: req.admin.id,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Ride force completed successfully.",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get ride timeline.
+ */
+const getTimeline = async (req, res, next) => {
+  try {
+    const result = await getRideTimeline(req.params.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Ride timeline fetched successfully.",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get ride logs.
+ */
+const getLogs = async (req, res, next) => {
+  try {
+    const result = await getRideLogs(req.params.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Ride logs fetched successfully.",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllRides,
   getRide,
@@ -152,4 +259,9 @@ module.exports = {
   getRidesByDriver,
   updateStatus,
   cancel,
+  assign,
+  reassign,
+  forceComplete,
+  getTimeline,
+  getLogs,
 };

@@ -235,7 +235,10 @@ const findRideById = async (rideId, db = prisma) => {
 /**
  * Get rides by user.
  */
-const findRidesByUserId = async (userId, { page = 1, limit = 10 } = {}) => {
+const findRidesByUserId = async (
+  userId,
+  { page = 1, limit = 10 } = {},
+) => {
   page = Number(page);
   limit = Number(limit);
 
@@ -275,7 +278,10 @@ const findRidesByUserId = async (userId, { page = 1, limit = 10 } = {}) => {
 /**
  * Get rides by driver.
  */
-const findRidesByDriverId = async (driverId, { page = 1, limit = 10 } = {}) => {
+const findRidesByDriverId = async (
+  driverId,
+  { page = 1, limit = 10 } = {},
+) => {
   page = Number(page);
   limit = Number(limit);
 
@@ -330,6 +336,21 @@ const updateRide = async (rideId, data, db = prisma) => {
  */
 const updateRideWithAudit = async ({ rideId, data, auditLog }) => {
   return prisma.$transaction(async (tx) => {
+    const ride = await tx.ride.findUnique({
+      where: {
+        id: rideId,
+      },
+      select: {
+        id: true,
+        driverId: true,
+        status: true,
+      },
+    });
+
+    if (!ride) {
+      return null;
+    }
+
     const updatedRide = await tx.ride.update({
       where: {
         id: rideId,
@@ -337,6 +358,21 @@ const updateRideWithAudit = async ({ rideId, data, auditLog }) => {
       data,
       include: adminRideInclude,
     });
+
+    // Driver becomes available when ride is completed/cancelled.
+    if (
+      ride.driverId &&
+      ["COMPLETED", "CANCELLED"].includes(data.status)
+    ) {
+      await tx.driver.update({
+        where: {
+          id: ride.driverId,
+        },
+        data: {
+          availability: "AVAILABLE",
+        },
+      });
+    }
 
     await tx.auditLog.create({
       data: auditLog,
@@ -347,7 +383,183 @@ const updateRideWithAudit = async ({ rideId, data, auditLog }) => {
 };
 
 /**
- * Get ride statistics for admin.
+ * Assign driver atomically.
+ */
+const assignDriverWithAudit = async ({
+  rideId,
+  driverId,
+  adminId,
+  ipAddress,
+  userAgent,
+}) => {
+  return prisma.$transaction(async (tx) => {
+    const ride = await tx.ride.findUnique({
+      where: {
+        id: rideId,
+      },
+    });
+
+    if (!ride) {
+      return null;
+    }
+
+    const updatedRide = await tx.ride.update({
+      where: {
+        id: rideId,
+      },
+      data: {
+        driverId,
+        status: "ACCEPTED",
+      },
+      include: adminRideInclude,
+    });
+
+    await tx.driver.update({
+      where: {
+        id: driverId,
+      },
+      data: {
+        availability: "BUSY",
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        adminId,
+        action: "ASSIGN",
+        entity: "RIDE",
+        entityId: rideId,
+        metadata: {
+          previousDriverId: ride.driverId,
+          newDriverId: driverId,
+          previousStatus: ride.status,
+          newStatus: "ACCEPTED",
+        },
+        ipAddress,
+        userAgent,
+      },
+    });
+
+    return updatedRide;
+  });
+};
+
+/**
+ * Reassign driver atomically.
+ */
+const reassignDriverWithAudit = async ({
+  rideId,
+  oldDriverId,
+  newDriverId,
+  adminId,
+  ipAddress,
+  userAgent,
+}) => {
+  return prisma.$transaction(async (tx) => {
+    const updatedRide = await tx.ride.update({
+      where: {
+        id: rideId,
+      },
+      data: {
+        driverId: newDriverId,
+      },
+      include: adminRideInclude,
+    });
+
+    if (oldDriverId) {
+      await tx.driver.update({
+        where: {
+          id: oldDriverId,
+        },
+        data: {
+          availability: "AVAILABLE",
+        },
+      });
+    }
+
+    await tx.driver.update({
+      where: {
+        id: newDriverId,
+      },
+      data: {
+        availability: "BUSY",
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        adminId,
+        action: "REASSIGN",
+        entity: "RIDE",
+        entityId: rideId,
+        metadata: {
+          previousDriverId: oldDriverId,
+          newDriverId,
+        },
+        ipAddress,
+        userAgent,
+      },
+    });
+
+    return updatedRide;
+  });
+};
+
+/**
+ * Force complete ride atomically.
+ */
+const forceCompleteRideWithAudit = async ({
+  rideId,
+  driverId,
+  adminId,
+  previousStatus,
+  ipAddress,
+  userAgent,
+}) => {
+  return prisma.$transaction(async (tx) => {
+    const updatedRide = await tx.ride.update({
+      where: {
+        id: rideId,
+      },
+      data: {
+        status: "COMPLETED",
+      },
+      include: adminRideInclude,
+    });
+
+    if (driverId) {
+      await tx.driver.update({
+        where: {
+          id: driverId,
+        },
+        data: {
+          availability: "AVAILABLE",
+        },
+      });
+    }
+
+    await tx.auditLog.create({
+      data: {
+        adminId,
+        action: "FORCE_COMPLETE",
+        entity: "RIDE",
+        entityId: rideId,
+        metadata: {
+          previousStatus,
+          newStatus: "COMPLETED",
+          driverId,
+        },
+        ipAddress,
+        userAgent,
+      },
+    });
+
+    return updatedRide;
+  });
+};
+
+/**
+ * Get ride statistics.
  */
 const getRideStats = async () => {
   const [statusStats, scheduledStats, vehicleTypeStats] =
@@ -383,6 +595,7 @@ const getRideStats = async () => {
 
 module.exports = {
   buildRideWhere,
+  adminRideInclude,
   findRides,
   findRideById,
   findRidesByUserId,
@@ -390,4 +603,7 @@ module.exports = {
   getRideStats,
   updateRide,
   updateRideWithAudit,
+  assignDriverWithAudit,
+  reassignDriverWithAudit,
+  forceCompleteRideWithAudit,
 };
