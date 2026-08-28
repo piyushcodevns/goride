@@ -4,13 +4,15 @@ const { z } = require("zod");
  * Payment ID parameter.
  */
 const paymentIdParamSchema = z.object({
-  id: z.string().trim().min(1, "Payment ID is required."),
+  params: z.object({
+    id: z.string().trim().min(1, "Payment ID is required."),
+  }),
 });
 
 /**
- * Pagination.
+ * Pagination query.
  */
-const paginationSchema = z.object({
+const paginationQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
@@ -18,7 +20,7 @@ const paginationSchema = z.object({
 /**
  * Admin payment list filters.
  */
-const getPaymentsQuerySchema = paginationSchema
+const paymentFiltersSchema = paginationQuerySchema
   .extend({
     search: z.string().trim().min(1).optional(),
 
@@ -49,9 +51,41 @@ const getPaymentsQuerySchema = paginationSchema
   });
 
 /**
- * Payment status update.
+ * Admin payment list query.
  */
-const updatePaymentStatusSchema = z
+const getPaymentsQuerySchema = z.object({
+  query: paymentFiltersSchema,
+});
+
+/**
+ * Revenue report query.
+ */
+const revenueReportSchema = z
+  .object({
+    fromDate: z.coerce.date().optional(),
+    toDate: z.coerce.date().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.fromDate && data.toDate && data.fromDate > data.toDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["toDate"],
+        message: "toDate must be greater than or equal to fromDate.",
+      });
+    }
+  });
+
+/**
+ * Revenue report query wrapper.
+ */
+const revenueReportQuerySchema = z.object({
+  query: revenueReportSchema,
+});
+
+/**
+ * Payment status update body.
+ */
+const paymentStatusSchema = z
   .object({
     status: z.enum(["PROCESSING", "SUCCESS", "FAILED", "REFUNDED"]),
 
@@ -71,9 +105,17 @@ const updatePaymentStatusSchema = z
     }
   });
 
+/**
+ * Payment status update body wrapper.
+ */
+const updatePaymentStatusSchema = z.object({
+  body: paymentStatusSchema,
+});
+
 module.exports = {
   paymentIdParamSchema,
-  paginationSchema,
+  paginationSchema: paginationQuerySchema,
   getPaymentsQuerySchema,
+  revenueReportQuerySchema,
   updatePaymentStatusSchema,
 };

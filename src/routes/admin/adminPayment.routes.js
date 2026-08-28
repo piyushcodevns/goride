@@ -12,7 +12,10 @@ const {
   getAllPayments,
   getPayment,
   getStatistics,
+  getRevenueReport,
   updateStatus,
+  retry,
+  refund,
 } = require("../../controllers/admin/adminPayment.controller");
 
 const { validate } = require("../../middleware/validate.middleware");
@@ -20,6 +23,7 @@ const { validate } = require("../../middleware/validate.middleware");
 const {
   paymentIdParamSchema,
   getPaymentsQuerySchema,
+  revenueReportQuerySchema,
   updatePaymentStatusSchema,
 } = require("../../validators/admin/adminPayment.validator");
 
@@ -44,6 +48,42 @@ router.get(
   adminAuthMiddleware,
   requirePermission("payment:view"),
   getStatistics,
+);
+
+// =====================================================
+// REVENUE REPORT
+// =====================================================
+
+router.get(
+  "/reports/revenue",
+  adminAuthMiddleware,
+  requirePermission("payment:view"),
+  validate(revenueReportQuerySchema),
+  getRevenueReport,
+);
+
+// =====================================================
+// REFUND PAYMENT
+// =====================================================
+
+router.post(
+  "/:id/refund",
+  adminAuthMiddleware,
+  requirePermission("payment:manage"),
+  validate(paymentIdParamSchema),
+  refund,
+);
+
+// =====================================================
+// RETRY PAYMENT
+// =====================================================
+
+router.post(
+  "/:id/retry",
+  adminAuthMiddleware,
+  requirePermission("payment:manage"),
+  validate(paymentIdParamSchema),
+  retry,
 );
 
 // =====================================================

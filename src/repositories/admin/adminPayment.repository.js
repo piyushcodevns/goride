@@ -203,50 +203,55 @@ const findPaymentById = async (paymentId) => {
  * Get payment statistics.
  */
 const getPaymentStats = async () => {
-  const [statusStats, methodStats, gatewayStats, totalAmount, successfulAmount] =
-    await prisma.$transaction([
-      prisma.payment.groupBy({
-        by: ["status"],
-        _count: {
-          status: true,
-        },
-      }),
+  const [
+    statusStats,
+    methodStats,
+    gatewayStats,
+    totalAmount,
+    successfulAmount,
+  ] = await prisma.$transaction([
+    prisma.payment.groupBy({
+      by: ["status"],
+      _count: {
+        status: true,
+      },
+    }),
 
-      prisma.payment.groupBy({
-        by: ["paymentMethod"],
-        _count: {
-          paymentMethod: true,
-        },
-      }),
+    prisma.payment.groupBy({
+      by: ["paymentMethod"],
+      _count: {
+        paymentMethod: true,
+      },
+    }),
 
-      prisma.payment.groupBy({
-        by: ["gateway"],
-        _count: {
-          gateway: true,
-        },
-      }),
+    prisma.payment.groupBy({
+      by: ["gateway"],
+      _count: {
+        gateway: true,
+      },
+    }),
 
-      prisma.payment.aggregate({
-        _count: {
-          id: true,
-        },
-        _sum: {
-          amount: true,
-        },
-      }),
+    prisma.payment.aggregate({
+      _count: {
+        id: true,
+      },
+      _sum: {
+        amount: true,
+      },
+    }),
 
-      prisma.payment.aggregate({
-        where: {
-          status: "SUCCESS",
-        },
-        _count: {
-          id: true,
-        },
-        _sum: {
-          amount: true,
-        },
-      }),
-    ]);
+    prisma.payment.aggregate({
+      where: {
+        status: "SUCCESS",
+      },
+      _count: {
+        id: true,
+      },
+      _sum: {
+        amount: true,
+      },
+    }),
+  ]);
 
   return {
     status: statusStats,
@@ -254,6 +259,57 @@ const getPaymentStats = async () => {
     gateway: gatewayStats,
     total: totalAmount,
     successful: successfulAmount,
+  };
+};
+
+/**
+ * Get revenue report.
+ */
+const getRevenueReport = async ({ fromDate, toDate }) => {
+  const where = {
+    status: "SUCCESS",
+    paidAt: {
+      not: null,
+    },
+  };
+
+  if (fromDate) {
+    const startDate = new Date(fromDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    where.paidAt.gte = startDate;
+  }
+
+  if (toDate) {
+    const endDate = new Date(toDate);
+    endDate.setHours(23, 59, 59, 999);
+
+    where.paidAt.lte = endDate;
+  }
+
+  const [summary, paymentCount] = await prisma.$transaction([
+    prisma.payment.aggregate({
+      where,
+      _count: {
+        id: true,
+      },
+      _sum: {
+        amount: true,
+      },
+      _avg: {
+        amount: true,
+      },
+    }),
+
+    prisma.payment.count({
+      where,
+    }),
+  ]);
+
+  return {
+    totalRevenue: summary._sum.amount?.toString() || "0",
+    paymentCount,
+    averagePayment: summary._avg.amount?.toString() || "0",
   };
 };
 
@@ -273,11 +329,7 @@ const updatePayment = async (paymentId, data) => {
 /**
  * Update payment and create audit log atomically.
  */
-const updatePaymentWithAudit = async ({
-  paymentId,
-  data,
-  auditLog,
-}) => {
+const updatePaymentWithAudit = async ({ paymentId, data, auditLog }) => {
   return prisma.$transaction(async (tx) => {
     const updatedPayment = await tx.payment.update({
       where: {
@@ -311,6 +363,7 @@ module.exports = {
   findPayments,
   findPaymentById,
   getPaymentStats,
+  getRevenueReport,
   updatePayment,
   updatePaymentWithAudit,
   findPaymentByTransactionId,

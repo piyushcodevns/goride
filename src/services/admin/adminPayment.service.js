@@ -2,6 +2,7 @@ const {
   findPayments,
   findPaymentById,
   getPaymentStats,
+  getRevenueReport,
   updatePaymentWithAudit,
   findPaymentByTransactionId,
 } = require("../../repositories/admin/adminPayment.repository");
@@ -55,6 +56,16 @@ const getPaymentStatistics = async () => {
 };
 
 /**
+ * Get revenue report.
+ */
+const getRevenueReports = async ({ fromDate, toDate }) => {
+  return getRevenueReport({
+    fromDate,
+    toDate,
+  });
+};
+
+/**
  * Update payment status.
  */
 const updatePaymentStatus = async ({
@@ -72,9 +83,7 @@ const updatePaymentStatus = async ({
   }
 
   if (payment.status === status) {
-    throw new ConflictError(
-      `Payment is already ${status}.`,
-    );
+    throw new ConflictError(`Payment is already ${status}.`);
   }
 
   const allowedTransitions =
@@ -86,8 +95,7 @@ const updatePaymentStatus = async ({
     );
   }
 
-  const sanitizedTransactionId =
-    transactionId?.trim() || null;
+  const sanitizedTransactionId = transactionId?.trim() || null;
 
   if (status === "SUCCESS" && !sanitizedTransactionId) {
     throw new BadRequestError(
@@ -96,18 +104,12 @@ const updatePaymentStatus = async ({
   }
 
   if (sanitizedTransactionId) {
-    const existingPayment =
-      await findPaymentByTransactionId(
-        sanitizedTransactionId,
-      );
+    const existingPayment = await findPaymentByTransactionId(
+      sanitizedTransactionId,
+    );
 
-    if (
-      existingPayment &&
-      existingPayment.id !== payment.id
-    ) {
-      throw new ConflictError(
-        "Transaction ID already exists.",
-      );
+    if (existingPayment && existingPayment.id !== payment.id) {
+      throw new ConflictError("Transaction ID already exists.");
     }
   }
 
@@ -119,10 +121,7 @@ const updatePaymentStatus = async ({
     data.transactionId = sanitizedTransactionId;
   }
 
-  if (
-    status === "SUCCESS" &&
-    !payment.paidAt
-  ) {
+  if (status === "SUCCESS" && !payment.paidAt) {
     data.paidAt = new Date();
   }
 
@@ -143,11 +142,96 @@ const updatePaymentStatus = async ({
       metadata: {
         previousStatus: payment.status,
         newStatus: status,
-        previousTransactionId:
-          payment.transactionId,
-        newTransactionId:
-          sanitizedTransactionId ||
-          payment.transactionId,
+        previousTransactionId: payment.transactionId,
+        newTransactionId: sanitizedTransactionId || payment.transactionId,
+      },
+
+      ipAddress,
+      userAgent,
+    },
+  });
+};
+
+/**
+ * Retry failed payment.
+ *
+ * FAILED -> PROCESSING
+ */
+const retryPayment = async ({ paymentId, adminId, ipAddress, userAgent }) => {
+  const payment = await findPaymentById(paymentId);
+
+  if (!payment) {
+    throw new NotFoundError("Payment not found.");
+  }
+
+  if (payment.status !== "FAILED") {
+    throw new BadRequestError(
+      `Only failed payments can be retried. Current status: ${payment.status}.`,
+    );
+  }
+
+  return updatePaymentWithAudit({
+    paymentId,
+    data: {
+      status: "PROCESSING",
+    },
+
+    auditLog: {
+      adminId,
+      action: "UPDATE",
+      entity: "PAYMENT",
+      entityId: paymentId,
+
+      metadata: {
+        action: "RETRY_PAYMENT",
+        previousStatus: payment.status,
+        newStatus: "PROCESSING",
+        transactionId: payment.transactionId,
+      },
+
+      ipAddress,
+      userAgent,
+    },
+  });
+};
+
+/**
+ * Refund successful payment.
+ *
+ * SUCCESS -> REFUNDED
+ */
+const refundPayment = async ({ paymentId, adminId, ipAddress, userAgent }) => {
+  const payment = await findPaymentById(paymentId);
+
+  if (!payment) {
+    throw new NotFoundError("Payment not found.");
+  }
+
+  if (payment.status !== "SUCCESS") {
+    throw new BadRequestError(
+      `Only successful payments can be refunded. Current status: ${payment.status}.`,
+    );
+  }
+
+  return updatePaymentWithAudit({
+    paymentId,
+
+    data: {
+      status: "REFUNDED",
+    },
+
+    auditLog: {
+      adminId,
+      action: "UPDATE",
+      entity: "PAYMENT",
+      entityId: paymentId,
+
+      metadata: {
+        action: "REFUND_PAYMENT",
+        previousStatus: payment.status,
+        newStatus: "REFUNDED",
+        transactionId: payment.transactionId,
+        refundedAmount: payment.amount.toString(),
       },
 
       ipAddress,
@@ -161,4 +245,7 @@ module.exports = {
   getPaymentDetails,
   getPaymentStatistics,
   updatePaymentStatus,
+  retryPayment,
+  refundPayment,
+  getRevenueReports,
 };
