@@ -1,4 +1,4 @@
-const {
+﻿const {
   NOTIFICATION_EVENTS,
   NOTIFICATION_TYPES,
   NOTIFICATION_CHANNELS,
@@ -12,17 +12,11 @@ class NotificationFactory {
   static createWelcomeNotification(user) {
     return {
       userId: user.id,
-
-      title: "Welcome to GoRide! 🚖",
-
+      title: "Welcome to GoRide!",
       message: `Hi ${user.fullName}, welcome to GoRide. Your account has been created successfully.`,
-
       type: NOTIFICATION_TYPES.ACCOUNT,
-
       channel: NOTIFICATION_CHANNELS.IN_APP,
-
       priority: NOTIFICATION_PRIORITY.NORMAL,
-
       metadata: null,
     };
   }
@@ -39,19 +33,15 @@ class NotificationFactory {
   }) {
     return {
       userId,
-
-      title: "Ride Booked Successfully 🚖",
-
+      title: "Ride Booked Successfully",
       message: `Your ride from ${pickup} to ${destination} has been booked successfully.`,
-
       type: NOTIFICATION_TYPES.RIDE,
-
       channel: NOTIFICATION_CHANNELS.IN_APP,
-
       priority: NOTIFICATION_PRIORITY.HIGH,
-
       metadata: {
         rideId,
+        pickup,
+        destination,
         status,
       },
     };
@@ -63,17 +53,11 @@ class NotificationFactory {
   static createRideAcceptedNotification({ userId, rideId, driverId, status }) {
     return {
       userId,
-
-      title: "Ride Accepted 🚖",
-
+      title: "Ride Accepted",
       message: "Your driver has accepted your ride and will reach you soon.",
-
       type: NOTIFICATION_TYPES.RIDE,
-
       channel: NOTIFICATION_CHANNELS.IN_APP,
-
       priority: NOTIFICATION_PRIORITY.HIGH,
-
       metadata: {
         rideId,
         driverId,
@@ -85,20 +69,19 @@ class NotificationFactory {
   /**
    * Driver Arrived Notification
    */
-  static createDriverArrivedNotification({ userId, rideId, driverId, status }) {
+  static createDriverArrivedNotification({
+    userId,
+    rideId,
+    driverId,
+    status,
+  }) {
     return {
       userId,
-
-      title: "Driver Arrived 🚗",
-
+      title: "Driver Arrived",
       message: "Your driver has arrived at pickup location.",
-
       type: NOTIFICATION_TYPES.RIDE,
-
       channel: NOTIFICATION_CHANNELS.IN_APP,
-
       priority: NOTIFICATION_PRIORITY.HIGH,
-
       metadata: {
         rideId,
         driverId,
@@ -113,17 +96,11 @@ class NotificationFactory {
   static createRideStartedNotification({ userId, rideId, driverId, status }) {
     return {
       userId,
-
-      title: "Ride Started 🚖",
-
+      title: "Ride Started",
       message: "Your ride has started. Have a safe journey.",
-
       type: NOTIFICATION_TYPES.RIDE,
-
       channel: NOTIFICATION_CHANNELS.IN_APP,
-
       priority: NOTIFICATION_PRIORITY.HIGH,
-
       metadata: {
         rideId,
         driverId,
@@ -138,17 +115,11 @@ class NotificationFactory {
   static createRideCompletedNotification({ userId, rideId, driverId, status }) {
     return {
       userId,
-
-      title: "Ride Completed 🎉",
-
+      title: "Ride Completed",
       message: "Your ride has been completed successfully.",
-
       type: NOTIFICATION_TYPES.RIDE,
-
       channel: NOTIFICATION_CHANNELS.IN_APP,
-
       priority: NOTIFICATION_PRIORITY.HIGH,
-
       metadata: {
         rideId,
         driverId,
@@ -169,19 +140,15 @@ class NotificationFactory {
   }) {
     return {
       userId,
-
-      title: "Ride Cancelled ❌",
-
+      title: "Ride Cancelled",
       message: `Your ride from ${pickup} to ${destination} has been cancelled.`,
-
       type: NOTIFICATION_TYPES.RIDE,
-
       channel: NOTIFICATION_CHANNELS.IN_APP,
-
       priority: NOTIFICATION_PRIORITY.HIGH,
-
       metadata: {
         rideId,
+        pickup,
+        destination,
         status,
       },
     };
@@ -193,18 +160,12 @@ class NotificationFactory {
   static createRideRejectedNotification({ userId, rideId, driverId }) {
     return {
       userId,
-
       title: "Ride Rejected",
-
       message:
         "Your ride request was rejected by the driver. We are searching for another driver.",
-
       type: NOTIFICATION_TYPES.RIDE,
-
       channel: NOTIFICATION_CHANNELS.IN_APP,
-
       priority: NOTIFICATION_PRIORITY.HIGH,
-
       metadata: {
         rideId,
         driverId,
@@ -219,20 +180,15 @@ class NotificationFactory {
   static createPaymentSuccessNotification(payment) {
     return {
       userId: payment.userId,
-
-      title: "Payment Successful 💳",
-
-      message: `Your payment of ₹${payment.amount} has been completed successfully.`,
-
+      title: "Payment Successful",
+      message: `Your payment of INR ${payment.amount} has been completed successfully.`,
       type: NOTIFICATION_TYPES.PAYMENT,
-
       channel: NOTIFICATION_CHANNELS.IN_APP,
-
       priority: NOTIFICATION_PRIORITY.HIGH,
-
       metadata: {
         paymentId: payment.id,
         rideId: payment.rideId,
+        amount: payment.amount,
         status: payment.status,
       },
     };
@@ -244,20 +200,15 @@ class NotificationFactory {
   static createPaymentFailedNotification(payment) {
     return {
       userId: payment.userId,
-
-      title: "Payment Failed ❌",
-
-      message: `Your payment of ₹${payment.amount} could not be completed.`,
-
+      title: "Payment Failed",
+      message: `Your payment of INR ${payment.amount} could not be completed.`,
       type: NOTIFICATION_TYPES.PAYMENT,
-
       channel: NOTIFICATION_CHANNELS.IN_APP,
-
       priority: NOTIFICATION_PRIORITY.HIGH,
-
       metadata: {
         paymentId: payment.id,
         rideId: payment.rideId,
+        amount: payment.amount,
         status: payment.status,
       },
     };
@@ -268,27 +219,23 @@ class NotificationFactory {
    */
   static createCouponAppliedNotification({
     userId,
-    rideId,
+    couponId,
     couponCode,
-    discountAmount,
+    rideId,
+    discount,
   }) {
     return {
       userId,
-
-      title: "Coupon Applied 🎉",
-
-      message: `Coupon ${couponCode} applied successfully. You saved ₹${discountAmount}.`,
-
+      title: "Coupon Applied",
+      message: `Coupon ${couponCode} was applied successfully. You saved INR ${discount}.`,
       type: NOTIFICATION_TYPES.PROMOTION,
-
       channel: NOTIFICATION_CHANNELS.IN_APP,
-
       priority: NOTIFICATION_PRIORITY.NORMAL,
-
       metadata: {
-        rideId,
+        couponId,
         couponCode,
-        discountAmount,
+        rideId,
+        discount,
       },
     };
   }
@@ -299,19 +246,14 @@ class NotificationFactory {
   static createPasswordResetNotification(user) {
     return {
       userId: user.id,
-
-      title: "Password Reset Successful 🔒",
-
-      message:
-        "Your GoRide account password has been changed successfully. If you did not perform this action, please contact support immediately.",
-
+      title: "Password Reset",
+      message: "Your password has been reset successfully.",
       type: NOTIFICATION_TYPES.SECURITY,
-
       channel: NOTIFICATION_CHANNELS.IN_APP,
-
       priority: NOTIFICATION_PRIORITY.HIGH,
-
-      metadata: null,
+      metadata: {
+        userId: user.id,
+      },
     };
   }
 }

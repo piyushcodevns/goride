@@ -1,33 +1,48 @@
-const { Queue } = require('bullmq');
+const { Queue } = require("bullmq");
 
-const logger = require('../utils/logger');
-const { redisConnection, isQueueEnabled, connectRedisIfNeeded } = require('../config/redis');
-const { NOTIFICATION_RETRY } = require('../constants/notification.constants');
+const logger = require("../utils/logger");
+const {
+  redisConnection,
+  isQueueEnabled,
+  connectRedisIfNeeded,
+} = require("../config/redis");
+const { NOTIFICATION_RETRY } = require("../constants/notification.constants");
 
 const queueNames = {
-  default: 'notification',
-  retry: 'notification-retry',
-  scheduled: 'notification-scheduled',
-  deadLetter: 'notification-dlq',
+  default: "notification",
+  retry: "notification-retry",
+  scheduled: "notification-scheduled",
+  deadLetter: "notification-dlq",
 };
 
 const queueInstances = new Map();
 
-const createQueue = (name = queueNames.default) => {
+const getRetryBackoff = () => ({
+  type: "custom",
+  delay: 5000,
+});
+
+const createQueue = (name) => {
   if (!isQueueEnabled()) {
     return null;
   }
 
   return new Queue(name, {
     connection: redisConnection,
+
     defaultJobOptions: {
       attempts: NOTIFICATION_RETRY.MAX_ATTEMPTS,
-      backoff: {
-        type: 'custom',
-        delay: 5000,
+      backoff: getRetryBackoff(),
+
+      removeOnComplete: {
+        age: 3600,
+        count: 1000,
       },
-      removeOnComplete: true,
-      removeOnFail: false,
+
+      removeOnFail: {
+        age: 86400,
+        count: 5000,
+      },
     },
   });
 };
@@ -45,105 +60,164 @@ const getQueueInstance = (name = queueNames.default) => {
 };
 
 const notificationQueue = () => getQueueInstance(queueNames.default);
+
 const retryQueue = () => getQueueInstance(queueNames.retry);
+
 const scheduledQueue = () => getQueueInstance(queueNames.scheduled);
+
 const deadLetterQueue = () => getQueueInstance(queueNames.deadLetter);
 
-const getQueueName = (kind = 'default') => {
-  if (kind === 'retry') return queueNames.retry;
-  if (kind === 'scheduled') return queueNames.scheduled;
-  if (kind === 'deadLetter') return queueNames.deadLetter;
+const getQueueName = (kind = "default") => {
+  if (kind === "retry") {
+    return queueNames.retry;
+  }
+
+  if (kind === "scheduled") {
+    return queueNames.scheduled;
+  }
+
+  if (kind === "deadLetter") {
+    return queueNames.deadLetter;
+  }
+
   return queueNames.default;
 };
 
-const buildNotificationJob = (payload) => ({
+const buildNotificationJob = (payload, options = {}) => ({
   queueName: queueNames.default,
+
   data: payload,
+
   options: {
-    attempts: NOTIFICATION_RETRY.MAX_ATTEMPTS,
-    backoff: {
-      type: 'custom',
-      delay: 5000,
+    attempts: options.attempts ?? NOTIFICATION_RETRY.MAX_ATTEMPTS,
+
+    backoff: options.backoff ?? getRetryBackoff(),
+
+    removeOnComplete: options.removeOnComplete ?? {
+      age: 3600,
+      count: 1000,
     },
-    removeOnComplete: true,
-    removeOnFail: false,
+
+    removeOnFail: options.removeOnFail ?? {
+      age: 86400,
+      count: 5000,
+    },
+
+    ...options,
   },
 });
 
 const addNotificationJob = async (payload, options = {}) => {
   if (!isQueueEnabled()) {
-    const error = new Error('Notification queue is disabled.');
-    logger.warn('Notification queue job skipped because queueing is disabled.', {
-      notificationId: payload?.notificationId,
-    });
+    const error = new Error("Notification queue is disabled.");
+
+    logger.warn(
+      "Notification queue job skipped because queueing is disabled.",
+      {
+        notificationId: payload?.notificationId,
+      },
+    );
+
     throw error;
+  }
+
+  if (!payload?.notificationId) {
+    throw new Error("Notification ID is required to enqueue notification job.");
   }
 
   try {
     await connectRedisIfNeeded();
 
-    const queue = options.queueName === queueNames.retry
-      ? retryQueue()
-      : options.queueName === queueNames.scheduled
-        ? scheduledQueue()
-        : notificationQueue();
+    let queue;
 
-    const job = await queue.add('notification-job', payload, {
-      ...buildNotificationJob(payload).options,
-      ...options,
-    });
+    if (options.queueName === queueNames.retry) {
+      queue = retryQueue();
+    } else if (options.queueName === queueNames.scheduled) {
+      queue = scheduledQueue();
+    } else if (options.queueName === queueNames.deadLetter) {
+      queue = deadLetterQueue();
+    } else {
+      queue = notificationQueue();
+    }
 
-    logger.info('Notification queue job created.', {
+    if (!queue) {
+      throw new Error("Notification queue instance is unavailable.");
+    }
+
+    const jobOptions = {
+      ...buildNotificationJob(payload, options).options,
+    };
+
+    delete jobOptions.queueName;
+
+    const job = await queue.add("notification-job", payload, jobOptions);
+
+    logger.info("Notification queue job created.", {
       jobId: job.id,
       queueName: queue.name,
-      notificationId: payload?.notificationId,
+      notificationId: payload.notificationId,
     });
 
     return job;
   } catch (error) {
-    logger.error('Unable to enqueue notification job.', {
+    logger.error("Unable to enqueue notification job.", {
       error: error.message,
       notificationId: payload?.notificationId,
     });
+
     throw error;
   }
 };
 
 const getQueueHealth = async () => {
   if (!isQueueEnabled()) {
-    return { healthy: false, queueEnabled: false, redis: 'disabled' };
+    return {
+      healthy: false,
+      queueEnabled: false,
+      redis: "disabled",
+    };
   }
 
   try {
     if (!redisConnection) {
-      return { healthy: false, queueEnabled: true, redis: 'unavailable' };
+      return {
+        healthy: false,
+        queueEnabled: true,
+        redis: "unavailable",
+      };
     }
 
     await connectRedisIfNeeded();
     await redisConnection.ping();
-    return { healthy: true, queueEnabled: true, redis: 'ok' };
+
+    return {
+      healthy: true,
+      queueEnabled: true,
+      redis: "ok",
+    };
   } catch (error) {
-    logger.error('Redis health check failed.', {
+    logger.error("Redis health check failed.", {
       error: error.message,
     });
-    return { healthy: false, queueEnabled: true, redis: 'error' };
+
+    return {
+      healthy: false,
+      queueEnabled: true,
+      redis: "error",
+    };
   }
 };
 
 const closeQueues = async () => {
-  const queues = [notificationQueue(), retryQueue(), scheduledQueue(), deadLetterQueue()].filter(Boolean);
+  const queues = Array.from(queueInstances.values()).filter(Boolean);
 
-  await Promise.allSettled([
-    ...queues.map((queue) => queue.close()),
-  ]);
+  await Promise.allSettled(queues.map((queue) => queue.close()));
 
-  await Promise.allSettled([
-    (async () => {
-      if (redisConnection && isQueueEnabled()) {
-        await redisConnection.quit();
-      }
-    })(),
-  ]);
+  queueInstances.clear();
+
+  logger.info("Notification queues closed.");
+
+  return true;
 };
 
 module.exports = {

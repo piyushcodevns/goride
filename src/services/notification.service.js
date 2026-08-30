@@ -8,7 +8,6 @@ const {
 const logger = require("../utils/logger");
 const { addNotificationJob } = require("../queues/notification.queue");
 const { deliverNotification } = require("./notification/delivery.service");
-const { canRetry, getRetryDelay } = require("./notification/retry.service");
 
 const {
   NOTIFICATION_STATUS,
@@ -48,11 +47,6 @@ const dispatchNotification = async (data) => {
   try {
     notification = await createNotification(data);
 
-    await notificationRepository.updateNotificationStatus(
-      notification.id,
-      NOTIFICATION_STATUS.PROCESSING,
-    );
-
     try {
       await addNotificationJob({
         notificationId: notification.id,
@@ -89,27 +83,10 @@ const dispatchNotification = async (data) => {
     });
 
     if (notification?.id) {
-      await notificationRepository.incrementRetryCount(notification.id);
-
-      const latest = await notificationRepository.findNotificationById(
+      await notificationRepository.updateNotificationStatus(
         notification.id,
+        NOTIFICATION_STATUS.FAILED,
       );
-
-      if (canRetry(latest.retryCount)) {
-        logger.warn("Notification retry scheduled.", {
-          notificationId: notification.id,
-          retryAfter: getRetryDelay(latest.retryCount - 1),
-        });
-      } else {
-        await notificationRepository.updateNotificationStatus(
-          notification.id,
-          NOTIFICATION_STATUS.FAILED,
-        );
-
-        logger.error("Notification retry limit exceeded.", {
-          notificationId: notification.id,
-        });
-      }
     }
 
     return null;
