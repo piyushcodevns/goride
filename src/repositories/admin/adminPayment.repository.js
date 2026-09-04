@@ -61,11 +61,15 @@ const buildPaymentWhere = ({
     where.createdAt = {};
 
     if (fromDate) {
-      where.createdAt.gte = fromDate;
+      const startDate = new Date(fromDate);
+      startDate.setHours(0, 0, 0, 0);
+      where.createdAt.gte = startDate;
     }
 
     if (toDate) {
-      where.createdAt.lte = toDate;
+      const endDate = new Date(toDate);
+      endDate.setHours(23, 59, 59, 999);
+      where.createdAt.lte = endDate;
     }
   }
 
