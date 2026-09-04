@@ -181,15 +181,51 @@ const incrementCouponUsage = (couponId) => {
   });
 };
 
-const incrementCouponUsageTx = (tx, couponId) => {
-  return tx.coupon.update({
+const incrementCouponUsageTx = async (tx, couponId) => {
+  const coupon = await tx.coupon.findUnique({
     where: {
       id: couponId,
+    },
+    select: {
+      id: true,
+      usageLimit: true,
+      usedCount: true,
+    },
+  });
+
+  if (!coupon) {
+    throw new ConflictError("Coupon no longer exists.");
+  }
+
+  if (coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit) {
+    throw new ConflictError("Coupon usage limit has been reached.");
+  }
+
+  const result = await tx.coupon.updateMany({
+    where: {
+      id: couponId,
+      ...(coupon.usageLimit !== null
+        ? {
+            usedCount: {
+              lt: coupon.usageLimit,
+            },
+          }
+        : {}),
     },
     data: {
       usedCount: {
         increment: 1,
       },
+    },
+  });
+
+  if (result.count === 0) {
+    throw new ConflictError("Coupon usage limit has been reached.");
+  }
+
+  return tx.coupon.findUnique({
+    where: {
+      id: couponId,
     },
   });
 };
@@ -223,15 +259,30 @@ const updateRideCouponTx = async (
   return result;
 };
 
-const decrementCouponUsage = (couponId) => {
-  return prisma.coupon.update({
+const decrementCouponUsage = async (couponId) => {
+  const result = await prisma.coupon.updateMany({
     where: {
       id: couponId,
+      usedCount: {
+        gt: 0,
+      },
     },
     data: {
       usedCount: {
         decrement: 1,
       },
+    },
+  });
+
+  if (result.count === 0) {
+    throw new ConflictError(
+      "Coupon usage count cannot be decremented below zero.",
+    );
+  }
+
+  return prisma.coupon.findUnique({
+    where: {
+      id: couponId,
     },
   });
 };
@@ -293,6 +344,207 @@ const getCouponUsagesByCouponId = (couponId) => {
 
 /**
  * ============================================================
+ * Coupon Analytics / Reports
+ * ============================================================
+ */
+
+const getCouponUsageAnalytics = async (couponId) => {
+  const [usageStats, uniqueUsers, coupon] = await Promise.all([
+    prisma.couponUsage.aggregate({
+      where: {
+        couponId,
+      },
+      _count: {
+        _all: true,
+      },
+      _sum: {
+        discountAmount: true,
+      },
+      _avg: {
+        discountAmount: true,
+      },
+    }),
+
+    prisma.couponUsage.findMany({
+      where: {
+        couponId,
+      },
+      distinct: ["userId"],
+      select: {
+        userId: true,
+      },
+    }),
+
+    prisma.coupon.findUnique({
+      where: {
+        id: couponId,
+      },
+      select: {
+        id: true,
+        code: true,
+        type: true,
+        discountValue: true,
+        usageLimit: true,
+        perUserUsageLimit: true,
+        usedCount: true,
+        isActive: true,
+        validFrom: true,
+        validUntil: true,
+      },
+    }),
+  ]);
+
+  return {
+    coupon,
+    totalUsages: usageStats._count._all,
+    uniqueUsers: uniqueUsers.length,
+    totalDiscountAmount: usageStats._sum.discountAmount || 0,
+    averageDiscountAmount: usageStats._avg.discountAmount || 0,
+  };
+};
+
+const getExpiredCoupons = async () => {
+  const now = new Date();
+
+  return prisma.coupon.findMany({
+    where: {
+      validUntil: {
+        lt: now,
+      },
+    },
+    orderBy: {
+      validUntil: "desc",
+    },
+    include: {
+      createdBy: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          role: true,
+        },
+      },
+    },
+  });
+};
+
+const getCouponReport = async () => {
+  const now = new Date();
+
+  const [
+    totalCoupons,
+    activeCoupons,
+    inactiveCoupons,
+    expiredCoupons,
+    totalUsages,
+    totalDiscount,
+    couponUsageGroups,
+  ] = await Promise.all([
+    prisma.coupon.count(),
+
+    prisma.coupon.count({
+      where: {
+        isActive: true,
+      },
+    }),
+
+    prisma.coupon.count({
+      where: {
+        isActive: false,
+      },
+    }),
+
+    prisma.coupon.count({
+      where: {
+        validUntil: {
+          lt: now,
+        },
+      },
+    }),
+
+    prisma.couponUsage.count(),
+
+    prisma.couponUsage.aggregate({
+      _sum: {
+        discountAmount: true,
+      },
+    }),
+
+    prisma.couponUsage.groupBy({
+      by: ["couponId"],
+      _count: {
+        _all: true,
+      },
+      _sum: {
+        discountAmount: true,
+      },
+      orderBy: {
+        _count: {
+          couponId: "desc",
+        },
+      },
+    }),
+  ]);
+
+  const couponIds = couponUsageGroups.map((item) => item.couponId);
+
+  const coupons =
+    couponIds.length > 0
+      ? await prisma.coupon.findMany({
+          where: {
+            id: {
+              in: couponIds,
+            },
+          },
+          select: {
+            id: true,
+            code: true,
+            type: true,
+            discountValue: true,
+            usageLimit: true,
+            usedCount: true,
+            isActive: true,
+            validFrom: true,
+            validUntil: true,
+          },
+        })
+      : [];
+
+  const couponMap = new Map(coupons.map((coupon) => [coupon.id, coupon]));
+
+  const performance = couponUsageGroups.map((group) => {
+    const coupon = couponMap.get(group.couponId);
+
+    return {
+      couponId: group.couponId,
+      code: coupon?.code || null,
+      type: coupon?.type || null,
+      discountValue: coupon?.discountValue || null,
+      usageLimit: coupon?.usageLimit ?? null,
+      usedCount: coupon?.usedCount ?? group._count._all,
+      isActive: coupon?.isActive ?? null,
+      validFrom: coupon?.validFrom || null,
+      validUntil: coupon?.validUntil || null,
+      totalUsages: group._count._all,
+      totalDiscountAmount: group._sum.discountAmount || 0,
+    };
+  });
+
+  return {
+    summary: {
+      totalCoupons,
+      activeCoupons,
+      inactiveCoupons,
+      expiredCoupons,
+      totalUsages,
+      totalDiscountAmount: totalDiscount._sum.discountAmount || 0,
+    },
+    performance,
+  };
+};
+
+/**
+ * ============================================================
  * Transactions
  * ============================================================
  */
@@ -319,6 +571,10 @@ module.exports = {
   getAvailableCoupons,
   getCouponUsageByRideId,
   getCouponUsagesByCouponId,
+
+  getCouponUsageAnalytics,
+  getExpiredCoupons,
+  getCouponReport,
 
   executeTransaction,
   createCouponUsageTx,

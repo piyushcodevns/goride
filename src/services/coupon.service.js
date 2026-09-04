@@ -154,12 +154,14 @@ const updateCoupon = async (adminIdOrCouponId, couponIdOrPayload, payload) => {
   if (updatePayload.perUserUsageLimit !== undefined)
     updateData.perUserUsageLimit = updatePayload.perUserUsageLimit;
 
-  if (updatePayload.validFrom !== undefined) updateData.validFrom = updatePayload.validFrom;
+  if (updatePayload.validFrom !== undefined)
+    updateData.validFrom = updatePayload.validFrom;
 
   if (updatePayload.validUntil !== undefined)
     updateData.validUntil = updatePayload.validUntil;
 
-  if (updatePayload.isActive !== undefined) updateData.isActive = updatePayload.isActive;
+  if (updatePayload.isActive !== undefined)
+    updateData.isActive = updatePayload.isActive;
 
   const validFrom = updateData.validFrom ?? coupon.validFrom;
 
@@ -185,7 +187,10 @@ const updateCoupon = async (adminIdOrCouponId, couponIdOrPayload, payload) => {
     }
   }
 
-  const updatedCoupon = await couponRepository.updateCoupon(couponId, updateData);
+  const updatedCoupon = await couponRepository.updateCoupon(
+    couponId,
+    updateData,
+  );
 
   if (adminId) {
     await couponRepository.createAuditLog({
@@ -287,6 +292,38 @@ const deactivateCoupon = async (adminIdOrCouponId, couponId) => {
   }
 
   return coupon;
+};
+
+/**
+ * ============================================================
+ * Coupon Analytics / Reports
+ * ============================================================
+ */
+
+const getCouponUsageAnalytics = async (couponId) => {
+  await getExistingCouponOrThrow(couponId);
+
+  const analytics = await couponRepository.getCouponUsageAnalytics(couponId);
+
+  return {
+    coupon: analytics.coupon,
+    analytics: {
+      totalUsages: analytics.totalUsages,
+      uniqueUsers: analytics.uniqueUsers,
+      totalDiscountAmount: Number(analytics.totalDiscountAmount || 0),
+      averageDiscountAmount: Number(
+        Number(analytics.averageDiscountAmount || 0).toFixed(2),
+      ),
+    },
+  };
+};
+
+const getExpiredCoupons = async () => {
+  return couponRepository.getExpiredCoupons();
+};
+
+const getCouponReport = async () => {
+  return couponRepository.getCouponReport();
 };
 
 const getCouponUsages = async (couponId) => {
@@ -438,8 +475,7 @@ const applyCoupon = async ({ code, rideId, userId }) => {
   }
 
   const rideFare =
-    normalizeRideFare(ride.finalFare) ||
-    normalizeRideFare(ride.estimatedFare);
+    normalizeRideFare(ride.finalFare) || normalizeRideFare(ride.estimatedFare);
 
   await validateCouponEligibility(coupon, userId, rideFare);
 
@@ -523,6 +559,11 @@ module.exports = {
   activateCoupon,
   deactivateCoupon,
   getCouponUsages,
+
+  // Analytics / Reports
+  getCouponUsageAnalytics,
+  getExpiredCoupons,
+  getCouponReport,
 
   // User
   validateCoupon,

@@ -126,6 +126,46 @@ const getCouponUsages = async (req, res, next) => {
   }
 };
 
+const getCouponUsageAnalytics = async (req, res, next) => {
+  try {
+    const result = await couponService.getCouponUsageAnalytics(req.params.id);
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getExpiredCoupons = async (req, res, next) => {
+  try {
+    const coupons = await couponService.getExpiredCoupons();
+
+    return res.status(200).json({
+      success: true,
+      count: coupons.length,
+      data: coupons,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getCouponReport = async (req, res, next) => {
+  try {
+    const report = await couponService.getCouponReport();
+
+    return res.status(200).json({
+      success: true,
+      data: report,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 /**
  * ============================================================
  * User
@@ -189,6 +229,10 @@ module.exports = {
   activateCoupon,
   deactivateCoupon,
   getCouponUsages,
+
+  getCouponUsageAnalytics,
+  getExpiredCoupons,
+  getCouponReport,
 
   validateCoupon,
   applyCoupon,

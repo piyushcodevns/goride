@@ -179,12 +179,79 @@ router.get(
   couponController.getAllCoupons,
 );
 
+/**
+ * @swagger
+ * /api/coupons/expired:
+ *   get:
+ *     summary: Get expired coupons (Admin)
+ *     tags: [Coupons]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Expired coupons fetched successfully
+ */
+
+router.get(
+  "/expired",
+  adminAuthMiddleware,
+  requirePermission("coupon:view"),
+  couponController.getExpiredCoupons,
+);
+
+/**
+ * @swagger
+ * /api/coupons/reports:
+ *   get:
+ *     summary: Get coupon reports (Admin)
+ *     tags: [Coupons]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Coupon report generated successfully
+ */
+
+router.get(
+  "/reports",
+  adminAuthMiddleware,
+  requirePermission("coupon:view"),
+  couponController.getCouponReport,
+);
+
 router.get(
   "/:id/usages",
   adminAuthMiddleware,
   requirePermission("coupon:view"),
   validate(couponIdParamSchema),
   couponController.getCouponUsages,
+);
+
+/**
+ * @swagger
+ * /api/coupons/{id}/analytics:
+ *   get:
+ *     summary: Get coupon usage analytics (Admin)
+ *     tags: [Coupons]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Coupon usage analytics fetched successfully
+ */
+
+router.get(
+  "/:id/analytics",
+  adminAuthMiddleware,
+  requirePermission("coupon:view"),
+  validate(couponIdParamSchema),
+  couponController.getCouponUsageAnalytics,
 );
 
 /**
