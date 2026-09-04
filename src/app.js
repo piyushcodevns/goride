@@ -35,6 +35,7 @@ const adminCouponRoutes = require("./routes/admin/adminCoupon.routes");
 const adminPricingRoutes = require("./routes/admin/adminPricing.routes");
 const adminMapsRoutes = require("./routes/admin/adminMaps.routes");
 const adminReportsRoutes = require("./routes/admin/adminReports.routes");
+const adminAnalyticsRoutes = require("./routes/admin/adminAnalytics.routes");
 
 const { apiLimiter } = require("./middleware/rateLimit.middleware");
 
@@ -138,6 +139,8 @@ app.use("/api/admin/pricing", adminPricingRoutes);
 app.use("/api/admin/maps", adminMapsRoutes);
 
 app.use("/api/admin/reports", adminReportsRoutes);
+
+app.use("/api/admin/analytics", adminAnalyticsRoutes);
 
 /* ===========================
    Health Check
