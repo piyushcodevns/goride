@@ -535,6 +535,7 @@ enum NotificationChannel {
   IN_APP
   EMAIL
   PUSH
+  SMS
 }
 
 enum NotificationStatus {
@@ -667,4 +668,25 @@ model MapZone {
   @@index([type])
   @@index([cityId])
   @@index([isActive])
+}
+
+enum SettingCategory {
+  GENERAL
+  COMPANY
+  MAINTENANCE
+  UPLOAD
+}
+
+model SystemSetting {
+  id               String          @id @default(cuid())
+  key              String          @unique
+  category         SettingCategory
+  value            String?
+  isSecret         Boolean         @default(false)
+  description      String?
+  updatedByAdminId String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([category])
 }
