@@ -42,6 +42,9 @@ model User {
   payments                 Payment[]
   rides                    Ride[]
   rideReviews              RideReview[]
+  tickets                  Ticket[]
+  ticketReplies            TicketReply[]
+  ticketHistoryActions     TicketHistory[]
 
   @@index([isBlocked])
   @@index([deletedAt])
@@ -66,6 +69,7 @@ model Driver {
   rideRejects   RideReject[]
   rideReviews   RideReview[]
   vehicle       Vehicle?
+  tickets       Ticket[]
 
   @@index([status])
   @@index([availability])
@@ -137,6 +141,7 @@ model Ride {
   user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   rideRejects          RideReject[]
   rideReview           RideReview?
+  tickets              Ticket[]
 
   @@index([userId])
   @@index([driverId])
@@ -589,6 +594,7 @@ enum AuditEntity {
   NOTIFICATION
   SETTINGS
   ADMIN
+  SUPPORT
 }
 
 enum DriverDocumentType {
@@ -635,6 +641,28 @@ enum ZoneType {
   AIRPORT
   TOLL
   RESTRICTED
+}
+
+enum TicketType {
+  GENERAL
+  COMPLAINT
+  USER_REPORT
+  DRIVER_REPORT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketHistoryAction {
+  CREATED
+  STATUS_CHANGED
+  REPLIED
+  RESOLVED
+  CLOSED
 }
 
 model SupportedCity {
@@ -689,4 +717,65 @@ model SystemSetting {
   updatedAt        DateTime        @updatedAt
 
   @@index([category])
+}
+
+model Ticket {
+  id           String       @id @default(cuid())
+  ticketNumber String       @unique
+  userId       String?
+  driverId     String?
+  rideId       String?
+  type         TicketType   @default(GENERAL)
+  subject      String
+  description  String
+  status       TicketStatus @default(OPEN)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user    User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  driver  Driver?         @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  ride    Ride?           @relation(fields: [rideId], references: [id], onDelete: SetNull)
+  replies TicketReply[]
+  history TicketHistory[]
+
+  @@index([userId])
+  @@index([driverId])
+  @@index([rideId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model TicketReply {
+  id        String   @id @default(cuid())
+  ticketId  String
+  adminId   String
+  message   String
+  createdAt DateTime @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  admin  User   @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([adminId])
+  @@index([createdAt])
+}
+
+model TicketHistory {
+  id        String              @id @default(cuid())
+  ticketId  String
+  adminId   String?
+  action    TicketHistoryAction
+  oldStatus TicketStatus?
+  newStatus TicketStatus?
+  message   String?
+  createdAt DateTime            @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  admin  User?  @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([ticketId])
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
 }

@@ -1,4 +1,4 @@
-const prisma = require("../../config/prisma");
+﻿const prisma = require("../../config/prisma");
 
 const buildTicketWhere = ({
   search,
@@ -94,7 +94,7 @@ const ticketListInclude = {
       status: true,
       pickup: true,
       destination: true,
-      fare: true,
+      finalFare: true,
       createdAt: true,
     },
   },
@@ -129,7 +129,7 @@ const ticketDetailInclude = {
       status: true,
       pickup: true,
       destination: true,
-      fare: true,
+      finalFare: true,
       createdAt: true,
     },
   },

@@ -1,5 +1,8 @@
-const prisma = require("../../config/prisma");
-const AppError = require("../../utils/AppError");
+﻿const prisma = require("../../config/prisma");
+const { AppError } = require("../../utils/AppError");
+const {
+  createAuditLog,
+} = require("../../repositories/admin/adminAuth.repository");
 
 const {
   findTickets,
@@ -156,6 +159,8 @@ const createSupportTicket = async ({
   subject,
   description,
   adminId,
+  ipAddress,
+  userAgent,
 }) => {
   ensureValidTicketType(type);
 
@@ -175,8 +180,8 @@ const createSupportTicket = async ({
 
   const ticketNumber = await generateTicketNumber();
 
-  return prisma.$transaction(async (tx) => {
-    const ticket = await createTicket(
+  const ticket = await prisma.$transaction(async (tx) => {
+    const createdTicket = await createTicket(
       {
         ticketNumber,
         userId: userId || null,
@@ -192,7 +197,7 @@ const createSupportTicket = async ({
 
     await createTicketHistory(
       {
-        ticketId: ticket.id,
+        ticketId: createdTicket.id,
         adminId: adminId || null,
         action: HISTORY_ACTIONS.CREATED,
         newStatus: "OPEN",
@@ -201,10 +206,25 @@ const createSupportTicket = async ({
       tx
     );
 
-    return ticket;
+    return createdTicket;
   });
-};
 
+  await createAuditLog({
+    adminId,
+    action: "CREATE",
+    entity: "SUPPORT",
+    entityId: ticket.id,
+    metadata: {
+      operation: "CREATE_TICKET",
+      ticketNumber: ticket.ticketNumber,
+      type: ticket.type,
+    },
+    ipAddress,
+    userAgent,
+  });
+
+  return ticket;
+};
 const getSupportTickets = async ({
   search,
   type,
@@ -263,6 +283,8 @@ const updateTicketStatus = async ({
   status,
   adminId,
   message,
+  ipAddress,
+  userAgent,
 }) => {
   ensureValidTicketStatus(status);
 
@@ -289,8 +311,8 @@ const updateTicketStatus = async ({
     );
   }
 
-  return prisma.$transaction(async (tx) => {
-    const updatedTicket = await updateTicket(
+  const updatedTicket = await prisma.$transaction(async (tx) => {
+    const updated = await updateTicket(
       id,
       {
         status,
@@ -318,19 +340,34 @@ const updateTicketStatus = async ({
       tx
     );
 
-    return updatedTicket;
+    return updated;
   });
-};
 
+  await createAuditLog({
+    adminId,
+    action: "UPDATE",
+    entity: "SUPPORT",
+    entityId: updatedTicket.id,
+    metadata: {
+      operation: "UPDATE_TICKET_STATUS",
+      ticketNumber: updatedTicket.ticketNumber,
+      oldStatus: ticket.status,
+      newStatus: status,
+      message: message?.trim() || null,
+    },
+    ipAddress,
+    userAgent,
+  });
+
+  return updatedTicket;
+};
 const replyToTicket = async ({
   ticketId,
   adminId,
   message,
+  ipAddress,
+  userAgent,
 }) => {
-  if (!adminId) {
-    throw new AppError("Admin ID is required", 400);
-  }
-
   if (!message || !message.trim()) {
     throw new AppError("Reply message is required", 400);
   }
@@ -344,8 +381,8 @@ const replyToTicket = async ({
     );
   }
 
-  return prisma.$transaction(async (tx) => {
-    const reply = await createTicketReply(
+  const reply = await prisma.$transaction(async (tx) => {
+    const createdReply = await createTicketReply(
       {
         ticketId,
         adminId,
@@ -359,15 +396,30 @@ const replyToTicket = async ({
         ticketId,
         adminId,
         action: HISTORY_ACTIONS.REPLIED,
-        message: "Ticket reply added",
+        message: message.trim(),
       },
       tx
     );
 
-    return reply;
+    return createdReply;
   });
-};
 
+  await createAuditLog({
+    adminId,
+    action: "UPDATE",
+    entity: "SUPPORT",
+    entityId: ticket.id,
+    metadata: {
+      operation: "REPLY_TO_TICKET",
+      ticketNumber: ticket.ticketNumber,
+      replyId: reply.id,
+    },
+    ipAddress,
+    userAgent,
+  });
+
+  return reply;
+};
 const getTicketReplies = async (ticketId) => {
   await getTicketOrThrow(ticketId);
 
@@ -403,3 +455,7 @@ module.exports = {
   getTicketHistory,
   getSupportStats,
 };
+
+
+
+

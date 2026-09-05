@@ -60,6 +60,8 @@ module.exports = Object.freeze({
     AUDIT_LOG_EXPORT,
     SETTINGS_VIEW,
     SETTINGS_MANAGE,
+    SUPPORT_VIEW,
+    SUPPORT_MANAGE,
     ADMIN_VIEW,
     ADMIN_MANAGE,
   ],
@@ -112,3 +114,4 @@ module.exports = Object.freeze({
     REPORT_VIEW,
   ],
 });
+
