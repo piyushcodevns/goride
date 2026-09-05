@@ -1,4 +1,4 @@
-const express = require("express");
+﻿const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const compression = require("compression");
@@ -37,6 +37,7 @@ const adminMapsRoutes = require("./routes/admin/adminMaps.routes");
 const adminReportsRoutes = require("./routes/admin/adminReports.routes");
 const adminAnalyticsRoutes = require("./routes/admin/adminAnalytics.routes");
 const adminSettingsRoutes = require("./routes/admin/adminSettings.routes");
+const adminAuditRoutes = require("./routes/admin/adminAudit.routes");
 
 const { apiLimiter } = require("./middleware/rateLimit.middleware");
 
@@ -144,6 +145,7 @@ app.use("/api/admin/reports", adminReportsRoutes);
 app.use("/api/admin/analytics", adminAnalyticsRoutes);
 
 app.use("/api/admin/settings", adminSettingsRoutes);
+app.use("/api/admin/audit-logs", adminAuditRoutes);
 
 /* ===========================
    Health Check
@@ -152,7 +154,7 @@ app.use("/api/admin/settings", adminSettingsRoutes);
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "🚖 GoRide Backend API Running",
+    message: "ðŸš– GoRide Backend API Running",
     version: "1.0.0",
     status: "OK",
     timestamp: new Date(),
@@ -174,3 +176,5 @@ app.use((req, res, next) => {
 app.use(errorMiddleware);
 
 module.exports = app;
+
+

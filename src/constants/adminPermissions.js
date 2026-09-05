@@ -1,4 +1,4 @@
-module.exports = {
+﻿module.exports = {
   DASHBOARD_VIEW: "dashboard:view",
 
   USER_VIEW: "user:view",
@@ -29,10 +29,15 @@ module.exports = {
   ANALYTICS_VIEW: "analytics:view",
 
   AUDIT_LOG_VIEW: "audit_log:view",
+  AUDIT_LOG_EXPORT: "audit_log:export",
 
   SETTINGS_VIEW: "settings:view",
   SETTINGS_MANAGE: "settings:manage",
 
+  SUPPORT_VIEW: "support:view",
+  SUPPORT_MANAGE: "support:manage",
+
   ADMIN_VIEW: "admin:view",
   ADMIN_MANAGE: "admin:manage",
 };
+
