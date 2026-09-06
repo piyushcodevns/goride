@@ -1,4 +1,4 @@
-﻿const express = require("express");
+const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const compression = require("compression");
@@ -11,6 +11,7 @@ const errorMiddleware = require("./middleware/error.middleware");
 const { NotFoundError } = require("./utils/AppError");
 
 const app = express();
+const adminMonitoringRoutes = require("./routes/admin/adminMonitoring.routes");
 
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
@@ -152,6 +153,7 @@ app.use("/api/admin/audit-logs", adminAuditRoutes);
 app.use("/api/admin/support", adminSupportRoutes);
 
 app.use("/api/admin/files", adminFileRoutes);
+app.use("/api/admin/monitoring", adminMonitoringRoutes);
 
 /* ===========================
    Health Check

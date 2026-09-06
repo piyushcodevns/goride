@@ -153,6 +153,8 @@ const handleJobFailure = async (job, err) => {
 /**
  * Create notification worker.
  */
+const workers = new Map();
+
 const createWorker = (queueName = "notification") => {
   if (!isQueueEnabled()) {
     logger.info("Notification worker skipped because queueing is disabled.", {
@@ -301,9 +303,20 @@ const createWorker = (queueName = "notification") => {
     });
   });
 
+  workers.set(queueName, worker);
+
   return worker;
+};
+
+const getWorkerStatus = () => {
+  return Array.from(workers.entries()).map(([queueName, worker]) => ({
+    queueName,
+    status: worker.isRunning() ? "RUNNING" : "STOPPED",
+    running: worker.isRunning(),
+  }));
 };
 
 module.exports = {
   createWorker,
+  getWorkerStatus,
 };
