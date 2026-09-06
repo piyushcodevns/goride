@@ -1,11 +1,11 @@
 const { ForbiddenError } = require("../../utils/AppError");
 const ADMIN_ROLES = require("../../constants/adminRoles");
-const ADMIN_ROLE_PERMISSIONS = require("../../constants/adminRolePermissions");
 const { validatePermission } = require("../../utils/admin/adminRbac.utils");
+const { getPermissionsForRole } = require("../../services/admin/adminRbac.service");
 
 const requirePermission = (permission) => {
   validatePermission(permission);
-  return (req, res, next) => {
+  return async (req, res, next) => {
     if (!req.admin) {
       return next(new ForbiddenError("Admin authentication required."));
     }
@@ -14,7 +14,7 @@ const requirePermission = (permission) => {
       return next(new ForbiddenError("Admin access is required."));
     }
 
-    const rolePermissions = ADMIN_ROLE_PERMISSIONS[req.admin.role] || [];
+    const rolePermissions = await getPermissionsForRole(req.admin.role);
 
     if (!rolePermissions.includes(permission)) {
       return next(

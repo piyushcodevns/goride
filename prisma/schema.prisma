@@ -393,6 +393,17 @@ model AdminSession {
   @@index([refreshTokenHash])
 }
 
+model AdminRolePermission {
+  role       String
+  permission String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@id([role, permission])
+  @@index([role])
+  @@index([permission])
+}
+
 model AdminLoginHistory {
   id            String      @id @default(cuid())
   userId        String?
