@@ -27,11 +27,13 @@ process.on("uncaughtException", (error) => {
 });
 
 const app = require("./src/app");
+const { ensureBackupSchedule } = require("./src/queues/backup.queue");
 const { createWorker } = require("./src/workers/notification.worker");
 
 const PORT = process.env.PORT || 5000;
 
 const notificationWorkers = [];
+let backupWorker = null;
 
 try {
   notificationWorkers.push(createWorker("notification"));

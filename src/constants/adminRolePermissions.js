@@ -34,6 +34,10 @@ const {
   ADMIN_VIEW,
   ADMIN_MANAGE,
   SYSTEM_MONITOR,
+  BACKUP_VIEW,
+  BACKUP_CREATE,
+  BACKUP_RESTORE,
+  BACKUP_DELETE,
 } = ADMIN_PERMISSIONS;
 
 const ALL_PERMISSIONS = Object.values(ADMIN_PERMISSIONS);
@@ -73,7 +77,11 @@ module.exports = Object.freeze({
     FILE_DELETE,
     ADMIN_VIEW,
     ADMIN_MANAGE,
-  SYSTEM_MONITOR,
+    SYSTEM_MONITOR,
+    BACKUP_VIEW,
+    BACKUP_CREATE,
+    BACKUP_RESTORE,
+    BACKUP_DELETE,
   ],
 
   [ADMIN_ROLES.OPERATIONS_MANAGER]: [
@@ -124,5 +132,3 @@ module.exports = Object.freeze({
     REPORT_VIEW,
   ],
 });
-
-

@@ -606,6 +606,8 @@ enum AuditAction {
   UPLOAD
   REPLACE
   ACCESS
+  BACKUP
+  RESTORE
 }
 
 enum AuditEntity {
@@ -621,6 +623,7 @@ enum AuditEntity {
   ADMIN
   SUPPORT
   FILE
+  BACKUP
 }
 
 enum DriverDocumentType {
@@ -810,4 +813,34 @@ model TicketHistory {
   @@index([adminId])
   @@index([action])
   @@index([createdAt])
+}
+
+model Backup {
+  id             String   @id @default(cuid())
+  filename       String   @unique
+  status         BackupStatus @default(PENDING)
+  type           BackupType @default(MANUAL)
+  size           BigInt?
+  checksum       String?
+  storagePath    String?
+  errorMessage   String?
+  createdBy      String?
+  createdAt      DateTime @default(now())
+  completedAt    DateTime?
+
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+}
+
+enum BackupStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum BackupType {
+  MANUAL
+  SCHEDULED
 }

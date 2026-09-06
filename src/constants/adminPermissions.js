@@ -46,7 +46,9 @@ module.exports = {
   ADMIN_MANAGE: "admin:manage",
 
   SYSTEM_MONITOR: "system:monitor",
+
+  BACKUP_VIEW: "backup:view",
+  BACKUP_CREATE: "backup:create",
+  BACKUP_RESTORE: "backup:restore",
+  BACKUP_DELETE: "backup:delete",
 };
-
-
-
