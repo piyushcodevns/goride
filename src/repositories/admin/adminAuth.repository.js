@@ -39,6 +39,7 @@ const findAdminById = async (id) => {
       lastLoginAt: true,
       passwordChangedAt: true,
       lastPasswordResetAt: true,
+      twoFactorEnabled: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -339,12 +340,68 @@ const findAdminByIdWithPassword = async (id) => {
   });
 };
 
+const updateAdminTwoFactor = async (adminId, data) => {
+  return prisma.user.update({
+    where: { id: adminId },
+    data,
+    select: {
+      id: true,
+      twoFactorEnabled: true,
+    },
+  });
+};
+
+const consumeAdminTwoFactorStep = async (adminId, step) => {
+  return prisma.user.updateMany({
+    where: {
+      id: adminId,
+      twoFactorEnabled: true,
+      OR: [
+        { twoFactorLastUsedStep: null },
+        { twoFactorLastUsedStep: { lt: BigInt(step) } },
+      ],
+    },
+    data: {
+      twoFactorFailedAttempts: 0,
+      twoFactorLockedUntil: null,
+      twoFactorLastUsedStep: BigInt(step),
+    },
+  });
+};
+
+const findAdminTwoFactorById = async (adminId) => {
+  return prisma.user.findFirst({
+    where: {
+      id: adminId,
+      role: {
+        in: Object.values(ADMIN_ROLES),
+      },
+    },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      phone: true,
+      role: true,
+      isActive: true,
+      twoFactorEnabled: true,
+      twoFactorSecret: true,
+      twoFactorFailedAttempts: true,
+      twoFactorLockedUntil: true,
+      twoFactorLastUsedStep: true,
+    },
+  });
+};
+
 module.exports = {
   findAdminByEmail,
   findAdminById,
   findExistingAdminAccount,
   createAdminAccount,
   findAdminByIdWithPassword,
+  updateAdminTwoFactor,
+  consumeAdminTwoFactorStep,
+  findAdminTwoFactorById,
 
   createAdminSession,
   findActiveAdminSessionById,

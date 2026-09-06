@@ -6,6 +6,10 @@ const {
   changeAdminPassword,
   forgotAdminPassword,
   resetAdminPasswordService,
+  verifyAdminMfaLogin,
+  enableAdminTwoFactor,
+  confirmAdminTwoFactor,
+  disableAdminTwoFactor,
 } = require("../../services/admin/adminAuth.service");
 
 const { AppError } = require("../../utils/AppError");
@@ -223,6 +227,46 @@ const resetAdminPasswordController = async (req, res) => {
   }
 };
 
+const verifyMfaLogin = async (req, res, next) => {
+  try {
+    const result = await verifyAdminMfaLogin({
+      ...req.body,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+    return res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const setupMfa = async (req, res, next) => {
+  try {
+    const result = await enableAdminTwoFactor(req.admin.id);
+    return res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const confirmMfa = async (req, res, next) => {
+  try {
+    const result = await confirmAdminTwoFactor(req.admin.id, req.body.code);
+    return res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const disableMfa = async (req, res, next) => {
+  try {
+    const result = await disableAdminTwoFactor(req.admin.id, req.body.code);
+    return res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   login,
   createAdminController,
@@ -231,4 +275,8 @@ module.exports = {
   changeAdminPasswordController,
   forgotAdminPasswordController,
   resetAdminPasswordController,
+  verifyMfaLogin,
+  setupMfa,
+  confirmMfa,
+  disableMfa,
 };

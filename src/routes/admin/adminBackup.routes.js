@@ -4,7 +4,13 @@ const router = express.Router();
 
 const adminAuthMiddleware = require("../../middleware/admin/adminAuth.middleware");
 const { requirePermission } = require("../../middleware/admin/adminRbac.middleware");
+const { validate } = require("../../middleware/validate.middleware");
 const ADMIN_PERMISSIONS = require("../../constants/adminPermissions");
+const {
+  backupIdSchema,
+  backupQuerySchema,
+  restoreBackupSchema,
+} = require("../../validators/admin/adminBackup.validator");
 
 const {
   createBackup,
@@ -66,6 +72,7 @@ router.post(
 router.get(
   "/",
   requirePermission(ADMIN_PERMISSIONS.BACKUP_VIEW),
+  validate(backupQuerySchema),
   getBackups
 );
 
@@ -116,6 +123,7 @@ router.get(
 router.get(
   "/:id/download",
   requirePermission(ADMIN_PERMISSIONS.BACKUP_VIEW),
+  validate(backupIdSchema),
   downloadBackup
 );
 
@@ -156,6 +164,7 @@ router.get(
 router.post(
   "/:id/restore",
   requirePermission(ADMIN_PERMISSIONS.BACKUP_RESTORE),
+  validate(restoreBackupSchema),
   restoreBackup
 );
 
@@ -184,6 +193,7 @@ router.post(
 router.delete(
   "/:id",
   requirePermission(ADMIN_PERMISSIONS.BACKUP_DELETE),
+  validate(backupIdSchema),
   deleteBackup
 );
 
@@ -191,10 +201,10 @@ router.delete(
 router.get(
   "/:id",
   requirePermission(ADMIN_PERMISSIONS.BACKUP_VIEW),
+  validate(backupIdSchema),
   getBackup
 );
 
 module.exports = router;
-
 
 

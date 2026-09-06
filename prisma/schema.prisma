@@ -32,6 +32,11 @@ model User {
   passwordChangedAt        DateTime?
   deletedAt                DateTime?
   isBlocked                Boolean             @default(false)
+  twoFactorEnabled         Boolean             @default(false)
+  twoFactorSecret          String?
+  twoFactorFailedAttempts  Int                 @default(0)
+  twoFactorLockedUntil     DateTime?
+  twoFactorLastUsedStep    BigInt?
   adminLoginHistory        AdminLoginHistory[]
   adminSessions            AdminSession[]
   auditLogs                AuditLog[]
@@ -46,6 +51,9 @@ model User {
   ticketReplies            TicketReply[]
   ticketHistoryActions     TicketHistory[]
   documents                UserDocument[]
+  pushDevices              PushDevice[]
+  smsCampaignsCreated      SmsCampaign[] @relation("SmsCampaignCreator")
+  smsCampaignRecipients    SmsCampaignRecipient[]
 
   @@index([isBlocked])
   @@index([deletedAt])
@@ -319,6 +327,53 @@ model Notification {
   @@index([createdAt])
 }
 
+model PushDevice {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  platform  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+}
+
+model SmsCampaign {
+  id          String                 @id @default(cuid())
+  title       String
+  message     String
+  status      CampaignStatus         @default(DRAFT)
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  createdById String
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  createdBy   User                   @relation("SmsCampaignCreator", fields: [createdById], references: [id])
+  recipients  SmsCampaignRecipient[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model SmsCampaignRecipient {
+  id           String                   @id @default(cuid())
+  campaignId   String
+  userId       String
+  notificationId String?
+  status       CampaignRecipientStatus  @default(PENDING)
+  attempts     Int                      @default(0)
+  errorMessage String?
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+  campaign     SmsCampaign              @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user         User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, userId])
+  @@index([campaignId, status])
+}
+
 model AdminSession {
   id               String   @id @default(cuid())
   userId           String
@@ -578,6 +633,22 @@ enum NotificationPriority {
   NORMAL
   HIGH
   URGENT
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  PARTIAL
+  FAILED
+}
+
+enum CampaignRecipientStatus {
+  PENDING
+  QUEUED
+  SENT
+  FAILED
 }
 
 enum LoginStatus {

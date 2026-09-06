@@ -8,6 +8,7 @@ const {
 const logger = require("../utils/logger");
 const { addNotificationJob } = require("../queues/notification.queue");
 const { deliverNotification } = require("./notification/delivery.service");
+const { upsertPushDevice } = require("../repositories/admin/adminNotification.repository");
 
 const {
   NOTIFICATION_STATUS,
@@ -41,7 +42,7 @@ const createNotification = async (data) => {
   });
 };
 
-const dispatchNotification = async (data) => {
+const dispatchNotification = async (data, queueOptions = {}) => {
   let notification;
 
   try {
@@ -57,7 +58,7 @@ const dispatchNotification = async (data) => {
         type: notification.type,
         priority: notification.priority,
         metadata: notification.metadata,
-      });
+      }, queueOptions);
 
       logger.info("Notification queued for processing.", {
         notificationId: notification.id,
@@ -137,6 +138,9 @@ const deleteNotification = async (id, userId) => {
   return notificationRepository.deleteNotification(id);
 };
 
+const registerPushDevice = (userId, token, platform) =>
+  upsertPushDevice(userId, token, platform);
+
 module.exports = {
   createNotification,
   dispatchNotification,
@@ -146,4 +150,5 @@ module.exports = {
   markAsRead,
   markAllAsRead,
   deleteNotification,
+  registerPushDevice,
 };

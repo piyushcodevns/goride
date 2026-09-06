@@ -6,6 +6,7 @@ const { validate } = require("../middleware/validate.middleware");
 const {
   notificationIdSchema,
   notificationQuerySchema,
+  pushDeviceSchema,
 } = require("../validators/notification.validator");
 
 const router = express.Router();
@@ -18,6 +19,12 @@ const router = express.Router();
  */
 
 router.use(authenticate);
+
+router.post(
+  "/devices",
+  validate(pushDeviceSchema),
+  notificationController.registerPushDevice,
+);
 
 /**
  * @swagger

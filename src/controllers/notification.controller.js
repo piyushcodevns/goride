@@ -98,10 +98,24 @@ const deleteNotification = async (req, res, next) => {
   }
 };
 
+const registerPushDevice = async (req, res, next) => {
+  try {
+    const device = await notificationService.registerPushDevice(
+      req.user.id,
+      req.body.token,
+      req.body.platform,
+    );
+    return res.status(200).json({ success: true, data: device });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   getNotifications,
   getUnreadCount,
   markAsRead,
   markAllAsRead,
   deleteNotification,
+  registerPushDevice,
 };

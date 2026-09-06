@@ -177,6 +177,19 @@ const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
+const mfaLoginSchema = z
+  .object({
+    mfaToken: z.string().trim().min(1),
+    code: z.string().regex(/^\d{6}$/, "MFA code must be 6 digits"),
+  })
+  .strict();
+
+const mfaCodeSchema = z
+  .object({
+    code: z.string().regex(/^\d{6}$/, "MFA code must be 6 digits"),
+  })
+  .strict();
+
 module.exports = {
   registerSchema,
   loginSchema,
@@ -186,4 +199,6 @@ module.exports = {
   forgotPasswordSchema,
   resetPasswordSchema,
   passwordSchema,
+  mfaLoginSchema,
+  mfaCodeSchema,
 };

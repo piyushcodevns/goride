@@ -1,4 +1,5 @@
 const { getUserById } = require("../../repositories/user.repository");
+const { findPushDevices } = require("../../repositories/admin/adminNotification.repository");
 
 const {
   InvalidNotificationChannelError,
@@ -23,8 +24,7 @@ const smsProvider = ProviderFactory.createSMSProvider();
  * - EMAIL
  * - SMS
  *
- * PUSH remains intentionally unchanged until its
- * existing provider is fully configured for delivery.
+ * PUSH is delivered to every active device registered for the user.
  */
 const deliverNotification = async (notification) => {
   switch (notification.channel) {
@@ -89,10 +89,30 @@ const deliverNotification = async (notification) => {
       };
     }
 
-    case NOTIFICATION_CHANNELS.PUSH:
-      throw new InvalidNotificationChannelError(
-        "Push notification provider is not configured.",
+    case NOTIFICATION_CHANNELS.PUSH: {
+      const devices = await findPushDevices(notification.userId);
+      if (!devices.length) {
+        throw new InvalidNotificationChannelError(
+          "No active push device is registered for this user.",
+        );
+      }
+      const results = await Promise.all(
+        devices.map((device) =>
+          ProviderFactory.createPushProvider().send({
+            token: device.token,
+            title: notification.title,
+            message: notification.message,
+            data: notification.metadata || {},
+          }),
+        ),
       );
+      return {
+        success: true,
+        channel: "PUSH",
+        provider: "FCM",
+        deliveredDevices: results.length,
+      };
+    }
 
     default:
       throw new InvalidNotificationChannelError(

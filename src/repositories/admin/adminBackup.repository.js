@@ -33,6 +33,18 @@ const listBackups = ({ skip = 0, take = 50 } = {}) =>
 const countBackups = () =>
   prisma.backup.count();
 
+const listBackupsBefore = (cutoffDate) =>
+  prisma.backup.findMany({
+    where: {
+      createdAt: {
+        lt: cutoffDate,
+      },
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
+
 const deleteBackup = (id) =>
   prisma.backup.delete({
     where: { id },
@@ -48,4 +60,3 @@ module.exports = {
   listBackupsBefore,
   deleteBackup,
 };
-

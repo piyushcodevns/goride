@@ -23,8 +23,11 @@ test('buildNotificationJob includes delivery metadata and retry configuration', 
   assert.equal(job.queueName, 'notification');
   assert.equal(job.data.notificationId, 'notif_1');
   assert.equal(job.data.channel, 'EMAIL');
-  assert.equal(job.options.attempts, 3);
-  assert.equal(job.options.removeOnComplete, true);
+  assert.equal(job.options.attempts, 4);
+  assert.deepEqual(job.options.removeOnComplete, {
+    age: 3600,
+    count: 1000,
+  });
 });
 
 test('getQueueHealth returns a safe status when queueing is disabled', async () => {

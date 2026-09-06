@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
 
 const {
   findAdminByEmail,
@@ -22,6 +23,9 @@ const {
   saveAdminPasswordResetToken,
   findAdminByPasswordResetToken,
   resetAdminPassword,
+  updateAdminTwoFactor,
+  consumeAdminTwoFactorStep,
+  findAdminTwoFactorById,
 } = require("../../repositories/admin/adminAuth.repository");
 
 const {
@@ -43,6 +47,12 @@ const {
 
 const logger = require("../../utils/logger");
 const ADMIN_ROLES = require("../../constants/adminRoles");
+const {
+  generateSecret,
+  verifyTotp,
+  encryptSecret,
+  decryptSecret,
+} = require("../../utils/adminTotp");
 
 const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS) || 12;
 
@@ -50,6 +60,68 @@ const MAX_FAILED_LOGIN_ATTEMPTS = 5;
 const ACCOUNT_LOCK_MINUTES = 30;
 const ADMIN_SESSION_DAYS = 7;
 const PASSWORD_RESET_MINUTES = 15;
+const MFA_CHALLENGE_MINUTES = 5;
+const MFA_MAX_FAILED_ATTEMPTS = 5;
+const MFA_LOCK_MINUTES = 15;
+
+const createMfaChallenge = (admin) =>
+  jwt.sign(
+    { id: admin.id, purpose: "admin-mfa" },
+    process.env.JWT_SECRET,
+    { expiresIn: `${MFA_CHALLENGE_MINUTES}m` },
+  );
+
+const createAdminTokens = async ({ admin, ipAddress, userAgent }) => {
+  const refreshSecret = generateRefreshSecret();
+  const refreshTokenHash = await bcrypt.hash(refreshSecret, SALT_ROUNDS);
+  await resetFailedLoginAttempts(admin.id);
+  await updateLastLogin(admin.id);
+  const session = await createAdminSession({
+    userId: admin.id,
+    refreshTokenHash,
+    ipAddress,
+    userAgent,
+    expiresAt: new Date(Date.now() + ADMIN_SESSION_DAYS * 24 * 60 * 60 * 1000),
+  });
+  const refreshToken = `${session.id}.${refreshSecret}`;
+  const accessToken = generateToken({
+    id: admin.id,
+    email: admin.email,
+    role: admin.role,
+    sessionId: session.id,
+  });
+
+  await createLoginHistory({
+    userId: admin.id,
+    email: admin.email,
+    ipAddress,
+    userAgent,
+    status: "SUCCESS",
+  });
+  await createAuditLog({
+    adminId: admin.id,
+    action: "LOGIN",
+    entity: "ADMIN",
+    entityId: admin.id,
+    metadata: { role: admin.role, sessionId: session.id },
+    ipAddress,
+    userAgent,
+  });
+
+  return {
+    user: {
+      id: admin.id,
+      fullName: admin.fullName,
+      email: admin.email,
+      phone: admin.phone,
+      role: admin.role,
+    },
+    token: accessToken,
+    accessToken,
+    refreshToken,
+    sessionId: session.id,
+  };
+};
 
 // =========================
 // GENERATE REFRESH SECRET
@@ -308,72 +380,12 @@ const loginAdmin = async ({ email, password, ipAddress, userAgent }) => {
     throw new UnauthorizedError("Invalid email or password.");
   }
 
-  // =========================
-  // SUCCESSFUL LOGIN
-  // =========================
-
-  const refreshSecret = generateRefreshSecret();
-
-  const refreshTokenHash = await bcrypt.hash(refreshSecret, SALT_ROUNDS);
-
-  await resetFailedLoginAttempts(admin.id);
-  await updateLastLogin(admin.id);
-
-  const session = await createAdminSession({
-    userId: admin.id,
-    refreshTokenHash,
-    ipAddress,
-    userAgent,
-    expiresAt: new Date(Date.now() + ADMIN_SESSION_DAYS * 24 * 60 * 60 * 1000),
-  });
-
-  // Refresh token contains session ID.
-  //
-  // Format:
-  // sessionId.refreshSecret
-  //
-  // This allows O(1) session lookup.
-  const refreshToken = `${session.id}.${refreshSecret}`;
-
-  // =========================
-  // ACCESS TOKEN
-  // =========================
-
-  const accessToken = generateToken({
-    id: admin.id,
-    email: admin.email,
-    role: admin.role,
-    sessionId: session.id,
-  });
-
-  // =========================
-  // LOGIN HISTORY
-  // =========================
-
-  await createLoginHistory({
-    userId: admin.id,
-    email: admin.email,
-    ipAddress,
-    userAgent,
-    status: "SUCCESS",
-  });
-
-  // =========================
-  // AUDIT LOG
-  // =========================
-
-  await createAuditLog({
-    adminId: admin.id,
-    action: "LOGIN",
-    entity: "ADMIN",
-    entityId: admin.id,
-    metadata: {
-      role: admin.role,
-      sessionId: session.id,
-    },
-    ipAddress,
-    userAgent,
-  });
+  if (admin.twoFactorEnabled) {
+    return {
+      mfaRequired: true,
+      mfaToken: createMfaChallenge(admin),
+    };
+  }
 
   logger.info("Admin login successful.", {
     adminId: admin.id,
@@ -381,19 +393,101 @@ const loginAdmin = async ({ email, password, ipAddress, userAgent }) => {
     ipAddress,
   });
 
+  return createAdminTokens({ admin, ipAddress, userAgent });
+};
+
+const verifyAdminMfaLogin = async ({ mfaToken, code, ipAddress, userAgent }) => {
+  let challenge;
+  try {
+    challenge = jwt.verify(mfaToken, process.env.JWT_SECRET);
+  } catch {
+    throw new UnauthorizedError("Invalid or expired MFA challenge.");
+  }
+  if (challenge?.purpose !== "admin-mfa" || !challenge.id) {
+    throw new UnauthorizedError("Invalid MFA challenge.");
+  }
+
+  const admin = await findAdminTwoFactorById(challenge.id);
+  if (!admin?.isActive || !admin.twoFactorEnabled || !admin.twoFactorSecret) {
+    throw new UnauthorizedError("MFA challenge is no longer valid.");
+  }
+  if (
+    admin.twoFactorLockedUntil &&
+    new Date(admin.twoFactorLockedUntil) > new Date()
+  ) {
+    throw new ForbiddenError("MFA is temporarily locked. Please try again later.");
+  }
+
+  const step = verifyTotp(decryptSecret(admin.twoFactorSecret), code);
+  if (step === null || (admin.twoFactorLastUsedStep !== null && BigInt(step) <= admin.twoFactorLastUsedStep)) {
+    const failedAttempts = admin.twoFactorFailedAttempts + 1;
+    await updateAdminTwoFactor(admin.id, {
+      twoFactorFailedAttempts: failedAttempts,
+      ...(failedAttempts >= MFA_MAX_FAILED_ATTEMPTS
+        ? { twoFactorLockedUntil: new Date(Date.now() + MFA_LOCK_MINUTES * 60 * 1000) }
+        : {}),
+    });
+    throw new UnauthorizedError("Invalid MFA code.");
+  }
+
+  const consumed = await consumeAdminTwoFactorStep(admin.id, step);
+  if (consumed.count !== 1) {
+    throw new UnauthorizedError("MFA code has already been used.");
+  }
+  return createAdminTokens({ admin, ipAddress, userAgent });
+};
+
+const enableAdminTwoFactor = async (adminId) => {
+  const secret = generateSecret();
+  await updateAdminTwoFactor(adminId, {
+    twoFactorSecret: encryptSecret(secret),
+    twoFactorEnabled: false,
+    twoFactorFailedAttempts: 0,
+    twoFactorLockedUntil: null,
+    twoFactorLastUsedStep: null,
+  });
   return {
-    user: {
-      id: admin.id,
-      fullName: admin.fullName,
-      email: admin.email,
-      phone: admin.phone,
-      role: admin.role,
-    },
-    token: accessToken,
-    accessToken,
-    refreshToken,
-    sessionId: session.id,
+    secret,
+    otpauthUrl: `otpauth://totp/GoRide%20Admin?secret=${secret}&issuer=GoRide`,
   };
+};
+
+const confirmAdminTwoFactor = async (adminId, code) => {
+  const admin = await findAdminTwoFactorById(adminId);
+  if (!admin?.twoFactorSecret || verifyTotp(decryptSecret(admin.twoFactorSecret), code) === null) {
+    throw new UnauthorizedError("Invalid MFA code.");
+  }
+  await updateAdminTwoFactor(adminId, { twoFactorEnabled: true, twoFactorLastUsedStep: null });
+  await createAuditLog({
+    adminId,
+    action: "UPDATE",
+    entity: "ADMIN",
+    entityId: adminId,
+    metadata: { action: "MFA_ENABLED" },
+  });
+  return { enabled: true };
+};
+
+const disableAdminTwoFactor = async (adminId, code) => {
+  const admin = await findAdminTwoFactorById(adminId);
+  if (!admin?.twoFactorEnabled || !admin.twoFactorSecret || verifyTotp(decryptSecret(admin.twoFactorSecret), code) === null) {
+    throw new UnauthorizedError("Invalid MFA code.");
+  }
+  await updateAdminTwoFactor(adminId, {
+    twoFactorEnabled: false,
+    twoFactorSecret: null,
+    twoFactorFailedAttempts: 0,
+    twoFactorLockedUntil: null,
+    twoFactorLastUsedStep: null,
+  });
+  await createAuditLog({
+    adminId,
+    action: "UPDATE",
+    entity: "ADMIN",
+    entityId: adminId,
+    metadata: { action: "MFA_DISABLED" },
+  });
+  return { enabled: false };
 };
 
 // =========================
@@ -819,6 +913,10 @@ const resetAdminPasswordService = async (
 
 module.exports = {
   loginAdmin,
+  verifyAdminMfaLogin,
+  enableAdminTwoFactor,
+  confirmAdminTwoFactor,
+  disableAdminTwoFactor,
   createAdmin,
   refreshAdminToken,
   logoutAdmin,

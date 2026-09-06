@@ -15,6 +15,10 @@ const {
 const { redisConnection, isQueueEnabled } = require("../config/redis");
 
 const { deadLetterQueue } = require("../queues/notification.queue");
+const {
+  findCampaignRecipientByNotificationId,
+  updateCampaignRecipient,
+} = require("../repositories/admin/adminNotification.repository");
 
 /**
  * BullMQ custom exponential retry backoff.
@@ -104,6 +108,13 @@ const handleJobFailure = async (job, err) => {
     notification.id,
     NOTIFICATION_STATUS.FAILED,
   );
+  const campaignRecipient = await findCampaignRecipientByNotificationId(notification.id);
+  if (campaignRecipient) {
+    await updateCampaignRecipient(campaignRecipient.id, {
+      status: "FAILED",
+      errorMessage: err?.message || "Notification delivery failed.",
+    });
+  }
 
   const dlq = deadLetterQueue();
 
@@ -211,6 +222,13 @@ const createWorker = (queueName = "notification") => {
         notification.id,
         NOTIFICATION_STATUS.SENT,
       );
+      const campaignRecipient = await findCampaignRecipientByNotificationId(notification.id);
+      if (campaignRecipient) {
+        await updateCampaignRecipient(campaignRecipient.id, {
+          status: "SENT",
+          errorMessage: null,
+        });
+      }
 
       logger.info("Notification job completed.", {
         notificationId: notification.id,

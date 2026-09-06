@@ -10,6 +10,10 @@ const {
   changeAdminPasswordController,
   forgotAdminPasswordController,
   resetAdminPasswordController,
+  verifyMfaLogin,
+  setupMfa,
+  confirmMfa,
+  disableMfa,
 } = require("../../controllers/admin/adminAuth.controller");
 
 const adminAuthMiddleware = require("../../middleware/admin/adminAuth.middleware");
@@ -22,6 +26,8 @@ const {
   changePasswordSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  mfaLoginSchema,
+  mfaCodeSchema,
 } = require("../../validators/admin/adminAuth.validator");
 
 const { validate } = require("../../middleware/validate.middleware");
@@ -33,6 +39,7 @@ const {
   loginLimiter,
   registerLimiter,
   forgotPasswordLimiter,
+  mfaLimiter,
 } = require("../../middleware/rateLimit.middleware");
 
 const {
@@ -81,6 +88,35 @@ const ADMIN_PERMISSIONS = require("../../constants/adminPermissions");
  *         description: Internal server error.
  */
 router.post("/login", loginLimiter, validateAdminBody(loginSchema), login);
+
+/**
+ * @swagger
+ * /api/admin/auth/login/mfa:
+ *   post:
+ *     summary: Complete admin MFA login
+ *     tags: [Admin Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [mfaToken, code]
+ *             properties:
+ *               mfaToken: { type: string }
+ *               code: { type: string, example: "123456" }
+ *     responses:
+ *       200:
+ *         description: Admin login successful.
+ *       401:
+ *         description: Invalid or expired MFA challenge/code.
+ */
+router.post(
+  "/login/mfa",
+  mfaLimiter,
+  validateAdminBody(mfaLoginSchema),
+  verifyMfaLogin,
+);
 
 /**
  * @swagger
@@ -332,5 +368,47 @@ router.post(
   resetAdminPasswordController,
 );
 
-module.exports = router;
+/**
+ * @swagger
+ * /api/admin/auth/2fa/setup:
+ *   post:
+ *     summary: Generate an admin TOTP secret
+ *     tags: [Admin Authentication]
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: TOTP setup data. The secret is returned only for enrollment.
+ */
+router.post("/2fa/setup", adminAuthMiddleware, setupMfa);
+/**
+ * @swagger
+ * /api/admin/auth/2fa/confirm:
+ *   post:
+ *     summary: Enable admin two-factor authentication
+ *     tags: [Admin Authentication]
+ *     security: [{ bearerAuth: [] }]
+ */
+router.post(
+  "/2fa/confirm",
+  adminAuthMiddleware,
+  mfaLimiter,
+  validateAdminBody(mfaCodeSchema),
+  confirmMfa,
+);
+/**
+ * @swagger
+ * /api/admin/auth/2fa/disable:
+ *   post:
+ *     summary: Disable admin two-factor authentication
+ *     tags: [Admin Authentication]
+ *     security: [{ bearerAuth: [] }]
+ */
+router.post(
+  "/2fa/disable",
+  adminAuthMiddleware,
+  mfaLimiter,
+  validateAdminBody(mfaCodeSchema),
+  disableMfa,
+);
 
+module.exports = router;

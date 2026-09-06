@@ -95,6 +95,7 @@ const restoreBackup = async (req, res, next) => {
     const backup = await backupService.restoreBackup({
       id: req.params.id,
       confirmation: req.body?.confirmation,
+      adminId: req.admin.id,
     });
 
     return res.status(200).json({
@@ -128,7 +129,6 @@ module.exports = {
   restoreBackup,
   deleteBackup,
 };
-
 
 
 

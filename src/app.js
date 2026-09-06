@@ -38,6 +38,7 @@ const adminPricingRoutes = require("./routes/admin/adminPricing.routes");
 const adminMapsRoutes = require("./routes/admin/adminMaps.routes");
 const adminReportsRoutes = require("./routes/admin/adminReports.routes");
 const adminAnalyticsRoutes = require("./routes/admin/adminAnalytics.routes");
+const adminNotificationRoutes = require("./routes/admin/adminNotification.routes");
 const adminSettingsRoutes = require("./routes/admin/adminSettings.routes");
 const adminAuditRoutes = require("./routes/admin/adminAudit.routes");
 const adminSupportRoutes = require("./routes/admin/adminSupport.routes");
@@ -53,7 +54,18 @@ app.use(helmet());
 
 app.use(
   cors({
-    origin: true,
+    origin: (origin, callback) => {
+      const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || "")
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean);
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Origin is not allowed by CORS."));
+    },
     credentials: true,
   }),
 );
@@ -71,8 +83,10 @@ app.use((req, res, next) => {
 
   express.json({ limit: "10mb" })(req, res, (err) => {
     if (err && err.type === "entity.parse.failed") {
-      req.body = {};
-      return next();
+      return res.status(400).json({
+        success: false,
+        message: "Malformed JSON request body.",
+      });
     }
 
     next(err);
@@ -146,6 +160,7 @@ app.use("/api/admin/maps", adminMapsRoutes);
 app.use("/api/admin/reports", adminReportsRoutes);
 
 app.use("/api/admin/analytics", adminAnalyticsRoutes);
+app.use("/api/admin/notifications", adminNotificationRoutes);
 
 app.use("/api/admin/settings", adminSettingsRoutes);
 

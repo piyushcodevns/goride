@@ -22,7 +22,15 @@ const notificationQuerySchema = z.object({
   }),
 });
 
+const pushDeviceSchema = z.object({
+  body: z.object({
+    token: z.string().trim().min(20).max(4096),
+    platform: z.enum(["ANDROID", "IOS", "WEB"]),
+  }).strict(),
+});
+
 module.exports = {
   notificationIdSchema,
   notificationQuerySchema,
+  pushDeviceSchema,
 };
