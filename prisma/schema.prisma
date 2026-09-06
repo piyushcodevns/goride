@@ -45,6 +45,7 @@ model User {
   tickets                  Ticket[]
   ticketReplies            TicketReply[]
   ticketHistoryActions     TicketHistory[]
+  documents                UserDocument[]
 
   @@index([isBlocked])
   @@index([deletedAt])
@@ -444,6 +445,27 @@ model VehicleDocument {
   @@index([status])
 }
 
+model UserDocument {
+  id             String           @id @default(cuid())
+  userId         String
+  documentType   UserDocumentType
+  documentNumber String?
+  fileUrl        String
+  filePublicId   String?
+  originalName   String?
+  mimeType       String?
+  fileSize       Int?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, documentType])
+  @@index([userId])
+  @@index([documentType])
+  @@index([createdAt])
+}
+
 enum UserRole {
   USER
   DRIVER
@@ -581,6 +603,9 @@ enum AuditAction {
   ASSIGN
   REASSIGN
   FORCE_COMPLETE
+  UPLOAD
+  REPLACE
+  ACCESS
 }
 
 enum AuditEntity {
@@ -595,6 +620,7 @@ enum AuditEntity {
   SETTINGS
   ADMIN
   SUPPORT
+  FILE
 }
 
 enum DriverDocumentType {
@@ -663,6 +689,12 @@ enum TicketHistoryAction {
   REPLIED
   RESOLVED
   CLOSED
+}
+
+enum UserDocumentType {
+  ID_PROOF
+  ADDRESS_PROOF
+  OTHER
 }
 
 model SupportedCity {

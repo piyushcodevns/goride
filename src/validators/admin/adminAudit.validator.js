@@ -16,6 +16,9 @@ const AUDIT_ACTIONS = [
   "ASSIGN",
   "REASSIGN",
   "FORCE_COMPLETE",
+  "UPLOAD",
+  "REPLACE",
+  "ACCESS",
 ];
 
 const AUDIT_ENTITIES = [
@@ -29,6 +32,7 @@ const AUDIT_ENTITIES = [
   "NOTIFICATION",
   "SETTINGS",
   "ADMIN",
+  "FILE",
 ];
 
 const LOGIN_STATUSES = [
@@ -165,6 +169,5 @@ module.exports = {
   AUDIT_ENTITIES,
   LOGIN_STATUSES,
 };
-
 
 

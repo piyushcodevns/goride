@@ -39,6 +39,7 @@ const adminAnalyticsRoutes = require("./routes/admin/adminAnalytics.routes");
 const adminSettingsRoutes = require("./routes/admin/adminSettings.routes");
 const adminAuditRoutes = require("./routes/admin/adminAudit.routes");
 const adminSupportRoutes = require("./routes/admin/adminSupport.routes");
+const adminFileRoutes = require("./routes/admin/adminFile.routes");
 
 const { apiLimiter } = require("./middleware/rateLimit.middleware");
 
@@ -66,7 +67,7 @@ app.use((req, res, next) => {
     return next();
   }
 
-  express.json()(req, res, (err) => {
+  express.json({ limit: "10mb" })(req, res, (err) => {
     if (err && err.type === "entity.parse.failed") {
       req.body = {};
       return next();
@@ -76,7 +77,6 @@ app.use((req, res, next) => {
   });
 });
 
-app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use(morgan("dev"));
@@ -150,6 +150,8 @@ app.use("/api/admin/settings", adminSettingsRoutes);
 app.use("/api/admin/audit-logs", adminAuditRoutes);
 
 app.use("/api/admin/support", adminSupportRoutes);
+
+app.use("/api/admin/files", adminFileRoutes);
 
 /* ===========================
    Health Check

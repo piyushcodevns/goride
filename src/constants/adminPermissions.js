@@ -1,4 +1,4 @@
-﻿module.exports = {
+module.exports = {
   DASHBOARD_VIEW: "dashboard:view",
 
   USER_VIEW: "user:view",
@@ -37,7 +37,16 @@
   SUPPORT_VIEW: "support:view",
   SUPPORT_MANAGE: "support:manage",
 
+  FILE_VIEW: "file:view",
+  FILE_UPLOAD: "file:upload",
+  FILE_MANAGE: "file:manage",
+  FILE_DELETE: "file:delete",
+
   ADMIN_VIEW: "admin:view",
   ADMIN_MANAGE: "admin:manage",
+
+  SYSTEM_MONITOR: "system:monitor",
 };
+
+
 

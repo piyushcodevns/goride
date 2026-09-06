@@ -1,4 +1,4 @@
-﻿const ADMIN_ROLES = require("./adminRoles");
+const ADMIN_ROLES = require("./adminRoles");
 const ADMIN_PERMISSIONS = require("./adminPermissions");
 
 const {
@@ -22,13 +22,18 @@ const {
   REPORT_VIEW,
   ANALYTICS_VIEW,
   AUDIT_LOG_VIEW,
-    AUDIT_LOG_EXPORT,
+  AUDIT_LOG_EXPORT,
   SETTINGS_VIEW,
   SETTINGS_MANAGE,
   SUPPORT_VIEW,
   SUPPORT_MANAGE,
+  FILE_VIEW,
+  FILE_UPLOAD,
+  FILE_MANAGE,
+  FILE_DELETE,
   ADMIN_VIEW,
   ADMIN_MANAGE,
+  SYSTEM_MONITOR,
 } = ADMIN_PERMISSIONS;
 
 const ALL_PERMISSIONS = Object.values(ADMIN_PERMISSIONS);
@@ -62,8 +67,13 @@ module.exports = Object.freeze({
     SETTINGS_MANAGE,
     SUPPORT_VIEW,
     SUPPORT_MANAGE,
+    FILE_VIEW,
+    FILE_UPLOAD,
+    FILE_MANAGE,
+    FILE_DELETE,
     ADMIN_VIEW,
     ADMIN_MANAGE,
+  SYSTEM_MONITOR,
   ],
 
   [ADMIN_ROLES.OPERATIONS_MANAGER]: [
@@ -114,4 +124,5 @@ module.exports = Object.freeze({
     REPORT_VIEW,
   ],
 });
+
 
