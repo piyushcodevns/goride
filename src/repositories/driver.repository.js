@@ -209,6 +209,63 @@ const replaceRejectedDriverDocument = async ({
   });
 };
 
+const getEligibleDriversForRecommendation = async (
+  vehicleType,
+  db = prisma,
+) => {
+  return db.driver.findMany({
+    where: {
+      status: "APPROVED",
+      availability: "AVAILABLE",
+
+      vehicle: {
+        is: {
+          status: "APPROVED",
+          vehicleType,
+        },
+      },
+
+      rides: {
+        none: {
+          status: {
+            in: ["ACCEPTED", "ARRIVED", "STARTED"],
+          },
+        },
+      },
+    },
+
+    select: {
+      id: true,
+      status: true,
+      availability: true,
+      experience: true,
+      averageRating: true,
+      totalRatings: true,
+      createdAt: true,
+
+      vehicle: {
+        select: {
+          id: true,
+          vehicleType: true,
+          status: true,
+        },
+      },
+    },
+
+    orderBy: [
+      {
+        averageRating: "desc",
+      },
+      {
+        createdAt: "asc",
+      },
+      {
+        id: "asc",
+      },
+    ],
+  });
+};
+
 module.exports = {
   createDriver,
   getDriverByUserId,
@@ -223,4 +280,6 @@ module.exports = {
   getDriverDocuments,
   getDriverDocumentByType,
   replaceRejectedDriverDocument,
+
+  getEligibleDriversForRecommendation,
 };
