@@ -51,11 +51,16 @@ const {
 const {
   getBusinessRecommendations,
 } = require("./businessRecommendation.service");
+const { getAllCapabilityStatuses } = require("../../ai/ml/capabilityStatus");
+const { MONITORING_STATUS } = require("../../ai/ml/predictionMonitoring");
 
 const getAICoreStatus = () => {
   return {
     status: "READY",
     modelVersion: "goride-ai-v1",
+    mlTrainingStatus: "NOT_READY_INSUFFICIENT_DATA",
+    monitoringStatus: MONITORING_STATUS.NOT_READY,
+    capabilityStatuses: getAllCapabilityStatuses(),
     features: {
       demandForecast: "AVAILABLE",
       pricingSignal: "AVAILABLE",
