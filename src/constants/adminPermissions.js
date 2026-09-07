@@ -1,4 +1,4 @@
-module.exports = {
+﻿module.exports = {
   DASHBOARD_VIEW: "dashboard:view",
 
   USER_VIEW: "user:view",
@@ -82,4 +82,6 @@ module.exports = {
   BACKUP_CREATE: "backup:create",
   BACKUP_RESTORE: "backup:restore",
   BACKUP_DELETE: "backup:delete",
+
+  AI_VIEW: "ai:view",
 };

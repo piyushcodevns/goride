@@ -8,33 +8,33 @@ datasource db {
 }
 
 model User {
-  id                       String              @id @default(cuid())
+  id                       String                 @id @default(cuid())
   fullName                 String
-  email                    String              @unique
-  phone                    String              @unique
+  email                    String                 @unique
+  phone                    String                 @unique
   password                 String
-  role                     UserRole            @default(USER)
+  role                     UserRole               @default(USER)
   gender                   Gender?
   profileImage             String?
-  isVerified               Boolean             @default(false)
-  isActive                 Boolean             @default(true)
-  createdAt                DateTime            @default(now())
-  updatedAt                DateTime            @updatedAt
+  isVerified               Boolean                @default(false)
+  isActive                 Boolean                @default(true)
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
   emailVerificationExpires DateTime?
   emailVerificationToken   String?
-  emailVerified            Boolean             @default(false)
+  emailVerified            Boolean                @default(false)
   passwordResetExpires     DateTime?
   passwordResetToken       String?
   accountLockedUntil       DateTime?
-  failedLoginAttempts      Int                 @default(0)
+  failedLoginAttempts      Int                    @default(0)
   lastLoginAt              DateTime?
   lastPasswordResetAt      DateTime?
   passwordChangedAt        DateTime?
   deletedAt                DateTime?
-  isBlocked                Boolean             @default(false)
-  twoFactorEnabled         Boolean             @default(false)
+  isBlocked                Boolean                @default(false)
+  twoFactorEnabled         Boolean                @default(false)
   twoFactorSecret          String?
-  twoFactorFailedAttempts  Int                 @default(0)
+  twoFactorFailedAttempts  Int                    @default(0)
   twoFactorLockedUntil     DateTime?
   twoFactorLastUsedStep    BigInt?
   adminLoginHistory        AdminLoginHistory[]
@@ -52,7 +52,7 @@ model User {
   ticketHistoryActions     TicketHistory[]
   documents                UserDocument[]
   pushDevices              PushDevice[]
-  smsCampaignsCreated      SmsCampaign[] @relation("SmsCampaignCreator")
+  smsCampaignsCreated      SmsCampaign[]          @relation("SmsCampaignCreator")
   smsCampaignRecipients    SmsCampaignRecipient[]
 
   @@index([isBlocked])
@@ -358,17 +358,17 @@ model SmsCampaign {
 }
 
 model SmsCampaignRecipient {
-  id           String                   @id @default(cuid())
-  campaignId   String
-  userId       String
+  id             String                  @id @default(cuid())
+  campaignId     String
+  userId         String
   notificationId String?
-  status       CampaignRecipientStatus  @default(PENDING)
-  attempts     Int                      @default(0)
-  errorMessage String?
-  createdAt    DateTime                 @default(now())
-  updatedAt    DateTime                 @updatedAt
-  campaign     SmsCampaign              @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  user         User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status         CampaignRecipientStatus @default(PENDING)
+  attempts       Int                     @default(0)
+  errorMessage   String?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  campaign       SmsCampaign             @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user           User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([campaignId, userId])
   @@index([campaignId, status])
@@ -898,17 +898,17 @@ model TicketHistory {
 }
 
 model Backup {
-  id             String   @id @default(cuid())
-  filename       String   @unique
-  status         BackupStatus @default(PENDING)
-  type           BackupType @default(MANUAL)
-  size           BigInt?
-  checksum       String?
-  storagePath    String?
-  errorMessage   String?
-  createdBy      String?
-  createdAt      DateTime @default(now())
-  completedAt    DateTime?
+  id           String       @id @default(cuid())
+  filename     String       @unique
+  status       BackupStatus @default(PENDING)
+  type         BackupType   @default(MANUAL)
+  size         BigInt?
+  checksum     String?
+  storagePath  String?
+  errorMessage String?
+  createdBy    String?
+  createdAt    DateTime     @default(now())
+  completedAt  DateTime?
 
   @@index([status])
   @@index([type])

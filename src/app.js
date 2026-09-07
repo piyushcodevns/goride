@@ -14,6 +14,7 @@ const app = express();
 const adminMonitoringRoutes = require("./routes/admin/adminMonitoring.routes");
 const adminBackupRoutes = require("./routes/admin/adminBackup.routes");
 const adminRbacRoutes = require("./routes/admin/adminRbac.routes");
+const adminAiRoutes = require("./routes/admin/adminAi.routes");
 
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
@@ -173,6 +174,7 @@ app.use("/api/admin/files", adminFileRoutes);
 app.use("/api/admin/monitoring", adminMonitoringRoutes);
 app.use("/api/admin/backups", adminBackupRoutes);
 app.use("/api/admin/rbac", adminRbacRoutes);
+app.use("/api/admin/ai", adminAiRoutes);
 
 /* ===========================
    Health Check
