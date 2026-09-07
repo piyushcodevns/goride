@@ -18,6 +18,7 @@ const {
   getHeatmap,
   getRetention,
   getCityAnalytics,
+  exportAnalytics,
 } = require("../../controllers/admin/adminAnalytics.controller");
 
 const {
@@ -27,6 +28,7 @@ const {
   heatmapAnalyticsQuerySchema,
   retentionAnalyticsQuerySchema,
   cityAnalyticsQuerySchema,
+  analyticsExportQuerySchema,
 } = require("../../validators/admin/adminAnalytics.validator");
 
 /**
@@ -437,6 +439,79 @@ router.get(
   getCityAnalytics,
 );
 
-module.exports = router;
+/**
+ * @swagger
+ * /api/admin/analytics/export:
+ *   get:
+ *     summary: Export analytics as CSV
+ *     description: Export validated Analytics data as CSV. Requires the dedicated analytics:export permission.
+ *     tags:
+ *       - Admin Analytics
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - growth
+ *             - users
+ *             - drivers
+ *             - revenue
+ *             - rides
+ *             - vehicles
+ *             - heatmap
+ *             - retention
+ *             - cities
+ *       - in: query
+ *         name: fromDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: toDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: granularity
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - daily
+ *             - weekly
+ *             - monthly
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 10000
+ *     responses:
+ *       200:
+ *         description: Analytics CSV export generated successfully.
+ *         content:
+ *           text/csv:
+ *             schema:
+ *               type: string
+ *       400:
+ *         description: Validation failed.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Requires analytics:export permission.
+ */
+router.get(
+  "/export",
+  adminAuthMiddleware,
+  requirePermission("analytics:export"),
+  validate(analyticsExportQuerySchema),
+  exportAnalytics,
+);
 
+module.exports = router;
 

@@ -1,18 +1,34 @@
 ﻿const prisma = require("../../config/prisma");
 
-const getPeriodBounds = (fromDate, toDate) => {
-    const from = new Date(fromDate);
-    const to = new Date(toDate);
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MAX_ANALYTICS_RANGE_DAYS = 366;
 
-    if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) {
-        throw new Error("Invalid analytics date range");
+const toValidDate = (value, fieldName) => {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        throw new Error(`Invalid analytics ${fieldName}`);
     }
+
+    return date;
+};
+
+const getPeriodBounds = (fromDate, toDate) => {
+    const from = toValidDate(fromDate, "fromDate");
+    const to = toValidDate(toDate, "toDate");
 
     if (from >= to) {
         throw new Error("Analytics fromDate must be before toDate");
     }
 
     const periodMs = to.getTime() - from.getTime();
+    const periodDays = periodMs / DAY_MS;
+
+    if (periodDays > MAX_ANALYTICS_RANGE_DAYS) {
+        throw new Error(
+            `Analytics date range cannot exceed ${MAX_ANALYTICS_RANGE_DAYS} days`
+        );
+    }
 
     return {
         from,
@@ -23,19 +39,17 @@ const getPeriodBounds = (fromDate, toDate) => {
 };
 
 /**
- * Growth summary.
+ * Overall growth comparison.
  *
- * Uses:
- * - User.role = USER
- * - Driver records directly
- * - Payment.status = SUCCESS
- * - Ride records directly
+ * Authoritative sources:
+ * - Users: USER registrations
+ * - Drivers: Driver records
+ * - Revenue: SUCCESS payments using paidAt
+ * - Rides: Ride records
  */
 const getGrowthMetrics = async ({ fromDate, toDate }) => {
-    const { from, to, previousFrom, previousTo } = getPeriodBounds(
-        fromDate,
-        toDate
-    );
+    const { from, to, previousFrom, previousTo } =
+        getPeriodBounds(fromDate, toDate);
 
     const [
         currentUsers,
@@ -137,6 +151,7 @@ const getGrowthMetrics = async ({ fromDate, toDate }) => {
             revenue: currentRevenue._sum.amount || 0,
             rides: currentRides,
         },
+
         previous: {
             users: previousUsers,
             drivers: previousDrivers,
@@ -147,24 +162,27 @@ const getGrowthMetrics = async ({ fromDate, toDate }) => {
 };
 
 /**
- * User growth records.
+ * User growth source data.
  *
- * Service layer converts these timestamps into requested
- * daily/weekly/monthly buckets.
+ * Only timestamp is required by the service.
  */
 const getUserGrowth = async ({ fromDate, toDate }) => {
+    const from = toValidDate(fromDate, "fromDate");
+    const to = toValidDate(toDate, "toDate");
+
     return prisma.user.findMany({
         where: {
             role: "USER",
             createdAt: {
-                gte: new Date(fromDate),
-                lt: new Date(toDate),
+                gte: from,
+                lt: to,
             },
         },
+
         select: {
-            id: true,
             createdAt: true,
         },
+
         orderBy: {
             createdAt: "asc",
         },
@@ -172,20 +190,24 @@ const getUserGrowth = async ({ fromDate, toDate }) => {
 };
 
 /**
- * Driver growth records.
+ * Driver growth source data.
  */
 const getDriverGrowth = async ({ fromDate, toDate }) => {
+    const from = toValidDate(fromDate, "fromDate");
+    const to = toValidDate(toDate, "toDate");
+
     return prisma.driver.findMany({
         where: {
             createdAt: {
-                gte: new Date(fromDate),
-                lt: new Date(toDate),
+                gte: from,
+                lt: to,
             },
         },
+
         select: {
-            id: true,
             createdAt: true,
         },
+
         orderBy: {
             createdAt: "asc",
         },
@@ -193,23 +215,30 @@ const getDriverGrowth = async ({ fromDate, toDate }) => {
 };
 
 /**
- * Revenue records.
+ * Revenue source data.
  *
- * ONLY successful payments are included.
+ * ONLY successful payments with a valid paidAt are included.
  */
 const getRevenueGrowth = async ({ fromDate, toDate }) => {
+    const from = toValidDate(fromDate, "fromDate");
+    const to = toValidDate(toDate, "toDate");
+
     return prisma.payment.findMany({
         where: {
             status: "SUCCESS",
+
             paidAt: {
-                gte: new Date(fromDate),
-                lt: new Date(toDate),
+                gte: from,
+                lt: to,
+                not: null,
             },
         },
+
         select: {
             amount: true,
             paidAt: true,
         },
+
         orderBy: {
             paidAt: "asc",
         },
@@ -217,26 +246,29 @@ const getRevenueGrowth = async ({ fromDate, toDate }) => {
 };
 
 /**
- * Ride growth.
+ * Ride growth source data.
  *
- * Only fields required for analytics are selected.
+ * Only fields required by analytics are selected.
  */
 const getRideGrowth = async ({ fromDate, toDate }) => {
+    const from = toValidDate(fromDate, "fromDate");
+    const to = toValidDate(toDate, "toDate");
+
     return prisma.ride.findMany({
         where: {
             createdAt: {
-                gte: new Date(fromDate),
-                lt: new Date(toDate),
+                gte: from,
+                lt: to,
             },
         },
+
         select: {
-            id: true,
             status: true,
-            vehicleType: true,
             distance: true,
             duration: true,
             createdAt: true,
         },
+
         orderBy: {
             createdAt: "asc",
         },
@@ -246,36 +278,48 @@ const getRideGrowth = async ({ fromDate, toDate }) => {
 /**
  * Vehicle performance analytics.
  *
- * Uses ride-level operational metrics rather than duplicating
- * simple vehicle revenue breakdowns already available in Reports.
+ * Database performs grouping and averages.
  */
 const getVehicleAnalytics = async ({ fromDate, toDate }) => {
+    const from = toValidDate(fromDate, "fromDate");
+    const to = toValidDate(toDate, "toDate");
+
     const rides = await prisma.ride.groupBy({
         by: ["vehicleType"],
+
         where: {
             createdAt: {
-                gte: new Date(fromDate),
-                lt: new Date(toDate),
+                gte: from,
+                lt: to,
             },
         },
+
         _count: {
             id: true,
         },
+
         _avg: {
             distance: true,
             duration: true,
         },
     });
 
+    if (!rides.length) {
+        return [];
+    }
+
     const completedRides = await prisma.ride.groupBy({
         by: ["vehicleType"],
+
         where: {
             status: "COMPLETED",
+
             createdAt: {
-                gte: new Date(fromDate),
-                lt: new Date(toDate),
+                gte: from,
+                lt: to,
             },
         },
+
         _count: {
             id: true,
         },
@@ -290,18 +334,28 @@ const getVehicleAnalytics = async ({ fromDate, toDate }) => {
 
     return rides.map((item) => ({
         vehicleType: item.vehicleType,
+
         totalRides: item._count.id,
-        completedRides: completedMap.get(item.vehicleType) || 0,
+
+        completedRides:
+            completedMap.get(item.vehicleType) || 0,
+
         averageDistance: item._avg.distance,
+
         averageDuration: item._avg.duration,
     }));
 };
 
 /**
- * Heatmap data.
+ * Heatmap source data.
  *
- * Only real stored coordinates are used.
- * Maximum 10,000 records prevents an unbounded response.
+ * IMPORTANT:
+ * This repository intentionally does NOT return:
+ * - ride id
+ * - user id
+ * - timestamps
+ *
+ * Service layer performs geographic bucketing.
  */
 const getHeatmapData = async ({
     fromDate,
@@ -309,7 +363,19 @@ const getHeatmapData = async ({
     type = "pickup",
     limit = 10000,
 }) => {
-    const safeLimit = Math.min(Math.max(Number(limit) || 10000, 1), 10000);
+    const from = toValidDate(fromDate, "fromDate");
+    const to = toValidDate(toDate, "toDate");
+
+    if (!["pickup", "destination"].includes(type)) {
+        throw new Error(
+            "Heatmap type must be pickup or destination"
+        );
+    }
+
+    const safeLimit = Math.min(
+        Math.max(Number(limit) || 10000, 1),
+        10000
+    );
 
     const coordinateFilter =
         type === "destination"
@@ -317,6 +383,7 @@ const getHeatmapData = async ({
                   destinationLatitude: {
                       not: null,
                   },
+
                   destinationLongitude: {
                       not: null,
                   },
@@ -325,6 +392,7 @@ const getHeatmapData = async ({
                   pickupLatitude: {
                       not: null,
                   },
+
                   pickupLongitude: {
                       not: null,
                   },
@@ -333,50 +401,54 @@ const getHeatmapData = async ({
     return prisma.ride.findMany({
         where: {
             createdAt: {
-                gte: new Date(fromDate),
-                lt: new Date(toDate),
+                gte: from,
+                lt: to,
             },
+
             ...coordinateFilter,
         },
+
         select: {
-            id: true,
             pickupLatitude: true,
             pickupLongitude: true,
             destinationLatitude: true,
             destinationLongitude: true,
-            createdAt: true,
         },
-        orderBy: {
-            createdAt: "desc",
-        },
+
         take: safeLimit,
     });
 };
 
 /**
- * Retention analytics source data.
+ * Retention source data.
  *
- * Cohort = user registration date.
- * Activity = subsequent ride activity.
- *
- * Service layer owns cohort/month calculations.
+ * Users are limited to the requested cohort period.
+ * Rides are limited to the requested period + enough
+ * future time for the service to evaluate month 0/1/2.
  */
 const getRetentionData = async ({ fromDate, toDate }) => {
-    const from = new Date(fromDate);
-    const to = new Date(toDate);
+    const from = toValidDate(fromDate, "fromDate");
+    const to = toValidDate(toDate, "toDate");
+
+    if (from >= to) {
+        throw new Error("Analytics fromDate must be before toDate");
+    }
 
     const users = await prisma.user.findMany({
         where: {
             role: "USER",
+
             createdAt: {
                 gte: from,
                 lt: to,
             },
         },
+
         select: {
             id: true,
             createdAt: true,
         },
+
         orderBy: {
             createdAt: "asc",
         },
@@ -391,19 +463,32 @@ const getRetentionData = async ({ fromDate, toDate }) => {
 
     const userIds = users.map((user) => user.id);
 
+    /*
+     * We need activity after registration for retention.
+     * Since the analytics range itself is bounded to 366 days,
+     * cap the activity lookup to a deterministic upper bound.
+     */
+    const retentionEnd = new Date(
+        to.getTime() + 3 * 31 * DAY_MS
+    );
+
     const rides = await prisma.ride.findMany({
         where: {
             userId: {
                 in: userIds,
             },
+
             createdAt: {
                 gte: from,
+                lt: retentionEnd,
             },
         },
+
         select: {
             userId: true,
             createdAt: true,
         },
+
         orderBy: {
             createdAt: "asc",
         },
@@ -416,22 +501,29 @@ const getRetentionData = async ({ fromDate, toDate }) => {
 };
 
 /**
- * City analytics is intentionally unsupported until Ride has a
- * reliable structured city relation.
+ * City analytics intentionally remains unavailable.
  *
- * SupportedCity exists in the schema, but Ride currently has no
- * cityId relation. We must not fabricate city information from
- * pickup strings or coordinates.
+ * SupportedCity exists, but Ride has no reliable structured
+ * city relation. Do NOT infer city from pickup strings or
+ * coordinates.
  */
 const getCityAnalytics = async ({ fromDate, toDate }) => {
+    const from = toValidDate(fromDate, "fromDate");
+    const to = toValidDate(toDate, "toDate");
+
     return {
         supported: false,
+
+        status: "DATA_UNAVAILABLE",
+
         reason:
             "Ride records do not currently have a reliable structured city relation",
+
         data: [],
+
         period: {
-            fromDate,
-            toDate,
+            fromDate: from,
+            toDate: to,
         },
     };
 };

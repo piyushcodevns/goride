@@ -1,11 +1,17 @@
 const analyticsService = require("../../services/admin/adminAnalytics.service");
 
+const getAdminContext = (req) => ({
+  adminId: req.admin.id,
+  ipAddress: req.ip,
+  userAgent: req.get("user-agent"),
+});
+
 /**
  * Get overall growth comparison analytics.
  */
 const getGrowth = async (req, res, next) => {
   try {
-    const result = await analyticsService.getGrowth(req.query);
+    const result = await analyticsService.getGrowth(req.query, getAdminContext(req));
 
     return res.status(200).json({
       success: true,
@@ -21,7 +27,7 @@ const getGrowth = async (req, res, next) => {
  */
 const getUserGrowth = async (req, res, next) => {
   try {
-    const result = await analyticsService.getUserGrowth(req.query);
+    const result = await analyticsService.getUserGrowth(req.query, getAdminContext(req));
 
     return res.status(200).json({
       success: true,
@@ -37,7 +43,7 @@ const getUserGrowth = async (req, res, next) => {
  */
 const getDriverGrowth = async (req, res, next) => {
   try {
-    const result = await analyticsService.getDriverGrowth(req.query);
+    const result = await analyticsService.getDriverGrowth(req.query, getAdminContext(req));
 
     return res.status(200).json({
       success: true,
@@ -53,7 +59,7 @@ const getDriverGrowth = async (req, res, next) => {
  */
 const getRevenueGrowth = async (req, res, next) => {
   try {
-    const result = await analyticsService.getRevenueGrowth(req.query);
+    const result = await analyticsService.getRevenueGrowth(req.query, getAdminContext(req));
 
     return res.status(200).json({
       success: true,
@@ -69,7 +75,7 @@ const getRevenueGrowth = async (req, res, next) => {
  */
 const getRideGrowth = async (req, res, next) => {
   try {
-    const result = await analyticsService.getRideGrowth(req.query);
+    const result = await analyticsService.getRideGrowth(req.query, getAdminContext(req));
 
     return res.status(200).json({
       success: true,
@@ -85,7 +91,7 @@ const getRideGrowth = async (req, res, next) => {
  */
 const getVehicleAnalytics = async (req, res, next) => {
   try {
-    const result = await analyticsService.getVehicleAnalytics(req.query);
+    const result = await analyticsService.getVehicleAnalytics(req.query, getAdminContext(req));
 
     return res.status(200).json({
       success: true,
@@ -101,7 +107,7 @@ const getVehicleAnalytics = async (req, res, next) => {
  */
 const getHeatmap = async (req, res, next) => {
   try {
-    const result = await analyticsService.getHeatmap(req.query);
+    const result = await analyticsService.getHeatmap(req.query, getAdminContext(req));
 
     return res.status(200).json({
       success: true,
@@ -117,7 +123,7 @@ const getHeatmap = async (req, res, next) => {
  */
 const getRetention = async (req, res, next) => {
   try {
-    const result = await analyticsService.getRetention(req.query);
+    const result = await analyticsService.getRetention(req.query, getAdminContext(req));
 
     return res.status(200).json({
       success: true,
@@ -133,12 +139,32 @@ const getRetention = async (req, res, next) => {
  */
 const getCityAnalytics = async (req, res, next) => {
   try {
-    const result = await analyticsService.getCityAnalytics(req.query);
+    const result = await analyticsService.getCityAnalytics(req.query, getAdminContext(req));
 
     return res.status(200).json({
       success: true,
       data: result,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const exportAnalytics = async (req, res, next) => {
+  try {
+    const csv = await analyticsService.exportAnalyticsCsv(
+      req.query,
+      getAdminContext(req),
+    );
+
+    res.status(200);
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=goride-analytics.csv",
+    );
+
+    return res.send(csv);
   } catch (error) {
     next(error);
   }
@@ -154,4 +180,5 @@ module.exports = {
   getHeatmap,
   getRetention,
   getCityAnalytics,
+  exportAnalytics,
 };
