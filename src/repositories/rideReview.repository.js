@@ -32,13 +32,20 @@ const getReviewById = async (id) => {
 };
 
 /**
- * Get Reviews By Driver ID
+ * Get Reviews By Driver ID (bounded)
  */
-const getDriverReviews = async (driverId) => {
+const getDriverReviews = async (driverId, options = {}) => {
+  const take = options.limit ? Math.min(Number(options.limit) || 50, 100) : 50;
+  const skip = options.page
+    ? (Math.max(1, Number(options.page)) - 1) * take
+    : (options.skip ? Number(options.skip) : 0);
+
   return prisma.rideReview.findMany({
     where: {
       driverId,
     },
+    take,
+    skip,
     orderBy: {
       createdAt: "desc",
     },

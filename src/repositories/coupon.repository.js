@@ -287,7 +287,9 @@ const decrementCouponUsage = async (couponId) => {
   });
 };
 
-const getAvailableCoupons = (currentDate = new Date()) => {
+const getAvailableCoupons = (currentDate = new Date(), options = {}) => {
+  const take = options.limit ? Math.min(Number(options.limit) || 50, 100) : 50;
+
   return prisma.coupon.findMany({
     where: {
       isActive: true,
@@ -298,6 +300,7 @@ const getAvailableCoupons = (currentDate = new Date()) => {
         gte: currentDate,
       },
     },
+    take,
     orderBy: {
       createdAt: "desc",
     },
@@ -403,7 +406,8 @@ const getCouponUsageAnalytics = async (couponId) => {
   };
 };
 
-const getExpiredCoupons = async () => {
+const getExpiredCoupons = async (options = {}) => {
+  const take = options.limit ? Math.min(Number(options.limit) || 50, 100) : 50;
   const now = new Date();
 
   return prisma.coupon.findMany({
@@ -412,6 +416,7 @@ const getExpiredCoupons = async () => {
         lt: now,
       },
     },
+    take,
     orderBy: {
       validUntil: "desc",
     },

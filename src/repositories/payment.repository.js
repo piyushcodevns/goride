@@ -85,11 +85,18 @@ const updatePaymentStatus = (id, data) => {
 };
 
 /**
- * Get User Payment History
+ * Get User Payment History (bounded)
  */
-const getUserPayments = (userId) => {
+const getUserPayments = (userId, options = {}) => {
+  const take = options.limit ? Math.min(Number(options.limit) || 50, 100) : 50;
+  const skip = options.page
+    ? (Math.max(1, Number(options.page)) - 1) * take
+    : (options.skip ? Number(options.skip) : 0);
+
   return prisma.payment.findMany({
     where: { userId },
+    take,
+    skip,
     include: {
       ride: true,
     },

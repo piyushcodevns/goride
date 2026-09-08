@@ -25,6 +25,7 @@ requiredEnv.forEach((key) => {
 // Uncaught Exception
 // ===============================
 
+
 process.on("uncaughtException", (error) => {
   logger.error(`UNCAUGHT EXCEPTION: ${error.stack || error.message}`);
 
@@ -32,13 +33,14 @@ process.on("uncaughtException", (error) => {
 });
 
 const app = require("./src/app");
+const prisma = require("./src/config/prisma");
+const { closeRedisConnection } = require("./src/config/redis");
 const { ensureBackupSchedule } = require("./src/queues/backup.queue");
 const { createWorker } = require("./src/workers/notification.worker");
 
 const PORT = process.env.PORT || 5000;
 
 const notificationWorkers = [];
-let backupWorker = null;
 
 try {
   notificationWorkers.push(createWorker("notification"));
@@ -62,29 +64,78 @@ const server = app.listen(PORT, () => {
 });
 
 // ===============================
+// Graceful Shutdown Handler
+// ===============================
+
+let isShuttingDown = false;
+
+const gracefulShutdown = async (signal) => {
+  if (isShuttingDown) {
+    return;
+  }
+  isShuttingDown = true;
+  logger.info(`${signal} received. Initiating graceful shutdown...`);
+
+  // Safety timeout to prevent hanging during shutdown
+  const forceExitTimer = setTimeout(() => {
+    logger.error("Graceful shutdown timed out after 10s. Forcing exit.");
+    process.exit(1);
+  }, 10000);
+
+  if (forceExitTimer && typeof forceExitTimer.unref === "function") {
+    forceExitTimer.unref();
+  }
+
+  try {
+    // 1. Stop receiving new HTTP connections
+    await new Promise((resolve) => {
+      server.close((err) => {
+        if (err) {
+          logger.warn("HTTP server close encountered an error:", { error: err.message });
+        } else {
+          logger.info("HTTP server closed successfully.");
+        }
+        resolve();
+      });
+    });
+
+    // 2. Close notification queue workers
+    if (notificationWorkers.length > 0) {
+      await Promise.allSettled(notificationWorkers.map((worker) => worker.close()));
+      logger.info("Notification workers closed.");
+    }
+
+    // 3. Disconnect Redis
+    await closeRedisConnection();
+
+    // 4. Disconnect Prisma connection pool
+    await prisma.$disconnect();
+    logger.info("Prisma database pool disconnected.");
+
+    clearTimeout(forceExitTimer);
+    logger.info("Graceful shutdown completed. Exiting cleanly.");
+    process.exit(0);
+  } catch (error) {
+    logger.error("Error during graceful shutdown:", { error: error.message });
+    clearTimeout(forceExitTimer);
+    process.exit(1);
+  }
+};
+
+// ===============================
 // Unhandled Promise Rejection
 // ===============================
 
 process.on("unhandledRejection", (error) => {
   logger.error(`UNHANDLED REJECTION: ${error.stack || error.message}`);
-
-  server.close(() => {
-    process.exit(1);
-  });
+  gracefulShutdown("unhandledRejection");
 });
 
 // ===============================
-// Graceful Shutdown
+// Process Termination Signals
 // ===============================
 
-process.on("SIGTERM", async () => {
-  logger.info("SIGTERM received. Shutting down server...");
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
-  await Promise.allSettled(notificationWorkers.map((worker) => worker.close()));
-
-  server.close(() => {
-    logger.info("Server closed successfully.");
-
-    process.exit(0);
-  });
-});
+module.exports = { server, gracefulShutdown };

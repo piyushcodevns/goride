@@ -87,13 +87,20 @@ const getRideByIdForUser = async (rideId, userId) => {
 };
 
 /**
- * Get all rides of a user
+ * Get all rides of a user (bounded)
  */
-const getUserRides = async (userId) => {
+const getUserRides = async (userId, options = {}) => {
+  const take = options.limit ? Math.min(Number(options.limit) || 50, 100) : 50;
+  const skip = options.page
+    ? (Math.max(1, Number(options.page)) - 1) * take
+    : (options.skip ? Number(options.skip) : 0);
+
   return prisma.ride.findMany({
     where: {
       userId,
     },
+    take,
+    skip,
     orderBy: {
       createdAt: "desc",
     },
@@ -225,15 +232,18 @@ const getActiveRideByDriverId = async (driverId, db = prisma) => {
 };
 
 /**
- * Get available rides for drivers
+ * Get available rides for drivers (bounded)
  */
-const getAvailableRides = async () => {
+const getAvailableRides = async (options = {}) => {
+  const take = options.limit ? Math.min(Number(options.limit) || 50, 100) : 50;
+
   return prisma.ride.findMany({
     where: {
       status: "REQUESTED",
       driverId: null,
       isScheduled: false,
     },
+    take,
     orderBy: {
       createdAt: "desc",
     },

@@ -107,7 +107,13 @@ app.use((req, res, next) => {
 
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
-app.use(morgan("dev"));
+if (process.env.NODE_ENV !== "test") {
+  app.use(
+    morgan(process.env.NODE_ENV === "production" ? "combined" : "dev", {
+      skip: (req) => req.path === "/" || req.path === "/health",
+    })
+  );
+}
 
 /* ===========================
    Swagger Docs
