@@ -44,7 +44,9 @@ const sanitizeString = (str) => {
   }
   return str
     .replace(/(Bearer\s+)[A-Za-z0-9\-._~+/]+=*/gi, "$1[REDACTED]")
-    .replace(/(redis:\/\/[^:]+:)[^@]+(@)/gi, "$1***$2");
+    .replace(/(redis:\/\/[^:]+:)[^@\s/]+(@)/gi, "$1***$2")
+    .replace(/(postgres(?:ql)?:\/\/[^:\s/]+:)[^@\s/]+(@)/gi, "$1***$2")
+    .replace(/((?:password|pwd)=)[^&; \t\r\n]+/gi, "$1***");
 };
 
 /**

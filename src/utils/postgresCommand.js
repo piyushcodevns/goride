@@ -1,4 +1,5 @@
 const { execFile } = require("child_process");
+const { sanitizeString } = require("./redact");
 
 const runPostgresCommand = ({
   executable,
@@ -22,10 +23,11 @@ const runPostgresCommand = ({
       },
       (error, stdout, stderr) => {
         if (error) {
-          const commandError = new Error(
-            stderr?.trim() || error.message || "PostgreSQL command failed.",
-          );
+          const rawMessage =
+            stderr?.trim() || error.message || "PostgreSQL command failed.";
+          const safeMessage = sanitizeString(rawMessage);
 
+          const commandError = new Error(safeMessage);
           commandError.code = error.code;
           commandError.killed = error.killed;
 
@@ -34,7 +36,7 @@ const runPostgresCommand = ({
 
         resolve({
           stdout,
-          stderr,
+          stderr: sanitizeString(stderr || ""),
         });
       },
     );

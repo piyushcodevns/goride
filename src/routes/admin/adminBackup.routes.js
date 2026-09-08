@@ -17,6 +17,7 @@ const {
   getBackups,
   getBackup,
   downloadBackup,
+  verifyBackup,
   restoreBackup,
   deleteBackup,
 } = require("../../controllers/admin/adminBackup.controller");
@@ -197,6 +198,13 @@ router.delete(
   deleteBackup
 );
 
+
+router.get(
+  "/:id/verify",
+  requirePermission(ADMIN_PERMISSIONS.BACKUP_VIEW),
+  validate(backupIdSchema),
+  verifyBackup
+);
 
 router.get(
   "/:id",

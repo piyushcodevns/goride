@@ -33,8 +33,20 @@ const getBackupQueue = () => {
   return backupQueueInstance;
 };
 
+let envConfig;
+try {
+  const { config } = require("../config/env");
+  envConfig = config;
+} catch {
+  envConfig = null;
+}
+
 const ensureBackupSchedule = async () => {
-  if (process.env.BACKUP_SCHEDULE_ENABLED !== "true" || !isQueueEnabled()) {
+  const isEnabled =
+    envConfig?.schedulers?.backup?.enabled ??
+    (process.env.BACKUP_SCHEDULE_ENABLED === "true");
+
+  if (!isEnabled || !isQueueEnabled()) {
     return false;
   }
 
@@ -45,10 +57,15 @@ const ensureBackupSchedule = async () => {
       return false;
     }
 
+    const cronPattern =
+      envConfig?.schedulers?.backup?.cron ||
+      process.env.BACKUP_CRON ||
+      "0 2 * * *";
+
     await queue.upsertJobScheduler(
       "daily-backup",
       {
-        pattern: process.env.BACKUP_CRON || "0 2 * * *",
+        pattern: cronPattern,
       },
       {
         name: "scheduled-backup",

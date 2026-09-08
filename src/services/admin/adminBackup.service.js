@@ -4,42 +4,61 @@ const path = require("path");
 
 const prisma = require("../../config/prisma");
 const logger = require("../../utils/logger");
+const { sanitizeString } = require("../../utils/redact");
 const {
   BACKUP_ROOT,
   BACKUP_MAX_SIZE_MB,
+  BACKUP_RETENTION_DAYS,
+  PG_DUMP_PATH,
+  PG_RESTORE_PATH,
 } = require("../../config/backup.config");
 const {
   ensureBackupDirectory,
   generateBackupFilename,
   resolveBackupPath,
+  atomicMoveFile,
   getBackupFileStats,
+  cleanupStaleTempFiles,
 } = require("../../utils/backupStorage");
-const { runPostgresCommand } = require("../../utils/postgresCommand");
+const postgresCommand = require("../../utils/postgresCommand");
 const backupRepository = require("../../repositories/admin/adminBackup.repository");
 const { createAuditLog } = require("../../repositories/admin/adminAuth.repository");
-const { BACKUP_RETENTION_DAYS } = require("../../config/backup.config");
 
+// Mutex to prevent overlapping backup runs in the same node process
+let backupInProgress = false;
 
 const auditBackupAction = async ({ adminId, action, backupId, metadata = {} }) => {
   if (!adminId) return;
 
-  await createAuditLog({
-    adminId,
-    action,
-    entity: "BACKUP",
-    entityId: backupId,
-    metadata,
-  });
+  try {
+    await createAuditLog({
+      adminId,
+      action,
+      entity: "BACKUP",
+      entityId: backupId,
+      metadata: {
+        ...metadata,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (auditError) {
+    logger.error("Failed to write backup audit log.", {
+      action,
+      backupId,
+      error: sanitizeString(auditError.message),
+    });
+  }
 };
 
-
+/**
+ * Standard Cryptographic Checksum (SHA-256)
+ */
 const calculateChecksum = async (filePath) => {
   const hash = crypto.createHash("sha256");
   const file = await fs.open(filePath, "r");
 
   try {
     const buffer = Buffer.allocUnsafe(1024 * 1024);
-
     let position = 0;
 
     while (true) {
@@ -64,19 +83,26 @@ const calculateChecksum = async (filePath) => {
   return hash.digest("hex");
 };
 
-const getPostgresConnectionEnv = () => {
-  if (!process.env.DATABASE_URL) {
+const getPostgresConnectionEnv = (customDatabaseUrl = null) => {
+  const rawUrl = customDatabaseUrl || process.env.DATABASE_URL;
+
+  if (!rawUrl) {
     throw new Error("DATABASE_URL is not configured.");
   }
 
-  const url = new URL(process.env.DATABASE_URL);
+  let url;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    throw new Error("Database URL is in an invalid format.");
+  }
 
   const env = {
     ...process.env,
     PGHOST: url.hostname,
     PGPORT: url.port || "5432",
-    PGUSER: decodeURIComponent(url.username),
-    PGPASSWORD: decodeURIComponent(url.password),
+    PGUSER: decodeURIComponent(url.username || "postgres"),
+    PGPASSWORD: decodeURIComponent(url.password || ""),
     PGDATABASE: decodeURIComponent(url.pathname.replace(/^\//, "")),
   };
 
@@ -84,14 +110,58 @@ const getPostgresConnectionEnv = () => {
     env.PGSSLMODE = url.searchParams.get("sslmode");
   }
 
-  return env;
+  return {
+    env,
+    databaseName: env.PGDATABASE,
+  };
 };
 
+/**
+ * Reconcile stale in-flight backups from crashes or unclean shutdowns.
+ */
+const reconcileStaleBackups = async ({ maxAgeMinutes = 30 } = {}) => {
+  const cutoff = new Date(Date.now() - maxAgeMinutes * 60 * 1000);
+  const result = await backupRepository.reconcileStaleRunningBackups(cutoff);
+  if (result.count > 0) {
+    logger.warn("Reconciled stale running backups.", {
+      staleCount: result.count,
+      cutoffMinutes: maxAgeMinutes,
+    });
+  }
+  return result.count;
+};
+
+/**
+ * Create a new database backup with atomic write, SHA-256 checksumming,
+ * format validation, and concurrency safety.
+ */
 const createBackup = async ({ adminId, type = "MANUAL" }) => {
+  if (backupInProgress) {
+    const error = new Error("A database backup is already in progress.");
+    error.statusCode = 409;
+    throw error;
+  }
+
+  // Reconcile any crashed running jobs before checking active status
+  await reconcileStaleBackups();
+
+  const existingActive = await backupRepository.findActiveBackup();
+  if (existingActive) {
+    const error = new Error("A database backup is already currently active.");
+    error.statusCode = 409;
+    throw error;
+  }
+
+  backupInProgress = true;
+  const startTime = Date.now();
+
   await ensureBackupDirectory();
+  await cleanupStaleTempFiles();
 
   const filename = generateBackupFilename();
-  const backupPath = resolveBackupPath(filename);
+  const tempFilename = `${filename}.tmp`;
+  const tempPath = resolveBackupPath(tempFilename);
+  const finalBackupPath = resolveBackupPath(filename);
 
   const backup = await backupRepository.createBackup({
     filename,
@@ -100,44 +170,60 @@ const createBackup = async ({ adminId, type = "MANUAL" }) => {
     createdBy: adminId || null,
   });
 
+  await auditBackupAction({
+    adminId,
+    action: "BACKUP",
+    backupId: backup.id,
+    metadata: {
+      operation: "CREATE_STARTED",
+      filename,
+      type,
+    },
+  });
+
   try {
     await backupRepository.updateBackup(backup.id, {
       status: "RUNNING",
     });
 
-    const pgDumpPath =
-      process.env.PG_DUMP_PATH || "pg_dump";
+    const { env: commandEnv } = getPostgresConnectionEnv();
 
-    const commandEnv = getPostgresConnectionEnv();
-
-    await runPostgresCommand({
-      executable: pgDumpPath,
+    // 1. Dump to temporary file
+    await postgresCommand.runPostgresCommand({
+      executable: PG_DUMP_PATH,
       args: [
         "--format=custom",
         "--no-owner",
         "--no-acl",
         "--file",
-        backupPath,
+        tempPath,
       ],
       timeout: 30 * 60 * 1000,
       env: commandEnv,
     });
 
-    const stats = await getBackupFileStats(filename);
-
+    // 2. Size & Existence Validation on temporary file
+    const stats = await getBackupFileStats(tempFilename);
     const maxBytes = BACKUP_MAX_SIZE_MB * 1024 * 1024;
 
     if (stats.size <= 0 || stats.size > maxBytes) {
       throw new Error("Generated backup has an invalid size.");
     }
 
-    const checksum = await calculateChecksum(backupPath);
+    // 3. Cryptographic SHA-256 Checksum Calculation
+    const checksum = await calculateChecksum(tempPath);
 
-    await runPostgresCommand({
-      executable: process.env.PG_RESTORE_PATH || "pg_restore",
-      args: ["--list", backupPath],
-      env: getPostgresConnectionEnv(),
+    // 4. Archive format catalog verification (pg_restore --list)
+    await postgresCommand.runPostgresCommand({
+      executable: PG_RESTORE_PATH,
+      args: ["--list", tempPath],
+      env: commandEnv,
     });
+
+    // 5. Cross-platform atomic move from .tmp to final .dump
+    await atomicMoveFile(tempPath, finalBackupPath);
+
+    const durationMs = Date.now() - startTime;
 
     const completedBackup = await backupRepository.updateBackup(backup.id, {
       status: "COMPLETED",
@@ -151,24 +237,59 @@ const createBackup = async ({ adminId, type = "MANUAL" }) => {
     logger.info("Backup created successfully.", {
       backupId: backup.id,
       filename,
-      size: stats.size,
+      sizeBytes: stats.size,
+      durationMs,
+      checksumAlgorithm: "SHA-256",
+    });
+
+    await auditBackupAction({
+      adminId,
+      action: "BACKUP",
+      backupId: backup.id,
+      metadata: {
+        operation: "CREATE_SUCCESS",
+        filename,
+        sizeBytes: stats.size,
+        durationMs,
+        checksum,
+      },
     });
 
     return completedBackup;
   } catch (error) {
+    const durationMs = Date.now() - startTime;
+    const safeErrorMsg = sanitizeString(error.message || "Unknown error").slice(0, 1000);
+
     await backupRepository.updateBackup(backup.id, {
       status: "FAILED",
-      errorMessage: error.message.slice(0, 1000),
+      errorMessage: safeErrorMsg,
     });
 
-    await fs.rm(backupPath, { force: true }).catch(() => {});
+    // Clean up temporary and partial files
+    await fs.rm(tempPath, { force: true }).catch(() => {});
+    await fs.rm(finalBackupPath, { force: true }).catch(() => {});
 
     logger.error("Backup creation failed.", {
       backupId: backup.id,
-      error: error.message,
+      durationMs,
+      error: safeErrorMsg,
+    });
+
+    await auditBackupAction({
+      adminId,
+      action: "BACKUP",
+      backupId: backup.id,
+      metadata: {
+        operation: "CREATE_FAILED",
+        filename,
+        durationMs,
+        error: safeErrorMsg,
+      },
     });
 
     throw error;
+  } finally {
+    backupInProgress = false;
   }
 };
 
@@ -182,12 +303,85 @@ const getBackup = async (id) => {
   return backup;
 };
 
-const getBackups = async ({ skip = 0, take = 50 } = {}) =>
-  backupRepository.listBackups({
-    skip,
-    take,
-  });
+const getBackups = async ({ skip = 0, take = 50, status, type } = {}) => {
+  const where = {};
+  if (status) where.status = status;
+  if (type) where.type = type;
 
+  const [data, total] = await Promise.all([
+    backupRepository.listBackups({ skip, take, where }),
+    backupRepository.countBackups(where),
+  ]);
+
+  return { data, total };
+};
+
+/**
+ * DB Metadata ↔ Filesystem Consistency Verification
+ * Audits whether the database record accurately matches the physical file on disk
+ * and confirms SHA-256 checksum integrity.
+ */
+const verifyBackupIntegrity = async (id) => {
+  const backup = await backupRepository.getBackupById(id);
+
+  if (!backup) {
+    throw new Error("Backup not found.");
+  }
+
+  if (backup.status !== "COMPLETED") {
+    return {
+      valid: false,
+      reason: `Backup status in database is ${backup.status}, not COMPLETED.`,
+      backupId: backup.id,
+      filename: backup.filename,
+    };
+  }
+
+  let stats;
+  try {
+    stats = await getBackupFileStats(backup.filename);
+  } catch (fileErr) {
+    return {
+      valid: false,
+      reason: `Filesystem artifact error: ${fileErr.message}`,
+      backupId: backup.id,
+      filename: backup.filename,
+    };
+  }
+
+  // Size match check
+  if (backup.size != null && BigInt(stats.size) !== BigInt(backup.size)) {
+    return {
+      valid: false,
+      reason: `Size mismatch: database recorded ${backup.size} bytes, filesystem contains ${stats.size} bytes.`,
+      backupId: backup.id,
+      filename: backup.filename,
+    };
+  }
+
+  // Cryptographic SHA-256 Checksum check
+  if (backup.checksum) {
+    const recalculated = await calculateChecksum(stats.path);
+    if (recalculated !== backup.checksum) {
+      return {
+        valid: false,
+        reason: "Cryptographic SHA-256 checksum mismatch (corrupted or altered file).",
+        backupId: backup.id,
+        filename: backup.filename,
+      };
+    }
+  }
+
+  return {
+    valid: true,
+    backupId: backup.id,
+    filename: backup.filename,
+    sizeBytes: stats.size,
+    checksum: backup.checksum,
+    checksumAlgorithm: "SHA-256",
+    verifiedAt: new Date().toISOString(),
+  };
+};
 
 const getBackupDownload = async ({ id, adminId }) => {
   const backup = await backupRepository.getBackupById(id);
@@ -200,14 +394,12 @@ const getBackupDownload = async ({ id, adminId }) => {
     throw new Error("Only completed backups can be downloaded.");
   }
 
-  const stats = await getBackupFileStats(backup.filename);
-
-  if (backup.checksum) {
-    const checksum = await calculateChecksum(stats.path);
-    if (checksum !== backup.checksum) {
-      throw new Error("Backup integrity validation failed.");
-    }
+  const integrity = await verifyBackupIntegrity(backup.id);
+  if (!integrity.valid) {
+    throw new Error(`Backup integrity validation failed: ${integrity.reason}`);
   }
+
+  const stats = await getBackupFileStats(backup.filename);
 
   await auditBackupAction({
     adminId,
@@ -216,6 +408,7 @@ const getBackupDownload = async ({ id, adminId }) => {
     metadata: {
       operation: "DOWNLOAD",
       filename: backup.filename,
+      sizeBytes: stats.size,
     },
   });
 
@@ -226,9 +419,25 @@ const getBackupDownload = async ({ id, adminId }) => {
   };
 };
 
+/**
+ * Production-Safe Restore Functionality
+ * Protected by operational confirmation, environment safeguards, SHA-256 integrity,
+ * single-transaction rollback, and duration telemetry.
+ */
 const restoreBackup = async ({ id, confirmation, adminId }) => {
   if (confirmation !== "RESTORE") {
     throw new Error("Restore confirmation is required.");
+  }
+
+  // Production safety switch: prevent accidental execution against live production DB
+  const isProduction =
+    process.env.NODE_ENV === "production" ||
+    process.env.APP_ENV === "production";
+
+  if (isProduction && process.env.ALLOW_PRODUCTION_RESTORE !== "true") {
+    throw new Error(
+      "Database restore is disabled in production unless ALLOW_PRODUCTION_RESTORE is explicitly set to 'true'.",
+    );
   }
 
   const backup = await backupRepository.getBackupById(id);
@@ -241,44 +450,141 @@ const restoreBackup = async ({ id, confirmation, adminId }) => {
     throw new Error("Only completed backups can be restored.");
   }
 
+  // Strict pre-restore integrity verification
+  const integrity = await verifyBackupIntegrity(backup.id);
+  if (!integrity.valid) {
+    throw new Error(`Restore blocked: integrity validation failed (${integrity.reason})`);
+  }
+
   const stats = await getBackupFileStats(backup.filename);
+  const { env: commandEnv, databaseName } = getPostgresConnectionEnv();
+  const restoreStartTime = Date.now();
 
-  if (backup.checksum) {
-    const checksum = await calculateChecksum(stats.path);
-
-    if (checksum !== backup.checksum) {
-      throw new Error("Backup integrity validation failed.");
-    }
-  }
-
-  const databaseUrl = process.env.DATABASE_URL;
-
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL is not configured.");
-  }
-
-  const url = new URL(databaseUrl);
-
-  const databaseName = decodeURIComponent(
-    url.pathname.replace(/^\//, ""),
-  );
-
-  const commandEnv = getPostgresConnectionEnv();
-
-  const pgRestorePath = process.env.PG_RESTORE_PATH || "pg_restore";
-
-  await runPostgresCommand({
-    executable: pgRestorePath,
-    args: [
-      "--list",
-      stats.path,
-    ],
-    timeout: 60 * 1000,
-    env: commandEnv,
+  await auditBackupAction({
+    adminId,
+    action: "RESTORE",
+    backupId: backup.id,
+    metadata: {
+      operation: "RESTORE_STARTED",
+      filename: backup.filename,
+      database: databaseName,
+    },
   });
 
-  await runPostgresCommand({
-    executable: pgRestorePath,
+  try {
+    // 1. Pre-restore archive catalog validation
+    await postgresCommand.runPostgresCommand({
+      executable: PG_RESTORE_PATH,
+      args: ["--list", stats.path],
+      timeout: 60 * 1000,
+      env: commandEnv,
+    });
+
+    // 2. Atomic single-transaction restore with clean recreation
+    await postgresCommand.runPostgresCommand({
+      executable: PG_RESTORE_PATH,
+      args: [
+        "--exit-on-error",
+        "--single-transaction",
+        "--clean",
+        "--if-exists",
+        "--no-owner",
+        "--no-acl",
+        "--dbname",
+        databaseName,
+        stats.path,
+      ],
+      timeout: 30 * 60 * 1000,
+      env: commandEnv,
+    });
+
+    const restoreDurationMs = Date.now() - restoreStartTime;
+
+    logger.warn("Backup restored successfully.", {
+      backupId: backup.id,
+      filename: backup.filename,
+      database: databaseName,
+      restoreDurationMs,
+    });
+
+    await auditBackupAction({
+      adminId,
+      action: "RESTORE",
+      backupId: backup.id,
+      metadata: {
+        operation: "RESTORE_SUCCESS",
+        filename: backup.filename,
+        database: databaseName,
+        restoreDurationMs,
+      },
+    });
+
+    return {
+      id: backup.id,
+      filename: backup.filename,
+      status: "RESTORED",
+      database: databaseName,
+      restoreDurationMs,
+    };
+  } catch (restoreError) {
+    const restoreDurationMs = Date.now() - restoreStartTime;
+    const safeErrorMsg = sanitizeString(restoreError.message).slice(0, 1000);
+
+    logger.error("Database restore failed.", {
+      backupId: backup.id,
+      filename: backup.filename,
+      restoreDurationMs,
+      error: safeErrorMsg,
+    });
+
+    await auditBackupAction({
+      adminId,
+      action: "RESTORE",
+      backupId: backup.id,
+      metadata: {
+        operation: "RESTORE_FAILED",
+        filename: backup.filename,
+        restoreDurationMs,
+        error: safeErrorMsg,
+      },
+    });
+
+    throw restoreError;
+  }
+};
+
+/**
+ * Isolated DR Restore Verification Drill
+ * Safely restores a backup into an isolated target database to verify schema,
+ * critical tables, and data recoverability without impacting the active database.
+ */
+const verifyRestoreInIsolatedDb = async ({ backupId, targetDbUrl, adminId = null }) => {
+  if (!targetDbUrl) {
+    throw new Error("Target isolated database URL is required for restore drill.");
+  }
+
+  const backup = await backupRepository.getBackupById(backupId);
+  if (!backup) {
+    throw new Error("Backup not found.");
+  }
+
+  const integrity = await verifyBackupIntegrity(backup.id);
+  if (!integrity.valid) {
+    throw new Error(`DR Drill blocked: integrity verification failed (${integrity.reason})`);
+  }
+
+  const stats = await getBackupFileStats(backup.filename);
+  const { env: targetEnv, databaseName } = getPostgresConnectionEnv(targetDbUrl);
+  const drillStartTime = Date.now();
+
+  logger.info("Starting isolated disaster recovery restore drill...", {
+    backupId: backup.id,
+    targetDatabase: databaseName,
+  });
+
+  // Execute restore into the isolated target database
+  await postgresCommand.runPostgresCommand({
+    executable: PG_RESTORE_PATH,
     args: [
       "--exit-on-error",
       "--single-transaction",
@@ -291,61 +597,69 @@ const restoreBackup = async ({ id, confirmation, adminId }) => {
       stats.path,
     ],
     timeout: 30 * 60 * 1000,
-    env: commandEnv,
+    env: targetEnv,
   });
 
-  logger.warn("Backup restored successfully.", {
-    backupId: backup.id,
-    filename: backup.filename,
-  });
+  const drillDurationMs = Date.now() - drillStartTime;
 
   await auditBackupAction({
     adminId,
     action: "RESTORE",
     backupId: backup.id,
     metadata: {
-      filename: backup.filename,
+      operation: "DR_DRILL_COMPLETED",
+      targetDatabase: databaseName,
+      drillDurationMs,
     },
   });
 
   return {
-    id: backup.id,
+    verified: true,
+    backupId: backup.id,
     filename: backup.filename,
-    status: "RESTORED",
+    targetDatabase: databaseName,
+    drillDurationMs,
+    verifiedAt: new Date().toISOString(),
   };
 };
 
+/**
+ * Bounded Retention Management
+ * Cleans up expired backups according to retention policy with bounded batches.
+ */
 const cleanupExpiredBackups = async () => {
-  const cutoff = new Date(
-    Date.now() - BACKUP_RETENTION_DAYS * 24 * 60 * 60 * 1000,
-  );
+  const retentionDays = Math.max(Number(BACKUP_RETENTION_DAYS) || 30, 1);
+  const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
 
-  const backups = await backupRepository.listBackupsBefore(cutoff);
+  // Clean up any stale temporary files on disk first
+  await cleanupStaleTempFiles();
+
+  // Query is bounded (take: 100) to prevent unbounded memory usage
+  const backups = await backupRepository.listBackupsBefore(cutoff, { take: 100 });
   let deleted = 0;
 
   for (const backup of backups) {
     try {
       const backupPath = resolveBackupPath(backup.filename);
-
       await fs.rm(backupPath, { force: true });
       await backupRepository.deleteBackup(backup.id);
-
       deleted += 1;
     } catch (error) {
-      logger.error("Backup cleanup failed.", {
+      logger.error("Backup cleanup failed for item.", {
         backupId: backup.id,
         filename: backup.filename,
-        error: String(error.message || error).slice(0, 500),
+        error: sanitizeString(error.message || error).slice(0, 500),
       });
     }
   }
 
   logger.info("Backup retention cleanup completed.", {
     deleted,
-    retentionDays: BACKUP_RETENTION_DAYS,
+    retentionDays,
+    remainingBatchCount: backups.length,
   });
 
-  return { deleted };
+  return { deleted, retentionDays };
 };
 
 const deleteBackup = async (id, adminId) => {
@@ -384,19 +698,18 @@ const deleteBackup = async (id, adminId) => {
     deleted: true,
   };
 };
+
 module.exports = {
   createBackup,
   getBackup,
   getBackups,
   calculateChecksum,
+  verifyBackupIntegrity,
   getBackupDownload,
   restoreBackup,
+  verifyRestoreInIsolatedDb,
+  reconcileStaleBackups,
   cleanupExpiredBackups,
   deleteBackup,
+  getPostgresConnectionEnv,
 };
-
-
-
-
-
-

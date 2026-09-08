@@ -32,6 +32,8 @@ const getBackups = async (req, res, next) => {
     const result = await backupService.getBackups({
       skip,
       take: limit,
+      status: req.query.status,
+      type: req.query.type,
     });
 
     const data = Array.isArray(result)
@@ -46,9 +48,7 @@ const getBackups = async (req, res, next) => {
         page,
         limit,
         count: data.length,
-        ...(Array.isArray(result)
-          ? {}
-          : { total: result.total }),
+        total: result.total ?? data.length,
       },
     });
   } catch (error) {
@@ -56,17 +56,19 @@ const getBackups = async (req, res, next) => {
   }
 };
 
-
 const downloadBackup = async (req, res, next) => {
   try {
-    const backup = await backupService.getBackupDownload({ id: req.params.id, adminId: req.admin.id });
+    const backup = await backupService.getBackupDownload({
+      id: req.params.id,
+      adminId: req.admin.id,
+    });
 
     res.setHeader("Content-Type", "application/octet-stream");
     res.setHeader(
       "Content-Disposition",
       `attachment; filename="${backup.filename}"`,
     );
-    res.setHeader("Content-Length", backup.size);
+    res.setHeader("Content-Length", String(backup.size));
 
     const stream = fs.createReadStream(backup.path);
     stream.on("error", next);
@@ -76,6 +78,21 @@ const downloadBackup = async (req, res, next) => {
   }
 };
 
+const verifyBackup = async (req, res, next) => {
+  try {
+    const result = await backupService.verifyBackupIntegrity(req.params.id);
+
+    return res.status(result.valid ? 200 : 422).json({
+      success: result.valid,
+      message: result.valid
+        ? "Backup integrity verified successfully."
+        : "Backup integrity verification failed.",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 const deleteBackup = async (req, res, next) => {
   try {
@@ -90,6 +107,7 @@ const deleteBackup = async (req, res, next) => {
     next(error);
   }
 };
+
 const restoreBackup = async (req, res, next) => {
   try {
     const backup = await backupService.restoreBackup({
@@ -107,6 +125,7 @@ const restoreBackup = async (req, res, next) => {
     next(error);
   }
 };
+
 const getBackup = async (req, res, next) => {
   try {
     const backup = await backupService.getBackup(req.params.id);
@@ -126,9 +145,7 @@ module.exports = {
   getBackups,
   getBackup,
   downloadBackup,
+  verifyBackup,
   restoreBackup,
   deleteBackup,
 };
-
-
-
