@@ -10,16 +10,16 @@ const { startSchedulers, stopSchedulers } = require("./src/schedulers");
 const { closeAllQueues } = require("./src/queues");
 
 // ===============================
-// Environment Validation
+// Centralized Environment Validation
 // ===============================
-const requiredEnv = ["DATABASE_URL"];
+const { config, validateConfig } = require("./src/config/env");
 
-requiredEnv.forEach((key) => {
-  if (!process.env[key]) {
-    logger.error(`Missing required environment variable for worker: ${key}`);
-    process.exit(1);
-  }
-});
+try {
+  validateConfig();
+} catch (error) {
+  logger.error(`Worker environment validation failed: ${error.message}`);
+  process.exit(1);
+}
 
 // ===============================
 // Uncaught Exception

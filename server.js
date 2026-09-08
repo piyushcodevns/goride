@@ -3,23 +3,16 @@ require("dotenv").config();
 const logger = require("./src/utils/logger");
 
 // ===============================
-// Environment Validation
+// Centralized Environment Validation
 // ===============================
+const { config, getPublicConfigSummary, validateConfig } = require("./src/config/env");
 
-const requiredEnv = [
-  "DATABASE_URL",
-  "JWT_SECRET",
-  "ADMIN_2FA_ENCRYPTION_KEY",
-  "OPENROUTESERVICE_API_KEY",
-];
-
-requiredEnv.forEach((key) => {
-  if (!process.env[key]) {
-    logger.error(`Missing required environment variable: ${key}`);
-
-    process.exit(1);
-  }
-});
+try {
+  validateConfig();
+} catch (error) {
+  logger.error(error.message);
+  process.exit(1);
+}
 
 // ===============================
 // Uncaught Exception
@@ -61,7 +54,8 @@ const server = app.listen(PORT, () => {
   logger.info("=================================");
   logger.info("🚀 GoRide Backend Started");
   logger.info(`🌐 Server : http://localhost:${PORT}`);
-  logger.info(`📦 Environment : ${process.env.NODE_ENV || "development"}`);
+  logger.info(`📦 Environment : ${config.app.env}`);
+  logger.info("🔧 Config Summary:", getPublicConfigSummary(config));
   logger.info("=================================");
 });
 
