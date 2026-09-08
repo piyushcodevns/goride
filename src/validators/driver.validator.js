@@ -87,10 +87,17 @@ const updateDriverAvailabilitySchema = z.object({
     .strict(),
 });
 
+const driverDocumentIdParamSchema = z.object({
+  params: z.object({
+    id: z.string().trim().min(1, "Document ID is required."),
+  }),
+});
+
 module.exports = {
   registerDriverSchema,
   approveDriverSchema,
   driverDocumentSchema,
+  driverDocumentIdParamSchema,
   updateDriverProfileSchema,
   updateDriverAvailabilitySchema,
 };

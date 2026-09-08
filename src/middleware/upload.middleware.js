@@ -1,44 +1,35 @@
 const multer = require("multer");
 const path = require("path");
+const { DANGEROUS_EXTENSIONS } = require("../utils/fileSecurity");
 
 const storage = multer.memoryStorage();
 
-const ALLOWED_FILES = {
+const ALLOWED_IMAGE_FILES = {
   "image/jpeg": [".jpg", ".jpeg"],
   "image/jpg": [".jpg", ".jpeg"],
   "image/png": [".png"],
   "image/webp": [".webp"],
 };
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_DOCUMENT_FILES = {
+  "image/jpeg": [".jpg", ".jpeg"],
+  "image/jpg": [".jpg", ".jpeg"],
+  "image/png": [".png"],
+  "image/webp": [".webp"],
+  "application/pdf": [".pdf"],
+};
 
-const DANGEROUS_EXTENSIONS = [
-  "exe",
-  "php",
-  "js",
-  "html",
-  "htm",
-  "sh",
-  "bat",
-  "cmd",
-  "ps1",
-  "vbs",
-  "jar",
-  "py",
-  "pl",
-  "cgi",
-  "jsp",
-  "asp",
-  "aspx",
-];
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024; // 10 MB
 
-const fileFilter = (req, file, cb) => {
+const createFileFilter = (allowedMimeMap) => (req, file, cb) => {
   if (
     !file.originalname ||
     file.originalname.length > 255 ||
     file.originalname.includes("..") ||
     file.originalname.includes("/") ||
-    file.originalname.includes("\\")
+    file.originalname.includes("\\") ||
+    file.originalname.includes("\0")
   ) {
     return cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", file.fieldname));
   }
@@ -52,14 +43,14 @@ const fileFilter = (req, file, cb) => {
     }
   }
 
-  const allowedExtensions = ALLOWED_FILES[file.mimetype];
+  const normalizedMime = (file.mimetype || "").toLowerCase();
+  const allowedExtensions = allowedMimeMap[normalizedMime];
 
   if (!allowedExtensions) {
     return cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", file.fieldname));
   }
 
   const extension = path.extname(file.originalname).toLowerCase();
-
   if (!allowedExtensions.includes(extension)) {
     return cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", file.fieldname));
   }
@@ -67,13 +58,33 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
-const upload = multer({
+const uploadAvatar = multer({
   storage,
   limits: {
-    fileSize: MAX_FILE_SIZE,
+    fileSize: MAX_AVATAR_SIZE,
     files: 1,
+    fields: 10,
+    parts: 20,
   },
-  fileFilter,
+  fileFilter: createFileFilter(ALLOWED_IMAGE_FILES),
 });
+
+const uploadDocument = multer({
+  storage,
+  limits: {
+    fileSize: MAX_DOCUMENT_SIZE,
+    files: 1,
+    fields: 10,
+    parts: 20,
+  },
+  fileFilter: createFileFilter(ALLOWED_DOCUMENT_FILES),
+});
+
+// Default upload instance is document-capable (PDF + images) for backward compatibility
+const upload = uploadDocument;
+
+upload.uploadAvatar = uploadAvatar;
+upload.uploadImageOnly = uploadAvatar;
+upload.uploadDocument = uploadDocument;
 
 module.exports = upload;

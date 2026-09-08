@@ -1,3 +1,4 @@
+const adminVehicleRepository = require("../../repositories/admin/adminVehicle.repository");
 const {
   findVehicles,
   findVehicleById,
@@ -7,11 +8,12 @@ const {
   rejectVehicleWithAudit,
   findVehicleDocuments,
   deleteVehicleWithAudit,
-} = require("../../repositories/admin/adminVehicle.repository");
+} = adminVehicleRepository;
 
 const {
   NotFoundError,
   ConflictError,
+  BadRequestError,
 } = require("../../utils/AppError");
 
 /**
@@ -227,6 +229,102 @@ const deleteVehicle = async ({
   });
 };
 
+/**
+ * Approve vehicle document.
+ */
+const approveVehicleDocument = async ({
+  documentId,
+  adminId,
+  ipAddress,
+  userAgent,
+}) => {
+  const document = await adminVehicleRepository.findVehicleDocumentById(documentId);
+
+  if (!document) {
+    throw new NotFoundError("Vehicle document not found.");
+  }
+
+  if (document.status === "APPROVED") {
+    throw new ConflictError("Vehicle document is already approved.");
+  }
+
+  if (document.status === "REJECTED") {
+    throw new ConflictError(
+      "Rejected vehicle document cannot be approved directly. Upload a new document."
+    );
+  }
+
+  const auditLog = {
+    adminId,
+    action: "APPROVE",
+    entity: "VEHICLE",
+    entityId: document.vehicleId,
+    metadata: {
+      documentId,
+      documentType: document.documentType,
+      previousStatus: document.status,
+      newStatus: "APPROVED",
+    },
+    ipAddress,
+    userAgent,
+  };
+
+  return adminVehicleRepository.updateVehicleDocumentStatusWithAudit({
+    documentId,
+    status: "APPROVED",
+    rejectionReason: null,
+    auditLog,
+  });
+};
+
+/**
+ * Reject vehicle document.
+ */
+const rejectVehicleDocument = async ({
+  documentId,
+  reason,
+  adminId,
+  ipAddress,
+  userAgent,
+}) => {
+  const document = await adminVehicleRepository.findVehicleDocumentById(documentId);
+
+  if (!document) {
+    throw new NotFoundError("Vehicle document not found.");
+  }
+
+  if (document.status === "REJECTED") {
+    throw new ConflictError("Vehicle document is already rejected.");
+  }
+
+  if (!reason || !reason.trim()) {
+    throw new BadRequestError("Rejection reason is required.");
+  }
+
+  const auditLog = {
+    adminId,
+    action: "REJECT",
+    entity: "VEHICLE",
+    entityId: document.vehicleId,
+    metadata: {
+      documentId,
+      documentType: document.documentType,
+      previousStatus: document.status,
+      newStatus: "REJECTED",
+      rejectionReason: reason.trim(),
+    },
+    ipAddress,
+    userAgent,
+  };
+
+  return adminVehicleRepository.updateVehicleDocumentStatusWithAudit({
+    documentId,
+    status: "REJECTED",
+    rejectionReason: reason.trim(),
+    auditLog,
+  });
+};
+
 module.exports = {
   getVehicles,
   getVehicleDetails,
@@ -234,5 +332,7 @@ module.exports = {
   approveVehicle,
   rejectVehicle,
   getVehicleDocuments,
+  approveVehicleDocument,
+  rejectVehicleDocument,
   deleteVehicle,
 };

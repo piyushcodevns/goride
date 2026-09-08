@@ -5,6 +5,8 @@ const {
   approveVehicle,
   rejectVehicle,
   getVehicleDocuments,
+  approveVehicleDocument,
+  rejectVehicleDocument,
   deleteVehicle,
 } = require("../../services/admin/adminVehicle.service");
 
@@ -13,6 +15,8 @@ const {
   getVehiclesQuerySchema,
   updateVehicleSchema,
   rejectVehicleSchema,
+  documentIdParamSchema,
+  documentRejectBodySchema,
 } = require("../../validators/admin/adminVehicle.validator");
 
 /**
@@ -180,6 +184,56 @@ const deleteVehicleController = async (req, res, next) => {
   }
 };
 
+/**
+ * Approve vehicle document.
+ */
+const approveVehicleDocumentController = async (req, res, next) => {
+  try {
+    const { id } = documentIdParamSchema.parse(req.params);
+
+    const document = await approveVehicleDocument({
+      documentId: id,
+      adminId: req.admin.id,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Vehicle document approved successfully.",
+      data: document,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Reject vehicle document.
+ */
+const rejectVehicleDocumentController = async (req, res, next) => {
+  try {
+    const { id } = documentIdParamSchema.parse(req.params);
+    const { reason } = documentRejectBodySchema.parse(req.body);
+
+    const document = await rejectVehicleDocument({
+      documentId: id,
+      reason,
+      adminId: req.admin.id,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Vehicle document rejected successfully.",
+      data: document,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllVehicles,
   getVehicle,
@@ -187,5 +241,7 @@ module.exports = {
   approveVehicleController,
   rejectVehicleController,
   getVehicleDocumentsController,
+  approveVehicleDocumentController,
+  rejectVehicleDocumentController,
   deleteVehicleController,
 };

@@ -428,6 +428,40 @@ const deleteVehicleWithAudit = async ({
   });
 };
 
+const findVehicleDocumentById = async (documentId) => {
+  return prisma.vehicleDocument.findUnique({
+    where: { id: documentId },
+    include: {
+      vehicle: true,
+    },
+  });
+};
+
+const updateVehicleDocumentStatusWithAudit = async ({
+  documentId,
+  status,
+  rejectionReason = null,
+  auditLog,
+}) => {
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.vehicleDocument.update({
+      where: { id: documentId },
+      data: {
+        status,
+        rejectionReason,
+      },
+    });
+
+    if (auditLog) {
+      await tx.auditLog.create({
+        data: auditLog,
+      });
+    }
+
+    return updated;
+  });
+};
+
 module.exports = {
   findVehicles,
   findVehicleById,
@@ -436,5 +470,7 @@ module.exports = {
   approveVehicleWithAudit,
   rejectVehicleWithAudit,
   findVehicleDocuments,
+  findVehicleDocumentById,
+  updateVehicleDocumentStatusWithAudit,
   deleteVehicleWithAudit,
 };

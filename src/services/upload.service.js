@@ -1,23 +1,15 @@
-const cloudinary = require("../config/cloudinary");
-const streamifier = require("streamifier");
+const { uploadStream } = require("./storage.service");
 
+/**
+ * Backward-compatible uploadImage function delegating to centralized storage service
+ * @param {object} file Multer file object
+ * @param {string} [folder="goride"]
+ * @returns {Promise<object>} Cloudinary upload result
+ */
 const uploadImage = (file, folder = "goride") => {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      {
-        folder,
-        resource_type: "image",
-      },
-      (error, result) => {
-        if (error) {
-          return reject(error);
-        }
-
-        resolve(result);
-      }
-    );
-
-    streamifier.createReadStream(file.buffer).pipe(stream);
+  return uploadStream(file.buffer, {
+    folder,
+    resourceType: "image",
   });
 };
 

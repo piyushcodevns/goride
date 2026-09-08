@@ -1,6 +1,5 @@
 const prisma = require("../config/prisma");
 
-
 /**
  * Get user by ID
  */
@@ -48,7 +47,63 @@ const updateUserProfile = async (id, data) => {
   });
 };
 
+/**
+ * Get all documents for a user
+ */
+const getUserDocuments = async (userId) => {
+  return prisma.userDocument.findMany({
+    where: { userId },
+    orderBy: { createdAt: "asc" },
+  });
+};
+
+/**
+ * Get single user document by ID
+ */
+const getUserDocumentById = async (id) => {
+  return prisma.userDocument.findUnique({
+    where: { id },
+  });
+};
+
+/**
+ * Create user document
+ */
+const createUserDocument = async (data) => {
+  return prisma.userDocument.create({
+    data,
+  });
+};
+
+/**
+ * Delete user document by ID
+ */
+const deleteUserDocument = async (id) => {
+  return prisma.userDocument.delete({
+    where: { id },
+  });
+};
+
+/**
+ * Find user document by type
+ */
+const findUserDocumentByType = async (userId, documentType) => {
+  return prisma.userDocument.findUnique({
+    where: {
+      userId_documentType: {
+        userId,
+        documentType,
+      },
+    },
+  });
+};
+
 module.exports = {
   getUserById,
   updateUserProfile,
+  getUserDocuments,
+  getUserDocumentById,
+  createUserDocument,
+  deleteUserDocument,
+  findUserDocumentByType,
 };

@@ -21,97 +21,14 @@ const {
 } = require("../../repositories/admin/adminAuth.repository");
 
 const prisma = require("../../config/prisma");
-const cloudinary = require("../../config/cloudinary");
-const { uploadImage } = require("../upload.service");
+const { uploadStream, deleteResource } = require("../storage.service");
+const { validateDocumentFile } = require("../../utils/fileSecurity");
 
 const ALLOWED_DOCUMENT_TYPES = [
   "ID_PROOF",
   "ADDRESS_PROOF",
   "OTHER",
 ];
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
-const isValidImageSignature = (buffer) => {
-  if (!buffer || buffer.length < 12) return false;
-
-  // JPEG: FF D8 FF
-  if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
-    return "image/jpeg";
-  }
-
-  // PNG: 89 50 4E 47 0D 0A 1A 0A
-  if (
-    buffer[0] === 0x89 &&
-    buffer[1] === 0x50 &&
-    buffer[2] === 0x4e &&
-    buffer[3] === 0x47 &&
-    buffer[4] === 0x0d &&
-    buffer[5] === 0x0a &&
-    buffer[6] === 0x1a &&
-    buffer[7] === 0x0a
-  ) {
-    return "image/png";
-  }
-
-  // WEBP: RIFF....WEBP
-  if (
-    buffer[0] === 0x52 &&
-    buffer[1] === 0x49 &&
-    buffer[2] === 0x46 &&
-    buffer[3] === 0x46 &&
-    buffer[8] === 0x57 &&
-    buffer[9] === 0x45 &&
-    buffer[10] === 0x42 &&
-    buffer[11] === 0x50
-  ) {
-    return "image/webp";
-  }
-
-  return false;
-};
-
-const validateFile = (file) => {
-  if (!file) {
-    throw new BadRequestError("Please upload a file.");
-  }
-
-  if (!file.buffer || !Buffer.isBuffer(file.buffer)) {
-    throw new BadRequestError("Invalid file upload.");
-  }
-
-  if (!file.size || file.size <= 0) {
-    throw new BadRequestError("Uploaded file is empty.");
-  }
-
-  if (file.size > MAX_FILE_SIZE) {
-    throw new BadRequestError("File size must not exceed 5 MB.");
-  }
-
-  const detectedType = isValidImageSignature(file.buffer);
-  if (!detectedType) {
-    throw new BadRequestError(
-      "Invalid or corrupted file content. File does not match supported image format.",
-    );
-  }
-
-  const normalizedMime = (file.mimetype || "").toLowerCase();
-  const isJpeg =
-    detectedType === "image/jpeg" &&
-    (normalizedMime === "image/jpeg" || normalizedMime === "image/jpg");
-  const isPng = detectedType === "image/png" && normalizedMime === "image/png";
-  const isWebp = detectedType === "image/webp" && normalizedMime === "image/webp";
-
-  if (!isJpeg && !isPng && !isWebp) {
-    throw new BadRequestError(
-      "File extension/MIME type does not match actual file contents (MIME spoofing detected).",
-    );
-  }
-
-  if (!ALLOWED_DOCUMENT_TYPES.length) {
-    throw new BadRequestError("No document types are configured.");
-  }
-};
 
 const validateUser = async (userId) => {
   if (!userId || typeof userId !== "string" || !userId.trim()) {
@@ -147,7 +64,7 @@ const uploadUserDocument = async ({
   ipAddress,
   userAgent,
 }) => {
-  validateFile(file);
+  const { isPdf } = validateDocumentFile(file);
 
   if (!ALLOWED_DOCUMENT_TYPES.includes(documentType)) {
     throw new BadRequestError("Invalid document type.");
@@ -169,9 +86,13 @@ const uploadUserDocument = async ({
   let uploadedFile;
 
   try {
-    uploadedFile = await uploadImage(
-      file,
-      "goride/user-documents"
+    uploadedFile = await uploadStream(
+      file.buffer,
+      {
+        folder: "goride/user-documents",
+        resourceType: isPdf ? "auto" : "image",
+        tags: ["goride", "admin-upload", `user_${userId}`],
+      }
     );
   } catch (error) {
     throw new BadRequestError("File upload failed.");
@@ -192,13 +113,9 @@ const uploadUserDocument = async ({
     });
   } catch (error) {
     if (uploadedFile.public_id) {
-      try {
-        await cloudinary.uploader.destroy(uploadedFile.public_id, {
-          resource_type: "image",
-        });
-      } catch (cleanupError) {
-        // Do not replace the original database error.
-      }
+      await deleteResource(uploadedFile.public_id, {
+        resourceType: uploadedFile.resource_type || "image",
+      });
     }
 
     throw error;
@@ -318,7 +235,7 @@ const replaceUserDocument = async ({
   ipAddress,
   userAgent,
 }) => {
-  validateFile(file);
+  const { isPdf } = validateDocumentFile(file);
 
   const existingDocument = await findUserDocumentById(documentId);
 
@@ -329,9 +246,13 @@ const replaceUserDocument = async ({
   let uploadedFile;
 
   try {
-    uploadedFile = await uploadImage(
-      file,
-      "goride/user-documents"
+    uploadedFile = await uploadStream(
+      file.buffer,
+      {
+        folder: "goride/user-documents",
+        resourceType: isPdf ? "auto" : "image",
+        tags: ["goride", "admin-replace", `doc_${documentId}`],
+      }
     );
   } catch (error) {
     throw new BadRequestError("File upload failed.");
@@ -353,13 +274,9 @@ const replaceUserDocument = async ({
     });
   } catch (error) {
     if (uploadedFile.public_id) {
-      try {
-        await cloudinary.uploader.destroy(uploadedFile.public_id, {
-          resource_type: "image",
-        });
-      } catch (cleanupError) {
-        // Preserve the original database error.
-      }
+      await deleteResource(uploadedFile.public_id, {
+        resourceType: uploadedFile.resource_type || "image",
+      });
     }
 
     throw error;
@@ -369,17 +286,12 @@ const replaceUserDocument = async ({
     existingDocument.filePublicId &&
     existingDocument.filePublicId !== uploadedFile.public_id
   ) {
-    try {
-      await cloudinary.uploader.destroy(
-        existingDocument.filePublicId,
-        {
-          resource_type: "image",
-        }
-      );
-    } catch (cleanupError) {
-      // The new DB reference remains valid even if old
-      // Cloudinary cleanup fails.
-    }
+    await deleteResource(
+      existingDocument.filePublicId,
+      {
+        resourceType: "auto",
+      }
+    );
   }
 
   if (adminId) {
@@ -424,21 +336,12 @@ const deleteUserDocumentById = async (
   const deletedDocument = await deleteUserDocument(documentId);
 
   if (existingDocument.filePublicId) {
-    try {
-      await cloudinary.uploader.destroy(
-        existingDocument.filePublicId,
-        {
-          resource_type: "image",
-        }
-      );
-    } catch (error) {
-      // DB reference has already been removed.
-      // Log warning for monitoring so orphaned Cloudinary asset can be cleaned up.
-      logger.warn(
-        `[FILE DELETE] Cloudinary cleanup failed for publicId="${existingDocument.filePublicId}". ` +
-          `DB record already deleted. Manual cleanup may be required.`
-      );
-    }
+    await deleteResource(
+      existingDocument.filePublicId,
+      {
+        resourceType: "auto",
+      }
+    );
   }
 
   if (adminId) {

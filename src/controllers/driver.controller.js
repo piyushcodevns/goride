@@ -5,6 +5,7 @@ const {
   updateAvailability,
   approveDriver,
   uploadDriverDocument,
+  deleteDriverDocument,
   getDriverDocuments,
 } = require("../services/driver.service");
 
@@ -112,6 +113,20 @@ const getDocuments = async (req, res, next) => {
   }
 };
 
+const deleteDocument = async (req, res, next) => {
+  try {
+    const driver = await getDriverProfile(req.user.id);
+    const result = await deleteDriverDocument(driver.id, req.params.id);
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   getProfile,
@@ -119,5 +134,6 @@ module.exports = {
   updateAvailabilityController,
   approveDriverController,
   uploadDocument,
+  deleteDocument,
   getDocuments,
 };

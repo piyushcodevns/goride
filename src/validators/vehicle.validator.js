@@ -107,7 +107,27 @@ const updateVehicleSchema = z
     },
   );
 
+const vehicleDocumentUploadSchema = z.object({
+  body: z
+    .object({
+      documentType: z.enum(["RC", "INSURANCE", "PERMIT", "FITNESS"], {
+        required_error: "Document type is required.",
+        invalid_type_error: "Invalid document type.",
+      }),
+      documentNumber: z.string().trim().max(100, "Document number is too long.").optional(),
+    })
+    .strict(),
+});
+
+const vehicleDocumentIdParamSchema = z.object({
+  params: z.object({
+    id: z.string().trim().min(1, "Document ID is required."),
+  }),
+});
+
 module.exports = {
   createVehicleSchema,
   updateVehicleSchema,
+  vehicleDocumentUploadSchema,
+  vehicleDocumentIdParamSchema,
 };

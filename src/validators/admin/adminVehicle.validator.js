@@ -111,10 +111,20 @@ const rejectVehicleSchema = z
   })
   .strict();
 
+const documentIdParamSchema = z.object({
+  id: z.string().trim().min(1, "Document ID is required."),
+});
+
+const documentRejectBodySchema = z.object({
+  reason: z.string().trim().min(3, "Rejection reason is required.").max(500, "Rejection reason is too long."),
+});
+
 module.exports = {
   vehicleIdParamSchema,
   paginationSchema,
   getVehiclesQuerySchema,
   updateVehicleSchema,
   rejectVehicleSchema,
+  documentIdParamSchema,
+  documentRejectBodySchema,
 };

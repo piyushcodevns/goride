@@ -8,7 +8,19 @@ const {
   getMyVehicle,
   updateMyVehicleController,
   deleteMyVehicleController,
+  uploadDocumentController,
+  getDocumentsController,
+  deleteDocumentController,
 } = require("../controllers/vehicle.controller");
+
+const { fileUploadLimiter } = require("../middleware/rateLimit.middleware");
+const { validate } = require("../middleware/validate.middleware");
+const upload = require("../middleware/upload.middleware");
+
+const {
+  vehicleDocumentUploadSchema,
+  vehicleDocumentIdParamSchema,
+} = require("../validators/vehicle.validator");
 
 /**
  * @swagger
@@ -196,5 +208,106 @@ router.patch("/", authenticate, updateMyVehicleController);
 
 // Delete My Vehicle
 router.delete("/", authenticate, deleteMyVehicleController);
+
+/**
+ * @swagger
+ * /api/driver/vehicle/documents:
+ *   post:
+ *     summary: Upload or replace vehicle document
+ *     description: Uploads a vehicle verification document (RC, Insurance, Permit, Fitness).
+ *     tags: [Vehicle]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - document
+ *               - documentType
+ *             properties:
+ *               document:
+ *                 type: string
+ *                 format: binary
+ *                 description: Document file (PDF, JPEG, PNG, WebP, max 10MB)
+ *               documentType:
+ *                 type: string
+ *                 enum: [RC, INSURANCE, PERMIT, FITNESS]
+ *               documentNumber:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Vehicle document uploaded successfully.
+ *       400:
+ *         description: Validation failed or document already exists.
+ *       401:
+ *         description: Unauthorized.
+ *       404:
+ *         description: Vehicle not found.
+ *       429:
+ *         description: Too many upload requests.
+ */
+router.post(
+  "/documents",
+  authenticate,
+  fileUploadLimiter,
+  upload.uploadDocument.single("document"),
+  validate(vehicleDocumentUploadSchema),
+  uploadDocumentController,
+);
+
+/**
+ * @swagger
+ * /api/driver/vehicle/documents:
+ *   get:
+ *     summary: Get vehicle documents
+ *     tags: [Vehicle]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Vehicle documents fetched successfully.
+ *       401:
+ *         description: Unauthorized.
+ *       404:
+ *         description: Vehicle not found.
+ */
+router.get("/documents", authenticate, getDocumentsController);
+
+/**
+ * @swagger
+ * /api/driver/vehicle/documents/{id}:
+ *   delete:
+ *     summary: Delete a vehicle document
+ *     description: Deletes a pending or rejected vehicle document. Approved documents cannot be deleted.
+ *     tags: [Vehicle]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Vehicle document deleted successfully.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden.
+ *       404:
+ *         description: Document not found.
+ *       409:
+ *         description: Approved documents cannot be deleted.
+ */
+router.delete(
+  "/documents/:id",
+  authenticate,
+  validate(vehicleDocumentIdParamSchema),
+  deleteDocumentController,
+);
 
 module.exports = router;

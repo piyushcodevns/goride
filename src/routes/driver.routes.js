@@ -8,6 +8,7 @@ const {
   updateAvailabilityController,
   approveDriverController,
   uploadDocument,
+  deleteDocument,
   getDocuments,
 } = require("../controllers/driver.controller");
 
@@ -17,12 +18,14 @@ const {
   requirePermission,
 } = require("../middleware/admin/adminRbac.middleware");
 const { validate } = require("../middleware/validate.middleware");
+const { fileUploadLimiter } = require("../middleware/rateLimit.middleware");
 const upload = require("../middleware/upload.middleware");
 
 const {
   registerDriverSchema,
   approveDriverSchema,
   driverDocumentSchema,
+  driverDocumentIdParamSchema,
   updateDriverProfileSchema,
   updateDriverAvailabilitySchema,
 } = require("../validators/driver.validator");
@@ -288,15 +291,103 @@ router.patch(
   updateAvailabilityController,
 );
 
+/**
+ * @swagger
+ * /api/driver/documents:
+ *   post:
+ *     summary: Upload or replace driver verification document
+ *     description: Uploads a driver verification document (License, Aadhaar, RC, Insurance, Permit, Fitness).
+ *     tags: [Driver]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - document
+ *               - documentType
+ *               - documentNumber
+ *             properties:
+ *               document:
+ *                 type: string
+ *                 format: binary
+ *                 description: Document file (PDF, JPEG, PNG, WebP, max 10MB)
+ *               documentType:
+ *                 type: string
+ *                 enum: [LICENSE, AADHAAR, RC, INSURANCE, PERMIT, FITNESS]
+ *               documentNumber:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Driver document uploaded successfully.
+ *       400:
+ *         description: Validation failed or document already exists.
+ *       401:
+ *         description: Unauthorized.
+ *       429:
+ *         description: Too many upload requests.
+ */
 router.post(
   "/documents",
   authenticate,
-  upload.single("document"),
+  fileUploadLimiter,
+  upload.uploadDocument.single("document"),
   validate(driverDocumentSchema),
   uploadDocument,
 );
 
+/**
+ * @swagger
+ * /api/driver/documents:
+ *   get:
+ *     summary: Get driver documents
+ *     tags: [Driver]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Driver documents fetched successfully.
+ *       401:
+ *         description: Unauthorized.
+ */
 router.get("/documents", authenticate, getDocuments);
+
+/**
+ * @swagger
+ * /api/driver/documents/{id}:
+ *   delete:
+ *     summary: Delete a driver document
+ *     description: Deletes a pending or rejected driver document. Approved documents cannot be deleted.
+ *     tags: [Driver]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Driver document deleted successfully.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden.
+ *       404:
+ *         description: Document not found.
+ *       409:
+ *         description: Approved documents cannot be deleted.
+ */
+router.delete(
+  "/documents/:id",
+  authenticate,
+  validate(driverDocumentIdParamSchema),
+  deleteDocument,
+);
 
 /**
  * Approve / Reject Driver (Admin Only)

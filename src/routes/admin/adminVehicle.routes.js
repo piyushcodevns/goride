@@ -15,6 +15,8 @@ const {
   approveVehicleController,
   rejectVehicleController,
   getVehicleDocumentsController,
+  approveVehicleDocumentController,
+  rejectVehicleDocumentController,
   deleteVehicleController,
 } = require("../../controllers/admin/adminVehicle.controller");
 
@@ -89,6 +91,28 @@ router.get(
   adminAuthMiddleware,
   requirePermission("vehicle:view"),
   getVehicleDocumentsController,
+);
+
+/**
+ * PATCH /api/admin/vehicles/documents/:id/approve
+ * Approve vehicle document
+ */
+router.patch(
+  "/documents/:id/approve",
+  adminAuthMiddleware,
+  requirePermission("vehicle:manage"),
+  approveVehicleDocumentController,
+);
+
+/**
+ * PATCH /api/admin/vehicles/documents/:id/reject
+ * Reject vehicle document
+ */
+router.patch(
+  "/documents/:id/reject",
+  adminAuthMiddleware,
+  requirePermission("vehicle:manage"),
+  rejectVehicleDocumentController,
 );
 
 /**

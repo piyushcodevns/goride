@@ -3,11 +3,13 @@ const {
   getVehicle,
   updateMyVehicle,
   deleteMyVehicle,
+  uploadVehicleDocument,
+  getVehicleDocuments,
+  deleteVehicleDocument,
 } = require("../services/vehicle.service");
 
-
 // Register Vehicle
-const registerVehicle = async (req, res) => {
+const registerVehicle = async (req, res, next) => {
   try {
     const vehicle = await addVehicle(req.user.id, req.body);
 
@@ -16,21 +18,13 @@ const registerVehicle = async (req, res) => {
       message: "Vehicle registered successfully.",
       data: vehicle,
     });
-
   } catch (error) {
-
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-
+    next(error);
   }
 };
 
-
-
 // Get My Vehicle
-const getMyVehicle = async (req, res) => {
+const getMyVehicle = async (req, res, next) => {
   try {
     const vehicle = await getVehicle(req.user.id);
 
@@ -39,77 +33,89 @@ const getMyVehicle = async (req, res) => {
       message: "Vehicle fetched successfully.",
       data: vehicle,
     });
-
   } catch (error) {
-
-    return res.status(404).json({
-      success: false,
-      message: error.message,
-    });
-
+    next(error);
   }
 };
 
-
-
 // Update My Vehicle
-const updateMyVehicleController = async (req, res) => {
+const updateMyVehicleController = async (req, res, next) => {
   try {
-
-    const vehicle = await updateMyVehicle(
-      req.user.id,
-      req.body
-    );
-
+    const vehicle = await updateMyVehicle(req.user.id, req.body);
 
     return res.status(200).json({
       success: true,
       message: "Vehicle updated successfully.",
       data: vehicle,
     });
-
-
   } catch (error) {
-
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-
+    next(error);
   }
 };
 
-
-
 // Delete My Vehicle
-const deleteMyVehicleController = async (req, res) => {
+const deleteMyVehicleController = async (req, res, next) => {
   try {
-
     const vehicle = await deleteMyVehicle(req.user.id);
-
 
     return res.status(200).json({
       success: true,
       message: "Vehicle deleted successfully.",
       data: vehicle,
     });
-
-
   } catch (error) {
-
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-
+    next(error);
   }
 };
 
+// Vehicle Document Handlers
+const uploadDocumentController = async (req, res, next) => {
+  try {
+    const document = await uploadVehicleDocument(req.user.id, req.body, req.file);
 
+    return res.status(201).json({
+      success: true,
+      message: "Vehicle document uploaded successfully.",
+      data: document,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getDocumentsController = async (req, res, next) => {
+  try {
+    const documents = await getVehicleDocuments(req.user.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Vehicle documents fetched successfully.",
+      data: documents,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteDocumentController = async (req, res, next) => {
+  try {
+    const result = await deleteVehicleDocument(req.user.id, req.params.id);
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports = {
   registerVehicle,
   getMyVehicle,
   updateMyVehicleController,
   deleteMyVehicleController,
+  uploadDocumentController,
+  getDocumentsController,
+  deleteDocumentController,
 };

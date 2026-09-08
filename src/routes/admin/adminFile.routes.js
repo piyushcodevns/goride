@@ -9,6 +9,7 @@ const {
 const { validate } = require("../../middleware/validate.middleware");
 
 const upload = require("../../middleware/upload.middleware");
+const { fileUploadLimiter } = require("../../middleware/rateLimit.middleware");
 
 const controller = require("../../controllers/admin/adminFile.controller");
 
@@ -74,7 +75,8 @@ router.use(adminAuthMiddleware);
 router.post(
   "/",
   requirePermission("file:upload"),
-  upload.single("file"),
+  fileUploadLimiter,
+  upload.uploadDocument.single("file"),
   validate(uploadUserDocumentBodySchema),
   controller.uploadDocument,
 );
@@ -265,8 +267,9 @@ router.get(
 router.put(
   "/:id",
   requirePermission("file:manage"),
+  fileUploadLimiter,
   validate(documentIdParamSchema),
-  upload.single("file"),
+  upload.uploadDocument.single("file"),
   validate(replaceUserDocumentBodySchema),
   controller.replaceDocument,
 );

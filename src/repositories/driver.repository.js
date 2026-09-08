@@ -186,6 +186,18 @@ const getDriverDocumentByType = async (driverId, documentType) => {
   });
 };
 
+const getDriverDocumentById = async (id) => {
+  return prisma.driverDocument.findUnique({
+    where: { id },
+  });
+};
+
+const deleteDriverDocument = async (id) => {
+  return prisma.driverDocument.delete({
+    where: { id },
+  });
+};
+
 /**
  * Replace a rejected document and return it to the review queue.
  */
@@ -279,6 +291,8 @@ module.exports = {
   createDriverDocument,
   getDriverDocuments,
   getDriverDocumentByType,
+  getDriverDocumentById,
+  deleteDriverDocument,
   replaceRejectedDriverDocument,
 
   getEligibleDriversForRecommendation,
