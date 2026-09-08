@@ -1,4 +1,5 @@
 const prisma = require("../../config/prisma");
+const { ConflictError } = require("../../utils/AppError");
 
 /**
  * Common payment relations for admin.
@@ -335,11 +336,27 @@ const updatePayment = async (paymentId, data) => {
  */
 const updatePaymentWithAudit = async ({ paymentId, data, auditLog }) => {
   return prisma.$transaction(async (tx) => {
-    const updatedPayment = await tx.payment.update({
-      where: {
-        id: paymentId,
-      },
-      data,
+    if (data.status) {
+      const updateResult = await tx.payment.updateMany({
+        where: {
+          id: paymentId,
+          status: { not: data.status },
+        },
+        data,
+      });
+
+      if (updateResult.count === 0) {
+        throw new ConflictError(`Payment is already ${data.status}.`);
+      }
+    } else {
+      await tx.payment.update({
+        where: { id: paymentId },
+        data,
+      });
+    }
+
+    const updatedPayment = await tx.payment.findUnique({
+      where: { id: paymentId },
       include: adminPaymentInclude,
     });
 

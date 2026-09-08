@@ -92,11 +92,22 @@ const ANALYTICS_CACHE_TTL_MS = Number(
 );
 
 const createAnalyticsCacheKey = (type, filters = {}) => {
+  let fromDate = null;
+  let toDate = null;
+
+  if (filters.fromDate) {
+    const d = new Date(filters.fromDate);
+    fromDate = Number.isNaN(d.getTime()) ? String(filters.fromDate) : d.toISOString();
+  }
+
+  if (filters.toDate) {
+    const d = new Date(filters.toDate);
+    toDate = Number.isNaN(d.getTime()) ? String(filters.toDate) : d.toISOString();
+  }
+
   const normalized = {
-    fromDate: filters.fromDate
-      ? new Date(filters.fromDate).toISOString()
-      : null,
-    toDate: filters.toDate ? new Date(filters.toDate).toISOString() : null,
+    fromDate,
+    toDate,
     granularity: filters.granularity || null,
     type: filters.type || null,
     limit: filters.limit || null,

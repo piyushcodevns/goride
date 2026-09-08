@@ -18,11 +18,11 @@ const validateFareRequest = ({
   }
 
   const numericFields = [
-    { name: "distanceKm", value: distanceKm, allowZero: false },
-    { name: "durationMinutes", value: durationMinutes, allowZero: true },
-    { name: "waitingMinutes", value: waitingMinutes, allowZero: true },
-    { name: "tollCharge", value: tollCharge, allowZero: true },
-    { name: "discountAmount", value: discountAmount, allowZero: true },
+    { name: "distanceKm", value: distanceKm, allowZero: false, max: 2000 },
+    { name: "durationMinutes", value: durationMinutes, allowZero: true, max: 2880 },
+    { name: "waitingMinutes", value: waitingMinutes, allowZero: true, max: 1440 },
+    { name: "tollCharge", value: tollCharge, allowZero: true, max: 50000 },
+    { name: "discountAmount", value: discountAmount, allowZero: true, max: 50000 },
   ];
 
   for (const field of numericFields) {
@@ -42,6 +42,10 @@ const validateFareRequest = ({
       if (field.value <= 0) {
         throw new Error(`${field.name} must be greater than zero.`);
       }
+    }
+
+    if (field.max !== undefined && field.value > field.max) {
+      throw new Error(`${field.name} exceeds maximum allowable limit of ${field.max}.`);
     }
   }
 };

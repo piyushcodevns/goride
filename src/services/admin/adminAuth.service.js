@@ -69,17 +69,19 @@ const MFA_CHALLENGE_MINUTES = 5;
 const MFA_MAX_FAILED_ATTEMPTS = 5;
 const MFA_LOCK_MINUTES = 15;
 
-const createMfaChallenge = (admin) =>
-  jwt.sign(
+const createMfaChallenge = (admin) => {
+  const options = {
+    expiresIn: `${MFA_CHALLENGE_MINUTES}m`,
+    algorithm: "HS256",
+  };
+  if (process.env.JWT_ISSUER) options.issuer = process.env.JWT_ISSUER;
+  if (process.env.JWT_AUDIENCE) options.audience = process.env.JWT_AUDIENCE;
+  return jwt.sign(
     { id: admin.id, purpose: "admin-mfa", tokenType: "mfa" },
     process.env.JWT_SECRET,
-    {
-      expiresIn: `${MFA_CHALLENGE_MINUTES}m`,
-      algorithm: "HS256",
-      issuer: process.env.JWT_ISSUER || undefined,
-      audience: process.env.JWT_AUDIENCE || undefined,
-    },
+    options,
   );
+};
 
 const createAdminTokens = async ({ admin, ipAddress, userAgent }) => {
   const refreshSecret = generateRefreshSecret();

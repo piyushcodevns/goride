@@ -12,28 +12,41 @@ const getJwtSecret = () => {
   return secret;
 };
 
-const jwtVerificationOptions = () => ({
-  algorithms: ["HS256"],
-  issuer: process.env.JWT_ISSUER || undefined,
-  audience: process.env.JWT_AUDIENCE || undefined,
-});
+const jwtVerificationOptions = () => {
+  const options = {
+    algorithms: ["HS256"],
+  };
+  if (process.env.JWT_ISSUER) {
+    options.issuer = process.env.JWT_ISSUER;
+  }
+  if (process.env.JWT_AUDIENCE) {
+    options.audience = process.env.JWT_AUDIENCE;
+  }
+  return options;
+};
 
 const generateToken = (user) => {
+  const options = {
+    expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+    algorithm: "HS256",
+  };
+  if (process.env.JWT_ISSUER) {
+    options.issuer = process.env.JWT_ISSUER;
+  }
+  if (process.env.JWT_AUDIENCE) {
+    options.audience = process.env.JWT_AUDIENCE;
+  }
+
   return jwt.sign(
-   {
-     id: user.id,
-     email: user.email,
-     role: user.role,
-     sessionId: user.sessionId,
-     tokenType: user.tokenType || "access",
-   },
-   getJwtSecret(),
-   {
-     expiresIn: process.env.JWT_EXPIRES_IN || "7d",
-     algorithm: "HS256",
-     issuer: process.env.JWT_ISSUER || undefined,
-     audience: process.env.JWT_AUDIENCE || undefined,
-   },
+    {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      sessionId: user.sessionId,
+      tokenType: user.tokenType || "access",
+    },
+    getJwtSecret(),
+    options,
   );
 };
 

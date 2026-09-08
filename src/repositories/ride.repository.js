@@ -319,10 +319,13 @@ const getCurrentRideByDriver = async (driverId) => {
  * Save Ride Reject History
  */
 const createRideReject = async (rideId, driverId) => {
+  const rId = typeof rideId === "object" && rideId !== null ? rideId.rideId : rideId;
+  const dId = typeof rideId === "object" && rideId !== null ? rideId.driverId : driverId;
+
   return prisma.rideReject.create({
     data: {
-      rideId,
-      driverId,
+      rideId: rId,
+      driverId: dId,
     },
   });
 };

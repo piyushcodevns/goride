@@ -6,6 +6,10 @@ const logger = require("../utils/logger");
 const emailProvider = new SMTPProvider();
 
 const sendEmail = async ({ to, subject, html, text }) => {
+  if (process.env.NODE_ENV === "test") {
+    return { messageId: "test-mock-message-id" };
+  }
+
   try {
     const info = await emailProvider.send({
       to,

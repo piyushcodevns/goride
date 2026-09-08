@@ -29,6 +29,7 @@ router.get("/", getHealth);
  *         description: Application process is alive
  */
 router.get("/live", getLiveness);
+router.get("/liveness", getLiveness);
 
 /**
  * @swagger
@@ -43,5 +44,6 @@ router.get("/live", getLiveness);
  *         description: Critical dependency is unavailable
  */
 router.get("/ready", getReadiness);
+router.get("/readiness", getReadiness);
 
 module.exports = router;

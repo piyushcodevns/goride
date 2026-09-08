@@ -6,7 +6,7 @@ const authorize = (...roles) => {
       return next(new ForbiddenError("Authentication required."));
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (!roles.includes(req.user.role) && req.user.role !== "SUPER_ADMIN") {
       return next(
         new ForbiddenError(
           "You are not authorized to access this resource."

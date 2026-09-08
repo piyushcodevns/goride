@@ -27,7 +27,7 @@ const errorMiddleware = (err, req, res, next) => {
     return res.status(400).json({
       success: false,
       message: "Validation failed.",
-      errors: err.errors,
+      errors: err.issues || err.errors || [],
       ...(requestId ? { requestId } : {}),
     });
   }

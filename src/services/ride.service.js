@@ -553,9 +553,13 @@ const rejectRide = async (rideId, driverId) => {
     driverId,
   });
 
-  await notificationService.sendRideNotification(ride.userId, "RIDE_REJECTED", {
-    rideId: ride.id,
-  });
+  await notificationService.dispatchNotification(
+    NotificationFactory.createRideRejectedNotification({
+      userId: ride.userId,
+      rideId: ride.id,
+      driverId,
+    }),
+  );
 
   return {
     message: "Ride rejected successfully.",
@@ -566,7 +570,11 @@ const rejectRide = async (rideId, driverId) => {
  * Cancel Ride
  */
 const cancelRide = async (rideId, userId) => {
-  const ride = await getRideById(rideId);
+  const ride = await rideRepository.getRideById(rideId);
+
+  if (!ride) {
+    throw new NotFoundError("Ride not found.");
+  }
 
   if (ride.userId !== userId) {
     throw new UnauthorizedError("Unauthorized.");
@@ -577,7 +585,23 @@ const cancelRide = async (rideId, userId) => {
   }
 
   return prisma.$transaction(async (tx) => {
-    const cancelledRide = await rideRepository.cancelRide(rideId, tx);
+    const updateResult = await tx.ride.updateMany({
+      where: {
+        id: rideId,
+        status: { in: ["REQUESTED", "ACCEPTED"] },
+      },
+      data: {
+        status: "CANCELLED",
+      },
+    });
+
+    if (updateResult.count === 0) {
+      throw new ConflictError("Ride cannot be cancelled.");
+    }
+
+    const cancelledRide = await tx.ride.findUnique({
+      where: { id: rideId },
+    });
 
     if (ride.driverId) {
       await updateDriverAvailability(ride.driverId, "AVAILABLE", tx);
