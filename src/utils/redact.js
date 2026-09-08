@@ -97,6 +97,11 @@ const redactSensitiveData = (data, visited = new WeakSet()) => {
   }
 
   const sanitized = {};
+  const symbols = Object.getOwnPropertySymbols(data);
+  for (const sym of symbols) {
+    sanitized[sym] = data[sym];
+  }
+
   for (const [key, value] of Object.entries(data)) {
     if (isSensitiveKey(key)) {
       sanitized[key] = REDACTED_VALUE;
