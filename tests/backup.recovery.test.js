@@ -359,6 +359,74 @@ test("Module 20: Isolated Disaster Recovery Drill & Measured RPO/RTO", async () 
   }
 });
 
+test("Module 20: Disaster Recovery Drill - Full Isolated Restore Execution & Validation", async () => {
+  await ensureBackupDirectory();
+  const filename = generateBackupFilename();
+  const filePath = resolveBackupPath(filename);
+  await fs.writeFile(filePath, "Mock DR drill dump archive content");
+
+  const checksum = await calculateChecksum(filePath);
+  const stats = await fs.stat(filePath);
+
+  const mockBackup = {
+    id: `dr-exec-${Date.now()}`,
+    filename,
+    status: "COMPLETED",
+    size: BigInt(stats.size),
+    checksum,
+    createdAt: new Date(),
+  };
+
+  const origGetBackupById = backupRepository.getBackupById;
+  backupRepository.getBackupById = async (id) => {
+    if (id === mockBackup.id) return mockBackup;
+    return null;
+  };
+
+  const postgresCommandModule = require("../src/utils/postgresCommand");
+  const origRunCommand = postgresCommandModule.runPostgresCommand;
+  let executedArgs = [];
+  postgresCommandModule.runPostgresCommand = async (opts) => {
+    executedArgs.push(opts.args);
+    return { stdout: "RESTORE OK", stderr: "" };
+  };
+
+  const targetDbUrl = "postgresql://postgres:root@localhost:5432/goride_isolated_test";
+
+  try {
+    const drillResult = await verifyRestoreInIsolatedDb({
+      backupId: mockBackup.id,
+      targetDbUrl,
+      adminId: "admin-dr-test",
+    });
+
+    assert.equal(drillResult.verified, true);
+    assert.equal(drillResult.targetDatabase, "goride_isolated_test");
+    assert.ok(typeof drillResult.restoreDurationMs === "number");
+    assert.ok(typeof drillResult.validationDurationMs === "number");
+    assert.ok(typeof drillResult.totalRecoveryDurationMs === "number");
+    assert.ok(drillResult.verifiedTables, "Verified tables object must be returned");
+
+    // Verify catalog check and restore command were both executed
+    assert.ok(executedArgs.some((args) => args.includes("--list")));
+    assert.ok(executedArgs.some((args) => args.includes("--single-transaction")));
+
+    // Test failure path
+    postgresCommandModule.runPostgresCommand = async () => {
+      throw new Error("pg_restore: simulated database failure on isolated target");
+    };
+
+    await assert.rejects(
+      () => verifyRestoreInIsolatedDb({ backupId: mockBackup.id, targetDbUrl }),
+      /simulated database failure/,
+    );
+  } finally {
+    backupRepository.getBackupById = origGetBackupById;
+    postgresCommandModule.runPostgresCommand = origRunCommand;
+    await fs.rm(filePath, { force: true });
+  }
+});
+
 test("Module 20: Scheduled Backup Job Processor & Queue Integration", async () => {
   // Reject unknown job names
   await assert.rejects(

@@ -582,45 +582,118 @@ const verifyRestoreInIsolatedDb = async ({ backupId, targetDbUrl, adminId = null
     targetDatabase: databaseName,
   });
 
-  // Execute restore into the isolated target database
-  await postgresCommand.runPostgresCommand({
-    executable: PG_RESTORE_PATH,
-    args: [
-      "--exit-on-error",
-      "--single-transaction",
-      "--clean",
-      "--if-exists",
-      "--no-owner",
-      "--no-acl",
-      "--dbname",
-      databaseName,
-      stats.path,
-    ],
-    timeout: 30 * 60 * 1000,
-    env: targetEnv,
-  });
+  try {
+    // 1. Pre-restore archive catalog validation
+    await postgresCommand.runPostgresCommand({
+      executable: PG_RESTORE_PATH,
+      args: ["--list", stats.path],
+      timeout: 60 * 1000,
+      env: targetEnv,
+    });
 
-  const drillDurationMs = Date.now() - drillStartTime;
+    // 2. Execute restore into the isolated target database
+    await postgresCommand.runPostgresCommand({
+      executable: PG_RESTORE_PATH,
+      args: [
+        "--exit-on-error",
+        "--single-transaction",
+        "--clean",
+        "--if-exists",
+        "--no-owner",
+        "--no-acl",
+        "--dbname",
+        databaseName,
+        stats.path,
+      ],
+      timeout: 30 * 60 * 1000,
+      env: targetEnv,
+    });
 
-  await auditBackupAction({
-    adminId,
-    action: "RESTORE",
-    backupId: backup.id,
-    metadata: {
-      operation: "DR_DRILL_COMPLETED",
+    const restoreDurationMs = Date.now() - drillStartTime;
+    const validationStartTime = Date.now();
+
+    // 3. Post-restore Prisma schema & critical table validation
+    const { PrismaClient } = require("@prisma/client");
+    const targetPrisma = new PrismaClient({
+      datasources: {
+        db: { url: targetDbUrl },
+      },
+    });
+
+    let verifiedTables = {};
+    try {
+      const [userCount, driverCount, vehicleCount, rideCount, paymentCount] = await Promise.all([
+        targetPrisma.user.count().catch(() => null),
+        targetPrisma.driver.count().catch(() => null),
+        targetPrisma.vehicle.count().catch(() => null),
+        targetPrisma.ride.count().catch(() => null),
+        targetPrisma.payment.count().catch(() => null),
+      ]);
+
+      verifiedTables = {
+        users: userCount,
+        drivers: driverCount,
+        vehicles: vehicleCount,
+        rides: rideCount,
+        payments: paymentCount,
+      };
+    } finally {
+      await targetPrisma.$disconnect().catch(() => {});
+    }
+
+    const validationDurationMs = Date.now() - validationStartTime;
+    const totalRecoveryDurationMs = Date.now() - drillStartTime;
+
+    await auditBackupAction({
+      adminId,
+      action: "RESTORE",
+      backupId: backup.id,
+      metadata: {
+        operation: "DR_DRILL_COMPLETED",
+        targetDatabase: databaseName,
+        restoreDurationMs,
+        validationDurationMs,
+        totalRecoveryDurationMs,
+        verifiedTables,
+      },
+    });
+
+    return {
+      verified: true,
+      backupId: backup.id,
+      filename: backup.filename,
       targetDatabase: databaseName,
-      drillDurationMs,
-    },
-  });
+      restoreDurationMs,
+      validationDurationMs,
+      totalRecoveryDurationMs,
+      verifiedTables,
+      verifiedAt: new Date().toISOString(),
+    };
+  } catch (drillError) {
+    const totalRecoveryDurationMs = Date.now() - drillStartTime;
+    const safeErrorMsg = sanitizeString(drillError.message).slice(0, 1000);
 
-  return {
-    verified: true,
-    backupId: backup.id,
-    filename: backup.filename,
-    targetDatabase: databaseName,
-    drillDurationMs,
-    verifiedAt: new Date().toISOString(),
-  };
+    logger.error("Isolated disaster recovery drill failed.", {
+      backupId: backup.id,
+      targetDatabase: databaseName,
+      totalRecoveryDurationMs,
+      error: safeErrorMsg,
+    });
+
+    await auditBackupAction({
+      adminId,
+      action: "RESTORE",
+      backupId: backup.id,
+      metadata: {
+        operation: "DR_DRILL_FAILED",
+        targetDatabase: databaseName,
+        totalRecoveryDurationMs,
+        error: safeErrorMsg,
+      },
+    });
+
+    throw drillError;
+  }
 };
 
 /**
