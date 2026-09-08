@@ -8,10 +8,14 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./docs/swagger");
 
 const errorMiddleware = require("./middleware/error.middleware");
+const { correlationMiddleware } = require("./middleware/correlation.middleware");
 const { NotFoundError } = require("./utils/AppError");
+
+const healthRoutes = require("./routes/health.routes");
 
 const app = express();
 app.set("trust proxy", 1);
+app.use(correlationMiddleware);
 const adminMonitoringRoutes = require("./routes/admin/adminMonitoring.routes");
 const adminBackupRoutes = require("./routes/admin/adminBackup.routes");
 const adminRbacRoutes = require("./routes/admin/adminRbac.routes");
@@ -110,7 +114,7 @@ app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 if (process.env.NODE_ENV !== "test") {
   app.use(
     morgan(process.env.NODE_ENV === "production" ? "combined" : "dev", {
-      skip: (req) => req.path === "/" || req.path === "/health",
+      skip: (req) => req.path === "/" || req.path.startsWith("/health"),
     })
   );
 }
@@ -198,10 +202,12 @@ app.use("/api/admin/ai", adminAiRoutes);
    Health Check
 =========================== */
 
+app.use("/health", healthRoutes);
+
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "ðŸš– GoRide Backend API Running",
+    message: "🚖 GoRide Backend API Running",
     version: "1.0.0",
     status: "OK",
     timestamp: new Date(),

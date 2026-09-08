@@ -1,17 +1,34 @@
 const { ZodError } = require("zod");
 const multer = require("multer");
 const logger = require("../utils/logger");
+const metrics = require("../utils/metrics");
+const { redactSensitiveData } = require("../utils/redact");
 
 const errorMiddleware = (err, req, res, next) => {
-  logger.error(
-    err.stack || err.message
-  );
+  const requestId = req?.id || req?.headers?.["x-request-id"] || null;
+  const method = req?.method;
+  const path = req?.originalUrl || req?.url;
+
+  // Record error metric
+  metrics.recordError(err?.name || "UnhandledError");
+
+  // Structured internal logging with redaction
+  logger.error(err?.message || "Internal Server Error", {
+    requestId,
+    method,
+    path,
+    errorName: err?.name,
+    isOperational: err?.isOperational,
+    stack: err?.stack,
+    meta: redactSensitiveData(err?.meta || {}),
+  });
 
   if (err instanceof ZodError) {
     return res.status(400).json({
       success: false,
       message: "Validation failed.",
       errors: err.errors,
+      ...(requestId ? { requestId } : {}),
     });
   }
 
@@ -29,9 +46,8 @@ const errorMiddleware = (err, req, res, next) => {
 
     return res.status(400).json({
       success: false,
-      message:
-        multerMessages[err.code] ||
-        "Invalid file upload.",
+      message: multerMessages[err.code] || "Invalid file upload.",
+      ...(requestId ? { requestId } : {}),
     });
   }
 
@@ -39,6 +55,7 @@ const errorMiddleware = (err, req, res, next) => {
     return res.status(400).json({
       success: false,
       message: "Invalid JSON in request body.",
+      ...(requestId ? { requestId } : {}),
     });
   }
 
@@ -46,12 +63,15 @@ const errorMiddleware = (err, req, res, next) => {
     return res.status(err.statusCode).json({
       success: false,
       message: err.message,
+      ...(requestId ? { requestId } : {}),
     });
   }
 
+  // Generic 500: never expose stack traces, database credentials, or filesystem paths to clients
   return res.status(500).json({
     success: false,
     message: "Internal Server Error",
+    ...(requestId ? { requestId } : {}),
   });
 };
 

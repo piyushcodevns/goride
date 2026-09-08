@@ -177,6 +177,33 @@ const getDatabaseStatus = async () => {
   }
 };
 
+const metrics = require("../../utils/metrics");
+const { isSchedulersStarted } = require("../../schedulers");
+
+const getSchedulerStatus = () => [
+  {
+    name: "scheduled-rides-sweep",
+    targetQueue: "scheduled-rides",
+    cron: process.env.SCHEDULED_RIDES_CRON || "* * * * *",
+    enabled: process.env.SCHEDULED_RIDES_SCHEDULE_ENABLED !== "false",
+    active: isSchedulersStarted(),
+  },
+  {
+    name: "daily-cleanup",
+    targetQueue: "cleanup",
+    cron: process.env.CLEANUP_CRON || "0 3 * * *",
+    enabled: process.env.CLEANUP_SCHEDULE_ENABLED !== "false",
+    active: isSchedulersStarted(),
+  },
+  {
+    name: "daily-backup",
+    targetQueue: "backup",
+    cron: process.env.BACKUP_CRON || "0 2 * * *",
+    enabled: process.env.BACKUP_SCHEDULE_ENABLED === "true",
+    active: isSchedulersStarted(),
+  },
+];
+
 const getHealthCheck = async () => {
   const [redis, database] = await Promise.all([
     getRedisStatus(),
@@ -185,6 +212,7 @@ const getHealthCheck = async () => {
 
   const healthy = redis.status === "UP" && database.status === "UP";
   const workers = getWorkerRuntimeStatus();
+  const schedulers = getSchedulerStatus();
 
   return {
     status: healthy ? "HEALTHY" : "UNHEALTHY",
@@ -192,6 +220,7 @@ const getHealthCheck = async () => {
     timestamp: new Date().toISOString(),
     server: getServerStatus(),
     workers,
+    schedulers,
     redis,
     database,
   };
@@ -199,6 +228,7 @@ const getHealthCheck = async () => {
 
 const getSystemStatus = async () => {
   const workers = getWorkerRuntimeStatus();
+  const schedulers = getSchedulerStatus();
   const [redis, queues, failedJobs, database, cpu] = await Promise.all([
     getRedisStatus(),
     getQueueStatus(),
@@ -211,12 +241,14 @@ const getSystemStatus = async () => {
     timestamp: new Date().toISOString(),
     server: getServerStatus(),
     workers,
+    schedulers,
     memory: getMemoryUsage(),
     cpu,
     redis,
     queues,
     failedJobs,
     database,
+    metrics: metrics.getSummary(),
   };
 };
 
@@ -225,6 +257,7 @@ module.exports = {
   getMemoryUsage,
   getCpuUsage,
   getWorkerRuntimeStatus,
+  getSchedulerStatus,
   getRedisStatus,
   getQueueStatus,
   getFailedJobs,
