@@ -71,11 +71,22 @@ const verifyTotp = (secret, code, currentStep = getTotpStep()) => {
   return null;
 };
 
-const encryptionKey = () =>
-  crypto
+const getEncryptionKey = () => {
+  const encryptionKey = process.env.ADMIN_2FA_ENCRYPTION_KEY;
+
+  if (!encryptionKey || !String(encryptionKey).trim()) {
+    throw new Error(
+      "ADMIN_2FA_ENCRYPTION_KEY is not configured. Set a dedicated TOTP encryption key.",
+    );
+  }
+
+  return crypto
     .createHash("sha256")
-    .update(String(process.env.ADMIN_2FA_ENCRYPTION_KEY || process.env.JWT_SECRET || ""))
+    .update(String(encryptionKey).trim())
     .digest();
+};
+
+const encryptionKey = () => getEncryptionKey();
 
 const encryptSecret = (secret) => {
   const iv = crypto.randomBytes(12);

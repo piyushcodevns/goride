@@ -40,7 +40,10 @@ const createRide = async (req, res) => {
  */
 const getRideById = async (req, res) => {
   try {
-    const ride = await rideService.getRideById(req.params.id);
+    const ride = await rideService.getRideByIdForUser(
+      req.params.id,
+      req.user.id,
+    );
 
     return res.status(200).json({
       success: true,
@@ -48,7 +51,7 @@ const getRideById = async (req, res) => {
       data: ride,
     });
   } catch (error) {
-    return res.status(404).json({
+    return res.status(400).json({
       success: false,
       message: error.message,
     });
@@ -118,10 +121,7 @@ const assignDriver = async (req, res) => {
       });
     }
 
-    const ride = await rideService.assignDriver(
-      req.params.id,
-      driver.id,
-    );
+    const ride = await rideService.assignDriver(req.params.id, driver.id);
 
     return res.status(200).json({
       success: true,
@@ -200,10 +200,7 @@ const rejectRide = async (req, res) => {
       });
     }
 
-    const result = await rideService.rejectRide(
-      req.params.id,
-      driver.id,
-    );
+    const result = await rideService.rejectRide(req.params.id, driver.id);
 
     return res.status(200).json({
       success: true,

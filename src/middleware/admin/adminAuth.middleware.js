@@ -2,11 +2,7 @@ const { verifyToken } = require("../../utils/jwt");
 
 const { UnauthorizedError, ForbiddenError } = require("../../utils/AppError");
 
-const {
-  findAdminById,
-  findActiveAdminSessionById,
-  updateSessionLastActive,
-} = require("../../repositories/admin/adminAuth.repository");
+const adminAuthRepository = require("../../repositories/admin/adminAuth.repository");
 
 const ADMIN_ROLES = require("../../constants/adminRoles");
 
@@ -40,7 +36,13 @@ const adminAuthMiddleware = async (req, res, next) => {
       throw new UnauthorizedError("Invalid access token payload.");
     }
 
-    const session = await findActiveAdminSessionById(decoded.sessionId);
+    if (decoded?.tokenType && decoded.tokenType !== "access") {
+      throw new UnauthorizedError("Invalid token type.");
+    }
+
+    const session = await adminAuthRepository.findActiveAdminSessionById(
+      decoded.sessionId,
+    );
 
     if (!session) {
       throw new UnauthorizedError(
@@ -51,7 +53,7 @@ const adminAuthMiddleware = async (req, res, next) => {
     if (session.userId !== decoded.id) {
       throw new UnauthorizedError("Invalid admin session.");
     }
-    const admin = await findAdminById(decoded.id);
+    const admin = await adminAuthRepository.findAdminById(decoded.id);
     if (!admin) {
       throw new UnauthorizedError("Admin account not found.");
     }
@@ -71,7 +73,7 @@ const adminAuthMiddleware = async (req, res, next) => {
       throw new ForbiddenError("Admin account is temporarily locked.");
     }
 
-    await updateSessionLastActive(session.id);
+    await adminAuthRepository.updateSessionLastActive(session.id);
 
     req.admin = admin;
 

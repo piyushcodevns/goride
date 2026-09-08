@@ -15,6 +15,10 @@ const {
 
 const { NotFoundError, BadRequestError } = require("../utils/AppError");
 const { uploadImage } = require("./upload.service");
+const {
+  updateDriverProfileSchema,
+  updateDriverAvailabilitySchema,
+} = require("../validators/driver.validator");
 
 const registerDriver = async (userId, data) => {
   const existingDriver = await getDriverByUserId(userId);
@@ -23,17 +27,13 @@ const registerDriver = async (userId, data) => {
     throw new BadRequestError("Driver profile already exists.");
   }
 
-  const licenseExists = await getDriverByLicenseNumber(
-    data.licenseNumber,
-  );
+  const licenseExists = await getDriverByLicenseNumber(data.licenseNumber);
 
   if (licenseExists) {
     throw new BadRequestError("License number already exists.");
   }
 
-  const aadharExists = await getDriverByAadharNumber(
-    data.aadharNumber,
-  );
+  const aadharExists = await getDriverByAadharNumber(data.aadharNumber);
 
   if (aadharExists) {
     throw new BadRequestError("Aadhar number already exists.");
@@ -58,18 +58,25 @@ const getDriverProfile = async (userId) => {
 };
 
 const updateDriverProfile = async (userId, data) => {
-  // Check driver exists
+  const validatedData = updateDriverProfileSchema.parse({
+    body: data,
+  });
+
   const driver = await getDriverByUserId(userId);
 
   if (!driver) {
     throw new NotFoundError("Driver profile not found.");
   }
 
-  // Update driver
-  return await updateDriver(userId, data);
+  return await updateDriver(userId, validatedData.body);
 };
 
 const updateAvailability = async (userId, availability) => {
+  const { availability: validatedAvailability } =
+    updateDriverAvailabilitySchema.parse({
+      body: { availability },
+    });
+
   const driver = await getDriverByUserId(userId);
 
   if (!driver) {
@@ -82,7 +89,10 @@ const updateAvailability = async (userId, availability) => {
     );
   }
 
-  return await updateDriverAvailability(driver.id, availability);
+  return await updateDriverAvailability(
+    driver.id,
+    validatedAvailability,
+  );
 };
 /**
  * Approve / Reject Driver

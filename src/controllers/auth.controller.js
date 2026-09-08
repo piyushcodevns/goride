@@ -98,12 +98,7 @@ const resetPasswordController = async (req, res) => {
 
 const changePasswordController = async (req, res) => {
   try {
-    const result = await changePassword(
-      req.user.id,
-      req.body.currentPassword,
-      req.body.newPassword,
-      req.body.confirmPassword
-    );
+    const result = await changePassword(req.user.id, req.body);
 
     return res.status(200).json({
       success: true,

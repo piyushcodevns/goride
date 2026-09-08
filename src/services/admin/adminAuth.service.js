@@ -55,6 +55,11 @@ const {
 } = require("../../utils/adminTotp");
 
 const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS) || 12;
+const JWT_VERIFY_OPTIONS = {
+  algorithms: ["HS256"],
+  issuer: process.env.JWT_ISSUER || undefined,
+  audience: process.env.JWT_AUDIENCE || undefined,
+};
 
 const MAX_FAILED_LOGIN_ATTEMPTS = 5;
 const ACCOUNT_LOCK_MINUTES = 30;
@@ -66,9 +71,14 @@ const MFA_LOCK_MINUTES = 15;
 
 const createMfaChallenge = (admin) =>
   jwt.sign(
-    { id: admin.id, purpose: "admin-mfa" },
+    { id: admin.id, purpose: "admin-mfa", tokenType: "mfa" },
     process.env.JWT_SECRET,
-    { expiresIn: `${MFA_CHALLENGE_MINUTES}m` },
+    {
+      expiresIn: `${MFA_CHALLENGE_MINUTES}m`,
+      algorithm: "HS256",
+      issuer: process.env.JWT_ISSUER || undefined,
+      audience: process.env.JWT_AUDIENCE || undefined,
+    },
   );
 
 const createAdminTokens = async ({ admin, ipAddress, userAgent }) => {
@@ -399,11 +409,11 @@ const loginAdmin = async ({ email, password, ipAddress, userAgent }) => {
 const verifyAdminMfaLogin = async ({ mfaToken, code, ipAddress, userAgent }) => {
   let challenge;
   try {
-    challenge = jwt.verify(mfaToken, process.env.JWT_SECRET);
+    challenge = jwt.verify(mfaToken, process.env.JWT_SECRET, JWT_VERIFY_OPTIONS);
   } catch {
     throw new UnauthorizedError("Invalid or expired MFA challenge.");
   }
-  if (challenge?.purpose !== "admin-mfa" || !challenge.id) {
+  if (challenge?.purpose !== "admin-mfa" || challenge?.tokenType !== "mfa" || !challenge.id) {
     throw new UnauthorizedError("Invalid MFA challenge.");
   }
 

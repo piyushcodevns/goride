@@ -11,15 +11,16 @@ const { getRouteDetails } = require("./openRoute.service");
 
 const { calculateFare } = require("./fare.service");
 
+const notificationService = require("./notification.service");
+const NotificationFactory = require("../factories/notification.factory");
+
 const {
   BadRequestError,
   ConflictError,
   UnauthorizedError,
   NotFoundError,
+  ForbiddenError,
 } = require("../utils/AppError");
-
-const notificationService = require("./notification.service");
-const NotificationFactory = require("../factories/notification.factory");
 
 /**
  * Allowed Ride Status Flow
@@ -59,17 +60,7 @@ const createRide = async (rideData) => {
     destinationLatitude,
     destinationLongitude,
     vehicleType,
-
     city = "DEFAULT",
-    waitingMinutes = 0,
-    tollCharge = 0,
-    isAirportRide = false,
-    isPeakHour = false,
-    isNightRide = false,
-    isRaining = false,
-    isEventRide = false,
-    discountAmount = 0,
-
     isScheduled = false,
     scheduledFor = null,
   } = rideData;
@@ -159,22 +150,6 @@ const createRide = async (rideData) => {
     distanceKm: routeDetails.distance,
 
     durationMinutes: routeDetails.duration,
-
-    waitingMinutes,
-
-    tollCharge,
-
-    isAirportRide,
-
-    isPeakHour,
-
-    isNightRide,
-
-    isRaining,
-
-    isEventRide,
-
-    discountAmount,
   });
 
   /**
@@ -265,18 +240,18 @@ const createRide = async (rideData) => {
             distanceKm: routeDetails.distance,
             durationMinutes: routeDetails.duration,
 
-            waitingMinutes,
-            tollCharge,
+            waitingMinutes: 0,
+            tollCharge: 0,
 
-            isAirportRide,
-            isPeakHour,
-            isNightRide,
-            isRaining,
-            isEventRide,
+            isAirportRide: fareDetails.pricingRules?.isAirportRide ?? false,
+            isPeakHour: fareDetails.pricingRules?.isPeakHour ?? false,
+            isNightRide: fareDetails.pricingRules?.isNightRide ?? false,
+            isRaining: fareDetails.pricingRules?.isRaining ?? false,
+            isEventRide: fareDetails.pricingRules?.isEventRide ?? false,
           },
 
           discountSnapshot: {
-            requestedDiscount: discountAmount,
+            requestedDiscount: 0,
             appliedDiscount: fareDetails.discountAmount,
           },
 
@@ -337,6 +312,19 @@ const createRide = async (rideData) => {
  */
 const getRideById = async (rideId) => {
   const ride = await rideRepository.getRideById(rideId);
+
+  if (!ride) {
+    throw new NotFoundError("Ride not found.");
+  }
+
+  return ride;
+};
+
+/**
+ * Get Ride By ID For User
+ */
+const getRideByIdForUser = async (rideId, userId) => {
+  const ride = await rideRepository.getRideByIdForUser(rideId, userId);
 
   if (!ride) {
     throw new NotFoundError("Ride not found.");
@@ -498,7 +486,7 @@ const updateRideStatus = async (rideId, driverId, status) => {
  * Reject Ride
  */
 const rejectRide = async (rideId, driverId) => {
-  const ride = await getRideById(rideId);
+  const ride = await rideRepository.getRideById(rideId);
 
   if (!ride) {
     throw new NotFoundError("Ride not found.");
@@ -508,19 +496,38 @@ const rejectRide = async (rideId, driverId) => {
     throw new ConflictError("Only requested rides can be rejected.");
   }
 
-  await rideRepository.createRideReject(rideId, driverId);
+  // Only approved drivers can reject rides.
+  const driver = await getDriverById(driverId);
 
-  await notificationService.dispatchNotification(
-    NotificationFactory.createRideRejectedNotification({
-      userId: ride.userId,
-      rideId: ride.id,
-      driverId,
-    }),
+  if (!driver) {
+    throw new NotFoundError("Driver profile not found.");
+  }
+
+  if (driver.status !== "APPROVED") {
+    throw new ForbiddenError("Only approved drivers can reject rides.");
+  }
+
+  // Prevent duplicate rejection records.
+  const alreadyRejected = await rideRepository.hasDriverRejectedRide(
+    rideId,
+    driverId,
   );
+
+  if (alreadyRejected) {
+    throw new ConflictError("You have already rejected this ride.");
+  }
+
+  await rideRepository.createRideReject({
+    rideId,
+    driverId,
+  });
+
+  await notificationService.sendRideNotification(ride.userId, "RIDE_REJECTED", {
+    rideId: ride.id,
+  });
 
   return {
     message: "Ride rejected successfully.",
-    rideId,
   };
 };
 
@@ -569,6 +576,7 @@ const getDriverCurrentRide = async (driverId) => {
 module.exports = {
   createRide,
   getRideById,
+  getRideByIdForUser,
   getUserRides,
   getAvailableRides,
   assignDriver,

@@ -1,5 +1,5 @@
-const jwt = require("jsonwebtoken");
 const prisma = require("../config/prisma");
+const { verifyToken } = require("../utils/jwt");
 
 const authenticate = async (req, res, next) => {
   try {
@@ -13,8 +13,14 @@ const authenticate = async (req, res, next) => {
     }
 
     const token = authHeader.split(" ")[1];
+    const decoded = verifyToken(token);
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded?.tokenType && decoded.tokenType !== "access") {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token type.",
+      });
+    }
 
     const user = await prisma.user.findUnique({
       where: {

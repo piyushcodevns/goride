@@ -14,6 +14,39 @@ const apiLimiter = rateLimit({
   },
 });
 
+const fareEstimateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many fare estimates. Please wait before retrying.",
+  },
+});
+
+const mapsLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many map requests. Please try again later.",
+  },
+});
+
+const fileUploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 25,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many file uploads. Please try again later.",
+  },
+});
+
 /**
  * Login Limiter
  */
@@ -24,8 +57,7 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     success: false,
-    message:
-      "Too many login attempts. Please try again after 15 minutes.",
+    message: "Too many login attempts. Please try again after 15 minutes.",
   },
 });
 
@@ -39,8 +71,7 @@ const registerLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     success: false,
-    message:
-      "Too many registration attempts. Please try again later.",
+    message: "Too many registration attempts. Please try again later.",
   },
 });
 
@@ -54,8 +85,7 @@ const forgotPasswordLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     success: false,
-    message:
-      "Too many password reset requests. Please try again later.",
+    message: "Too many password reset requests. Please try again later.",
   },
 });
 
@@ -70,10 +100,73 @@ const mfaLimiter = rateLimit({
   },
 });
 
+/**
+ * Reset Password Limiter
+ */
+const resetPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many password reset attempts. Please try again later.",
+  },
+});
+
+/**
+ * Verify Email Limiter
+ */
+const verifyEmailLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many verification attempts. Please try again later.",
+  },
+});
+
+/**
+ * Change Password Limiter
+ */
+const changePasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many password change attempts. Please try again later.",
+  },
+});
+
+/**
+ * Send Verification Email Limiter
+ */
+const sendVerificationEmailLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many verification email requests. Please try again later.",
+  },
+});
+
 module.exports = {
   apiLimiter,
+  fareEstimateLimiter,
+  mapsLimiter,
+  fileUploadLimiter,
   loginLimiter,
   registerLimiter,
   forgotPasswordLimiter,
+  resetPasswordLimiter,
+  verifyEmailLimiter,
+  changePasswordLimiter,
+  sendVerificationEmailLimiter,
   mfaLimiter,
 };

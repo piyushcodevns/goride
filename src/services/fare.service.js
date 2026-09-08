@@ -1,6 +1,7 @@
 const PricingCacheService = require("./pricing-cache.service");
 const PricingEngine = require("./pricing.engine");
 const PricingRulesEngine = require("./pricing-rules.engine");
+const { getRouteDetails } = require("./openRoute.service");
 
 const DEFAULT_CITY = "DEFAULT";
 
@@ -47,10 +48,49 @@ const validateFareRequest = ({
 
 const normalizeNumber = (value) => Number(value.toFixed(2));
 
+const resolveRouteInputs = async ({
+  pickupLatitude,
+  pickupLongitude,
+  destinationLatitude,
+  destinationLongitude,
+  distanceKm,
+  durationMinutes,
+}) => {
+  if (
+    pickupLatitude !== undefined &&
+    pickupLongitude !== undefined &&
+    destinationLatitude !== undefined &&
+    destinationLongitude !== undefined
+  ) {
+    const routeDetails = await getRouteDetails(
+      { latitude: Number(pickupLatitude), longitude: Number(pickupLongitude) },
+      { latitude: Number(destinationLatitude), longitude: Number(destinationLongitude) },
+    );
+
+    return {
+      distanceKm: routeDetails.distance,
+      durationMinutes: routeDetails.duration,
+    };
+  }
+
+  if (distanceKm === undefined || durationMinutes === undefined) {
+    throw new Error("Pickup and destination coordinates are required for fare estimation.");
+  }
+
+  return {
+    distanceKm,
+    durationMinutes,
+  };
+};
+
 const calculateFare = async ({
   city = DEFAULT_CITY,
   vehicleType,
 
+  pickupLatitude,
+  pickupLongitude,
+  destinationLatitude,
+  destinationLongitude,
   distanceKm,
   durationMinutes = 0,
 
@@ -58,31 +98,36 @@ const calculateFare = async ({
 
   tollCharge = 0,
 
-  isAirportRide = false,
-
-  isPeakHour = false,
-  isNightRide = false,
-  isRaining = false,
-  isEventRide = false,
-
   discountAmount = 0,
 
   rideDate = new Date(),
 }) => {
-  validateFareRequest({
-    vehicleType,
+  const routeInputs = await resolveRouteInputs({
+    pickupLatitude,
+    pickupLongitude,
+    destinationLatitude,
+    destinationLongitude,
     distanceKm,
     durationMinutes,
+  });
+
+  const resolvedDistanceKm = routeInputs.distanceKm;
+  const resolvedDurationMinutes = routeInputs.durationMinutes;
+
+  validateFareRequest({
+    vehicleType,
+    distanceKm: resolvedDistanceKm,
+    durationMinutes: resolvedDurationMinutes,
     waitingMinutes,
     tollCharge,
     discountAmount,
   });
 
-  distanceKm = normalizeNumber(distanceKm);
-  durationMinutes = normalizeNumber(durationMinutes);
-  waitingMinutes = normalizeNumber(waitingMinutes);
-  tollCharge = normalizeNumber(tollCharge);
-  discountAmount = normalizeNumber(discountAmount);
+  const normalizedDistanceKm = normalizeNumber(resolvedDistanceKm);
+  const normalizedDurationMinutes = normalizeNumber(resolvedDurationMinutes);
+  const normalizedWaitingMinutes = normalizeNumber(waitingMinutes);
+  const normalizedTollCharge = normalizeNumber(tollCharge);
+  const normalizedDiscountAmount = normalizeNumber(discountAmount);
 
   const pricingConfig = await PricingCacheService.getPricingConfig(
     city,
@@ -95,22 +140,17 @@ const calculateFare = async ({
 
   const pricingRules = PricingRulesEngine.evaluate({
     rideDate,
-    isAirportRide,
-    isPeakHour,
-    isNightRide,
-    isRaining,
-    isEventRide,
   });
 
   const fare = PricingEngine.calculateFare({
     pricingConfig,
 
-    distanceKm,
-    durationMinutes,
+    distanceKm: normalizedDistanceKm,
+    durationMinutes: normalizedDurationMinutes,
 
-    waitingMinutes,
+    waitingMinutes: normalizedWaitingMinutes,
 
-    tollCharge,
+    tollCharge: normalizedTollCharge,
 
     isAirportRide: pricingRules.isAirportRide,
     isPeakHour: pricingRules.isPeakHour,
@@ -118,7 +158,7 @@ const calculateFare = async ({
     isRaining: pricingRules.isRaining,
     isEventRide: pricingRules.isEventRide,
 
-    discountAmount,
+    discountAmount: normalizedDiscountAmount,
   });
 
   return {

@@ -1,68 +1,54 @@
 class PricingRulesEngine {
-  /**
-   * Enterprise Pricing Rules Engine
-   *
-   * This class is responsible ONLY for deciding
-   * which pricing rules are applicable.
-   *
-   * It NEVER performs fare calculation.
-   */
-
   static evaluate({
     rideDate = new Date(),
-
     isAirportRide = false,
-    isPeakHour = false,
-    isNightRide = false,
     isRaining = false,
     isEventRide = false,
   } = {}) {
-    const date = rideDate instanceof Date
-      ? rideDate
-      : new Date(rideDate);
+    const date = rideDate instanceof Date ? rideDate : new Date(rideDate);
 
     if (Number.isNaN(date.getTime())) {
       throw new Error("Invalid ride date.");
     }
 
+    const isPeakHour = this.isPeakHour(date);
+    const isNightRide = this.isNightRide(date);
+    const isWeekend = this.isWeekend(date);
+
     const appliedRules = [];
 
-    const weekend = this.isWeekend(date);
-
-    if (isPeakHour) {
-      appliedRules.push("PEAK_HOUR");
-    }
-
-    if (isNightRide) {
-      appliedRules.push("NIGHT_RIDE");
-    }
-
-    if (weekend) {
-      appliedRules.push("WEEKEND");
-    }
-
-    if (isAirportRide) {
-      appliedRules.push("AIRPORT");
-    }
-
-    if (isRaining) {
-      appliedRules.push("RAIN");
-    }
-
-    if (isEventRide) {
-      appliedRules.push("EVENT");
-    }
+    if (isPeakHour) appliedRules.push("PEAK_HOUR");
+    if (isNightRide) appliedRules.push("NIGHT_RIDE");
+    if (isWeekend) appliedRules.push("WEEKEND");
+    if (isAirportRide) appliedRules.push("AIRPORT");
+    if (isRaining) appliedRules.push("RAIN");
+    if (isEventRide) appliedRules.push("EVENT");
 
     return {
       isPeakHour,
       isNightRide,
-      isWeekend: weekend,
+      isWeekend,
       isAirportRide,
       isRaining,
       isEventRide,
       appliedRules,
       evaluatedAt: date.toISOString(),
     };
+  }
+
+  static isPeakHour(date) {
+    const hour = date.getHours();
+
+    return (
+      (hour >= 7 && hour < 10) ||
+      (hour >= 17 && hour < 21)
+    );
+  }
+
+  static isNightRide(date) {
+    const hour = date.getHours();
+
+    return hour >= 22 || hour < 6;
   }
 
   static isWeekend(date) {

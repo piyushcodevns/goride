@@ -6,7 +6,7 @@ const { validatePermission } = require("../../utils/admin/adminRbac.utils");
 const requirePermission = (permission) => {
   validatePermission(permission);
 
-  return async (req, res, next) => {
+  return async function requirePermissionMiddleware(req, res, next) {
     if (!req.admin) {
       return next(new ForbiddenError("Admin authentication required."));
     }

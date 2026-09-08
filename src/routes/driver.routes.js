@@ -12,7 +12,10 @@ const {
 } = require("../controllers/driver.controller");
 
 const { authenticate } = require("../middleware/auth.middleware");
-const { authorize } = require("../middleware/authorize.middleware");
+const adminAuthMiddleware = require("../middleware/admin/adminAuth.middleware");
+const {
+  requirePermission,
+} = require("../middleware/admin/adminRbac.middleware");
 const { validate } = require("../middleware/validate.middleware");
 const upload = require("../middleware/upload.middleware");
 
@@ -20,6 +23,8 @@ const {
   registerDriverSchema,
   approveDriverSchema,
   driverDocumentSchema,
+  updateDriverProfileSchema,
+  updateDriverAvailabilitySchema,
 } = require("../validators/driver.validator");
 /**
  * @swagger
@@ -268,10 +273,20 @@ router.post(
 router.get("/profile", authenticate, getProfile);
 
 // Update Driver Profile
-router.patch("/profile", authenticate, updateProfile);
+router.patch(
+  "/profile",
+  authenticate,
+  validate(updateDriverProfileSchema),
+  updateProfile,
+);
 
 // Update Driver Availability
-router.patch("/availability", authenticate, updateAvailabilityController);
+router.patch(
+  "/availability",
+  authenticate,
+  validate(updateDriverAvailabilitySchema),
+  updateAvailabilityController,
+);
 
 router.post(
   "/documents",
@@ -288,8 +303,8 @@ router.get("/documents", authenticate, getDocuments);
  */
 router.patch(
   "/:driverId/status",
-  authenticate,
-  authorize("ADMIN"),
+  adminAuthMiddleware,
+  requirePermission("driver:manage"),
   validate(approveDriverSchema),
   approveDriverController,
 );

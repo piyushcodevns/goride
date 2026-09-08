@@ -1,6 +1,7 @@
 const express = require("express");
 
 const mapsController = require("../controllers/maps.controller");
+const { mapsLimiter } = require("../middleware/rateLimit.middleware");
 
 const router = express.Router();
 
@@ -51,7 +52,7 @@ const router = express.Router();
  *                       type: string
  *                       example: Lucknow Railway Station
  */
-router.get("/geocode", mapsController.getCoordinates);
+router.get("/geocode", mapsLimiter, mapsController.getCoordinates);
 
 /**
  * @swagger
@@ -99,6 +100,6 @@ router.get("/geocode", mapsController.getCoordinates);
  *                       type: number
  *                       example: 80.924186
  */
-router.get("/reverse-geocode", mapsController.getAddress);
+router.get("/reverse-geocode", mapsLimiter, mapsController.getAddress);
 
 module.exports = router;

@@ -113,7 +113,7 @@ router.get(
 router.get(
   "/export",
   adminAuthMiddleware,
-  requirePermission("user:view"),
+  requirePermission("user:export"),
   exportUsers,
 );
 
@@ -520,7 +520,7 @@ router.patch(
 router.delete(
   "/:id",
   adminAuthMiddleware,
-  requirePermission("user:manage"),
+  requirePermission("user:delete"),
   deleteUserController,
 );
 

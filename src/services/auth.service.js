@@ -46,6 +46,11 @@ const { sendEmail } = require("./email.service");
 
 const {
   registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  changePasswordSchema,
+  verifyEmailSchema,
   passwordSchema,
 } = require("../validators/auth.validator");
 
@@ -109,7 +114,11 @@ const registerUser = async (userData) => {
 
 // ================= LOGIN =================
 
-const loginUser = async ({ email, password }) => {
+const loginUser = async (userData) => {
+  const validatedData = loginSchema.parse(userData);
+
+  const { email, password } = validatedData;
+
   const user = await findUserByEmailWithPassword(email);
 
   if (!user) {
@@ -142,11 +151,16 @@ const loginUser = async ({ email, password }) => {
 
 // ================= FORGOT PASSWORD =================
 
-const forgotPassword = async ({ email }) => {
+const forgotPassword = async (userData) => {
+  const { email } = forgotPasswordSchema.parse(userData);
+
   const user = await findUserByEmail(email);
 
   if (!user) {
-    throw new NotFoundError("No account found with this email.");
+    return {
+      message:
+        "If an account exists for this email, a password reset email has been sent.",
+    };
   }
 
   const resetToken = generateResetToken();
@@ -176,8 +190,8 @@ const forgotPassword = async ({ email }) => {
 
 // ================= RESET PASSWORD =================
 
-const resetPassword = async ({ token, password }) => {
-  passwordSchema.parse(password);
+const resetPassword = async (userData) => {
+  const { token, password } = resetPasswordSchema.parse(userData);
   const hashedToken = hashToken(token);
 
   const user = await findUserByResetToken(hashedToken);
@@ -200,13 +214,9 @@ const resetPassword = async ({ token, password }) => {
 
 // ================= CHANGE PASSWORD =================
 
-const changePassword = async (
-  userId,
-  currentPassword,
-  newPassword,
-  confirmPassword,
-) => {
-  passwordSchema.parse(newPassword);
+const changePassword = async (userId, passwordData) => {
+  const { currentPassword, newPassword, confirmPassword } =
+    changePasswordSchema.parse(passwordData);
   const user = await findUserByIdWithPassword(userId);
 
   if (!user) {
@@ -290,7 +300,9 @@ const sendVerificationEmail = async (userId) => {
 // ================= VERIFY EMAIL =================
 
 const verifyEmail = async (otp) => {
-  const hashedToken = hashToken(otp);
+  const { otp: validatedOtp } = verifyEmailSchema.parse({ otp });
+
+  const hashedToken = hashToken(validatedOtp);
 
   const user = await findUserByEmailVerificationToken(hashedToken);
 

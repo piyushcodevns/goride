@@ -6,7 +6,12 @@ const logger = require("./src/utils/logger");
 // Environment Validation
 // ===============================
 
-const requiredEnv = ["OPENROUTESERVICE_API_KEY"];
+const requiredEnv = [
+  "DATABASE_URL",
+  "JWT_SECRET",
+  "ADMIN_2FA_ENCRYPTION_KEY",
+  "OPENROUTESERVICE_API_KEY",
+];
 
 requiredEnv.forEach((key) => {
   if (!process.env[key]) {

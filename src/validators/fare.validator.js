@@ -1,89 +1,30 @@
 const { z } = require("zod");
 
+const coordinateSchema = z.coerce.number().finite().refine(
+  (value) => value >= -180 && value <= 180,
+  "Coordinate must be within valid range.",
+);
+
+const latitudeSchema = z.coerce.number().finite().refine(
+  (value) => value >= -90 && value <= 90,
+  "Latitude must be between -90 and 90.",
+);
 
 const calculateFareSchema = z.object({
+  body: z
+    .object({
+      city: z.string().trim().min(2).max(100).optional().default("DEFAULT"),
+      vehicleType: z.enum(["BIKE", "AUTO", "CAR", "SUV"]),
+      pickupLatitude: latitudeSchema,
+      pickupLongitude: coordinateSchema,
+      destinationLatitude: latitudeSchema,
+      destinationLongitude: coordinateSchema,
+    })
+    .strict(),
 
-  body: z.object({
-
-    city: z
-      .string()
-      .min(2)
-      .optional()
-      .default("DEFAULT"),
-
-
-    vehicleType: z.enum([
-      "BIKE",
-      "AUTO",
-      "CAR",
-      "SUV",
-    ]),
-
-
-    distanceKm: z
-      .number()
-      .positive("Distance must be greater than zero"),
-
-
-    durationMinutes: z
-      .number()
-      .nonnegative("Duration cannot be negative")
-      .default(0),
-
-
-    waitingMinutes: z
-      .number()
-      .nonnegative("Waiting time cannot be negative")
-      .default(0),
-
-
-    tollCharge: z
-      .number()
-      .nonnegative("Toll charge cannot be negative")
-      .default(0),
-
-
-    isAirportRide: z
-      .boolean()
-      .default(false),
-
-
-    isPeakHour: z
-      .boolean()
-      .default(false),
-
-
-    isNightRide: z
-      .boolean()
-      .default(false),
-
-
-    isRaining: z
-      .boolean()
-      .default(false),
-
-
-    isEventRide: z
-      .boolean()
-      .default(false),
-
-
-    discountAmount: z
-      .number()
-      .nonnegative("Discount cannot be negative")
-      .default(0),
-
-  }),
-
-
-  params: z.object({}),
-
-
-  query: z.object({}),
-
-
+  params: z.object({}).strict(),
+  query: z.object({}).strict(),
 });
-
 
 module.exports = {
   calculateFareSchema,

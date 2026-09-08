@@ -45,6 +45,9 @@
   PRICING_UPDATE: "pricing:update",
   PRICING_DELETE: "pricing:delete",
 
+  MAP_VIEW: "map:view",
+  MAP_MANAGE: "map:manage",
+
   REPORT_VIEW: "report:view",
   REPORTS_VIEW: "reports:view",
   REPORT_EXPORT: "reports:export",

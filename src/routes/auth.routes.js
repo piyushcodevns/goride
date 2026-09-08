@@ -19,6 +19,10 @@ const {
   loginLimiter,
   registerLimiter,
   forgotPasswordLimiter,
+  resetPasswordLimiter,
+  verifyEmailLimiter,
+  changePasswordLimiter,
+  sendVerificationEmailLimiter,
 } = require("../middleware/rateLimit.middleware");
 
 /**
@@ -286,10 +290,6 @@ const {
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 
-// ==========================
-// Public Routes
-// ==========================
-
 router.post("/register", registerLimiter, register);
 
 router.post("/login", loginLimiter, login);
@@ -300,21 +300,31 @@ router.post(
   forgotPasswordController,
 );
 
-router.post("/reset-password", forgotPasswordLimiter, resetPasswordController);
+router.post(
+  "/reset-password",
+  resetPasswordLimiter,
+  resetPasswordController,
+);
 
-router.post("/verify-email", verifyEmailController);
-
-// ==========================
-// Protected Routes
-// ==========================
+router.post(
+  "/verify-email",
+  verifyEmailLimiter,
+  verifyEmailController,
+);
 
 router.get("/profile", authenticate, profile);
 
-router.post("/change-password", authenticate, changePasswordController);
+router.post(
+  "/change-password",
+  authenticate,
+  changePasswordLimiter,
+  changePasswordController,
+);
 
 router.post(
   "/send-verification-email",
   authenticate,
+  sendVerificationEmailLimiter,
   sendVerificationEmailController,
 );
 

@@ -5,22 +5,23 @@ const router = express.Router();
 const { calculateRideFare } = require("../controllers/fare.controller");
 
 const { validate } = require("../middleware/validate.middleware");
+const { fareEstimateLimiter } = require("../middleware/rateLimit.middleware");
 
 const { calculateFareSchema } = require("../validators/fare.validator");
 
 /**
  * @swagger
- * /api/v1/fare/calculate:
+ * /api/fare/calculate:
  *   post:
  *     tags:
  *       - Fare
  *     operationId: calculateFare
- *     summary: Calculate enterprise ride fare
+ *     summary: Estimate a route fare using server-derived route details
  *     description: >
- *       Calculates ride fare using the enterprise pricing engine.
- *       The calculation includes base fare, distance fare, duration fare,
- *       waiting charges, toll charges, airport charges, surge pricing,
- *       GST, discounts and minimum fare protection.
+ *       Calculates fare for a customer route by resolving pickup and destination
+ *       coordinates on the server using the existing maps routing service. Client
+ *       input cannot control authoritative distance, duration, toll, airport, or
+ *       discount values.
  *     requestBody:
  *       required: true
  *       content:
@@ -29,7 +30,10 @@ const { calculateFareSchema } = require("../validators/fare.validator");
  *             type: object
  *             required:
  *               - vehicleType
- *               - distanceKm
+ *               - pickupLatitude
+ *               - pickupLongitude
+ *               - destinationLatitude
+ *               - destinationLongitude
  *             properties:
  *               city:
  *                 type: string
@@ -42,86 +46,33 @@ const { calculateFareSchema } = require("../validators/fare.validator");
  *                   - CAR
  *                   - SUV
  *                 example: CAR
- *               distanceKm:
+ *               pickupLatitude:
  *                 type: number
- *                 example: 12.5
- *               durationMinutes:
+ *                 example: 26.8467
+ *               pickupLongitude:
  *                 type: number
- *                 example: 25
- *               waitingMinutes:
+ *                 example: 80.9462
+ *               destinationLatitude:
  *                 type: number
- *                 example: 3
- *               tollCharge:
+ *                 example: 26.9124
+ *               destinationLongitude:
  *                 type: number
- *                 example: 50
- *               discountAmount:
- *                 type: number
- *                 example: 100
- *               isAirportRide:
- *                 type: boolean
- *                 example: false
- *               isPeakHour:
- *                 type: boolean
- *                 example: true
- *               isNightRide:
- *                 type: boolean
- *                 example: false
- *               isRaining:
- *                 type: boolean
- *                 example: false
- *               isEventRide:
- *                 type: boolean
- *                 example: false
+ *                 example: 80.9463
  *     responses:
  *       200:
- *         description: Fare calculated successfully.
- *         content:
- *           application/json:
- *             example:
- *               success: true
- *               message: Fare calculated successfully
- *               data:
- *                 city: DEFAULT
- *                 vehicleType: CAR
- *                 estimatedFare: 380
- *                 baseFare: 80
- *                 distanceFare: 150
- *                 durationFare: 60
- *                 platformFee: 15
- *                 bookingFee: 10
- *                 waitingCharge: 15
- *                 airportCharge: 0
- *                 tollCharge: 50
- *                 surgeMultiplier: 1
- *                 surgeAmount: 0
- *                 gstAmount: 19
- *                 discountAmount: 100
- *                 finalFare: 299
- *
+ *         description: Fare estimated successfully.
  *       400:
- *         description: Validation failed or invalid fare calculation request.
- *         content:
- *           application/json:
- *             example:
- *               success: false
- *               message: Validation failed.
- *
+ *         description: Validation failed or route inputs are invalid.
  *       404:
  *         description: Pricing configuration not found.
- *         content:
- *           application/json:
- *             example:
- *               success: false
- *               message: Pricing configuration not found.
- *
  *       500:
  *         description: Internal server error.
- *         content:
- *           application/json:
- *             example:
- *               success: false
- *               message: Internal server error.
  */
-router.post("/calculate", validate(calculateFareSchema), calculateRideFare);
+router.post(
+  "/calculate",
+  fareEstimateLimiter,
+  validate(calculateFareSchema),
+  calculateRideFare,
+);
 
 module.exports = router;

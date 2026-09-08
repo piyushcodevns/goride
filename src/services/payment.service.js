@@ -79,8 +79,7 @@ const getPaymentByRide = async (rideId, currentUser) => {
     throw new NotFoundError("Payment not found.");
   }
 
-  // Admin can access every payment
-  if (currentUser.role !== "ADMIN" && payment.userId !== currentUser.id) {
+  if (payment.userId !== currentUser.id) {
     throw new ForbiddenError("You are not authorized to access this payment.");
   }
 

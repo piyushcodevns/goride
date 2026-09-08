@@ -3,8 +3,14 @@ const express = require("express");
 const router = express.Router();
 
 const { authenticate } = require("../middleware/auth.middleware");
-const { authorize } = require("../middleware/authorize.middleware");
+
 const { validate } = require("../middleware/validate.middleware");
+
+const adminAuthMiddleware = require("../middleware/admin/adminAuth.middleware");
+
+const {
+  requirePermission,
+} = require("../middleware/admin/adminRbac.middleware");
 
 const {
   createPayment,
@@ -62,7 +68,7 @@ router.post(
   "/create",
   authenticate,
   validate(createPaymentSchema),
-  createPayment
+  createPayment,
 );
 
 /**
@@ -84,11 +90,7 @@ router.post(
  *       401:
  *         description: Unauthorized.
  */
-router.get(
-  "/history",
-  authenticate,
-  getMyPayments
-);
+router.get("/history", authenticate, getMyPayments);
 
 /**
  * @swagger
@@ -120,11 +122,7 @@ router.get(
  *       404:
  *         description: Payment not found.
  */
-router.get(
-  "/ride/:rideId",
-  authenticate,
-  getPaymentByRide
-);
+router.get("/ride/:rideId", authenticate, getPaymentByRide);
 
 /**
  * @swagger
@@ -181,10 +179,10 @@ router.get(
  */
 router.patch(
   "/:id/status",
-  authenticate,
-  authorize("ADMIN"),
+  adminAuthMiddleware,
+  requirePermission("payment:manage"),
   validate(updatePaymentStatusSchema),
-  updatePaymentStatus
+  updatePaymentStatus,
 );
 
 module.exports = router;

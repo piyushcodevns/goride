@@ -11,6 +11,7 @@ const errorMiddleware = require("./middleware/error.middleware");
 const { NotFoundError } = require("./utils/AppError");
 
 const app = express();
+app.set("trust proxy", 1);
 const adminMonitoringRoutes = require("./routes/admin/adminMonitoring.routes");
 const adminBackupRoutes = require("./routes/admin/adminBackup.routes");
 const adminRbacRoutes = require("./routes/admin/adminRbac.routes");
@@ -52,7 +53,14 @@ const { apiLimiter } = require("./middleware/rateLimit.middleware");
    Security & Middleware
 =========================== */
 
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    hsts: process.env.NODE_ENV === "production",
+    noSniff: true,
+    referrerPolicy: { policy: "no-referrer" },
+  }),
+);
 
 app.use(
   cors({
@@ -69,6 +77,8 @@ app.use(
       return callback(new Error("Origin is not allowed by CORS."));
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 
@@ -83,7 +93,7 @@ app.use((req, res, next) => {
     return next();
   }
 
-  express.json({ limit: "10mb" })(req, res, (err) => {
+  express.json({ limit: "1mb" })(req, res, (err) => {
     if (err && err.type === "entity.parse.failed") {
       return res.status(400).json({
         success: false,
@@ -95,7 +105,7 @@ app.use((req, res, next) => {
   });
 });
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
 app.use(morgan("dev"));
 
@@ -103,7 +113,9 @@ app.use(morgan("dev"));
    Swagger Docs
 =========================== */
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+if (process.env.NODE_ENV !== "production" || process.env.SWAGGER_ENABLED === "true") {
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
 
 /* ===========================
    Rate Limiter

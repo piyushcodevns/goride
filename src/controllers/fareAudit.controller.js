@@ -4,7 +4,7 @@ const getFareAudit = async (req, res, next) => {
   try {
     const { rideId } = req.params;
 
-    const fareAudit = await getRideFareAudit(rideId);
+    const fareAudit = await getRideFareAudit(rideId, req.user.id);
 
     res.status(200).json({
       success: true,

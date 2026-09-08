@@ -10,13 +10,53 @@ const createRide = async (data, db = prisma) => {
   });
 };
 
-/** 
+/**
  * Get ride by ID
  */
 const getRideById = async (rideId, db = prisma) => {
   return db.ride.findUnique({
     where: {
       id: rideId,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          profileImage: true,
+        },
+      },
+      driver: {
+        include: {
+          vehicle: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phone: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+    },
+  });
+};
+
+/**
+ * Get ride by ID for its owner
+ */
+const getRideByIdForUser = async (rideId, userId) => {
+  return prisma.ride.findFirst({
+    where: {
+      id: rideId,
+      OR: [
+        { userId },
+        { driver: { userId } },
+      ],
     },
     include: {
       user: {
@@ -310,6 +350,7 @@ const getRejectedRideIdsByDriver = async (driverId) => {
 module.exports = {
   createRide,
   getRideById,
+  getRideByIdForUser,
   getUserRides,
   assignDriver,
   updateRideStatus,
