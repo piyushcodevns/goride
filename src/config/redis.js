@@ -2,7 +2,16 @@ const Redis = require('ioredis');
 const logger = require('../utils/logger');
 
 const isQueueEnabled = () => {
-  return process.env.NODE_ENV !== 'test' && process.env.NOTIFICATION_QUEUE_ENABLED !== 'false';
+  if (process.env.NODE_ENV === 'test') {
+    return false;
+  }
+  if (process.env.QUEUE_ENABLED === 'false') {
+    return false;
+  }
+  if (process.env.NOTIFICATION_QUEUE_ENABLED === 'false') {
+    return false;
+  }
+  return true;
 };
 
 const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';

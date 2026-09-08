@@ -1,22 +1,30 @@
 const os = require("os");
 const prisma = require("../../config/prisma");
 const { redisConnection } = require("../../config/redis");
-const { getWorkerStatus } = require("../../workers/notification.worker");
+const { getAllWorkerStatus } = require("../../workers");
 const {
   notificationQueue,
   retryQueue,
   scheduledQueue,
   deadLetterQueue,
 } = require("../../queues/notification.queue");
+const { getScheduledRideQueue } = require("../../queues/scheduledRide.queue");
+const { getCleanupQueue } = require("../../queues/cleanup.queue");
+const { getDatasetQueue } = require("../../queues/dataset.queue");
+const { getBackupQueue } = require("../../queues/backup.queue");
 
 const QUEUES = [
   ["notification", notificationQueue],
   ["notification-retry", retryQueue],
   ["notification-scheduled", scheduledQueue],
   ["notification-dlq", deadLetterQueue],
+  ["scheduled-rides", getScheduledRideQueue],
+  ["cleanup", getCleanupQueue],
+  ["dataset", getDatasetQueue],
+  ["backup", getBackupQueue],
 ];
 
-const getWorkerRuntimeStatus = () => getWorkerStatus();
+const getWorkerRuntimeStatus = () => getAllWorkerStatus();
 
 const getServerStatus = () => ({
   status: "UP",
@@ -88,6 +96,14 @@ const getQueueStatus = async () => {
   for (const [name, getter] of QUEUES) {
     try {
       const queue = getter();
+      if (!queue) {
+        queues[name] = {
+          status: "DISABLED",
+          counts: null,
+        };
+        continue;
+      }
+
       const counts = await queue.getJobCounts(
         "waiting",
         "active",
@@ -117,7 +133,13 @@ const getFailedJobs = async () => {
 
   for (const [name, getter] of QUEUES) {
     try {
-      const jobs = await getter().getFailed(0, 49);
+      const queue = getter();
+      if (!queue) {
+        failedJobs[name] = [];
+        continue;
+      }
+
+      const jobs = await queue.getFailed(0, 49);
 
       failedJobs[name] = jobs.map((job) => ({
         id: job.id,

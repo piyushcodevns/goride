@@ -357,6 +357,45 @@ const getRejectedRideIdsByDriver = async (driverId) => {
   return rejected.map((item) => item.rideId);
 };
 
+/**
+ * Find scheduled rides that are due for dispatch within lead time window (bounded).
+ */
+const findDueScheduledRides = async (leadTimeMinutes = 15, limit = 50) => {
+  const targetTime = new Date(Date.now() + leadTimeMinutes * 60 * 1000);
+  const boundedLimit = Math.min(Number(limit) || 50, 100);
+
+  return prisma.ride.findMany({
+    where: {
+      status: "REQUESTED",
+      isScheduled: true,
+      scheduledFor: {
+        lte: targetTime,
+      },
+    },
+    take: boundedLimit,
+    orderBy: {
+      scheduledFor: "asc",
+    },
+  });
+};
+
+/**
+ * Atomically activate a scheduled ride so it becomes available to drivers.
+ * Idempotent: only updates if isScheduled: true and status: 'REQUESTED'.
+ */
+const activateScheduledRide = async (rideId) => {
+  return prisma.ride.updateMany({
+    where: {
+      id: rideId,
+      status: "REQUESTED",
+      isScheduled: true,
+    },
+    data: {
+      isScheduled: false,
+    },
+  });
+};
+
 module.exports = {
   createRide,
   getRideById,
@@ -374,4 +413,6 @@ module.exports = {
   createRideReject,
   hasDriverRejectedRide,
   getRejectedRideIdsByDriver,
+  findDueScheduledRides,
+  activateScheduledRide,
 };

@@ -1,5 +1,6 @@
 const rideRepository = require("../repositories/ride.repository");
 const prisma = require("../config/prisma");
+const logger = require("../utils/logger");
 const { createFareAudit } = require("../repositories/fareAudit.repository");
 
 const {
@@ -161,7 +162,7 @@ const createRide = async (rideData) => {
     rideStartTime.getTime() + routeDetails.duration * 60 * 1000,
   );
 
-  return await prisma.$transaction(async (tx) => {
+  const createdRide = await prisma.$transaction(async (tx) => {
     const ride = await rideRepository.createRide(
       {
         userId,
@@ -305,6 +306,23 @@ const createRide = async (rideData) => {
       finalFare: Number(ride.finalFare),
     };
   });
+
+  if (isScheduled && scheduledFor) {
+    try {
+      const { addScheduledRideActivationJob } = require("../queues/scheduledRide.queue");
+      await addScheduledRideActivationJob({
+        rideId: createdRide.id,
+        scheduledFor,
+      });
+    } catch (queueErr) {
+      logger.warn("Scheduled ride activation job skipped or failed.", {
+        rideId: createdRide.id,
+        error: queueErr.message,
+      });
+    }
+  }
+
+  return createdRide;
 };
 
 /**
@@ -476,6 +494,19 @@ const updateRideStatus = async (rideId, driverId, status) => {
           status: "COMPLETED",
         }),
       );
+
+      try {
+        const { addRideDatasetJob } = require("../queues/dataset.queue");
+        await addRideDatasetJob({
+          rideId: ride.id,
+          eventType: "RIDE_COMPLETED",
+        });
+      } catch (datasetErr) {
+        logger.warn("Ride dataset extraction job skipped or failed.", {
+          rideId: ride.id,
+          error: datasetErr.message,
+        });
+      }
     }
 
     return updatedRide;
@@ -573,6 +604,63 @@ const getDriverCurrentRide = async (driverId) => {
   return await rideRepository.getCurrentRideByDriver(driverId);
 };
 
+/**
+ * Activate a scheduled ride (called by worker/processor).
+ * Idempotent: checks return count; returns early if already activated.
+ */
+const activateScheduledRide = async (rideId) => {
+  if (!rideId) {
+    throw new BadRequestError("rideId is required to activate scheduled ride.");
+  }
+
+  const updateResult = await rideRepository.activateScheduledRide(rideId);
+
+  if (updateResult.count > 0) {
+    const ride = await rideRepository.getRideById(rideId);
+    if (ride) {
+      await notificationService.dispatchNotification({
+        userId: ride.userId,
+        title: "Scheduled Ride Activated",
+        message: `Your scheduled ride from ${ride.pickup} is now active and searching for drivers.`,
+        type: "RIDE",
+        channel: "IN_APP",
+        metadata: { rideId: ride.id, action: "SCHEDULED_RIDE_ACTIVATED" },
+      });
+    }
+
+    logger.info("Scheduled ride activated successfully.", { rideId });
+    return { activated: true, rideId };
+  }
+
+  logger.info("Scheduled ride activation skipped (already active, assigned, or cancelled).", { rideId });
+  return { activated: false, reason: "Already active or not found", rideId };
+};
+
+/**
+ * Process all due scheduled rides (called by periodic sweep scheduler).
+ */
+const processDueScheduledRides = async (leadTimeMinutes = 15) => {
+  const dueRides = await rideRepository.findDueScheduledRides(leadTimeMinutes);
+  let activatedCount = 0;
+
+  for (const ride of dueRides) {
+    const result = await activateScheduledRide(ride.id);
+    if (result.activated) {
+      activatedCount += 1;
+    }
+  }
+
+  logger.info("Processed due scheduled rides.", {
+    totalDue: dueRides.length,
+    activatedCount,
+  });
+
+  return {
+    totalChecked: dueRides.length,
+    activatedCount,
+  };
+};
+
 module.exports = {
   createRide,
   getRideById,
@@ -584,4 +672,6 @@ module.exports = {
   rejectRide,
   cancelRide,
   getDriverCurrentRide,
+  activateScheduledRide,
+  processDueScheduledRides,
 };

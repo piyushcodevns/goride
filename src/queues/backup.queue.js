@@ -1,44 +1,89 @@
 const { Queue } = require("bullmq");
-const { redisConnection } = require("../config/redis");
+const { redisConnection, isQueueEnabled, connectRedisIfNeeded } = require("../config/redis");
+const logger = require("../utils/logger");
 
 const BACKUP_QUEUE_NAME = "backup";
 
-const backupQueue = new Queue(BACKUP_QUEUE_NAME, {
-  connection: redisConnection,
-});
+let backupQueueInstance = null;
+
+const getBackupQueue = () => {
+  if (!isQueueEnabled()) {
+    return null;
+  }
+  if (!backupQueueInstance) {
+    backupQueueInstance = new Queue(BACKUP_QUEUE_NAME, {
+      connection: redisConnection,
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: {
+          type: "exponential",
+          delay: 10000,
+        },
+        removeOnComplete: {
+          age: 86400,
+          count: 50,
+        },
+        removeOnFail: {
+          age: 604800,
+          count: 100,
+        },
+      },
+    });
+  }
+  return backupQueueInstance;
+};
 
 const ensureBackupSchedule = async () => {
-  if (process.env.BACKUP_SCHEDULE_ENABLED !== "true") {
+  if (process.env.BACKUP_SCHEDULE_ENABLED !== "true" || !isQueueEnabled()) {
     return false;
   }
 
-  await backupQueue.upsertJobScheduler(
-    "daily-backup",
-    {
-      pattern: process.env.BACKUP_CRON || "0 2 * * *",
-    },
-    {
-      name: "scheduled-backup",
-      data: {
-        type: "SCHEDULED",
-      },
-      opts: {
-        removeOnComplete: 20,
-        removeOnFail: 50,
-      },
-    },
-  );
+  try {
+    await connectRedisIfNeeded();
+    const queue = getBackupQueue();
+    if (!queue) {
+      return false;
+    }
 
-  return true;
+    await queue.upsertJobScheduler(
+      "daily-backup",
+      {
+        pattern: process.env.BACKUP_CRON || "0 2 * * *",
+      },
+      {
+        name: "scheduled-backup",
+        data: {
+          type: "SCHEDULED",
+        },
+        opts: {
+          removeOnComplete: 20,
+          removeOnFail: 50,
+        },
+      },
+    );
+
+    logger.info("Backup schedule registered successfully.");
+    return true;
+  } catch (error) {
+    logger.error("Failed to register backup schedule.", { error: error.message });
+    return false;
+  }
 };
 
 const closeBackupQueue = async () => {
-  await backupQueue.close();
+  if (backupQueueInstance) {
+    await backupQueueInstance.close();
+    backupQueueInstance = null;
+    logger.info("Backup queue closed.");
+  }
 };
 
 module.exports = {
   BACKUP_QUEUE_NAME,
-  backupQueue,
+  get backupQueue() {
+    return getBackupQueue();
+  },
+  getBackupQueue,
   ensureBackupSchedule,
   closeBackupQueue,
 };

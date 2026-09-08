@@ -1,55 +1,64 @@
 const { Worker } = require("bullmq");
-const { redisConnection } = require("../config/redis");
-const {
-  BACKUP_QUEUE_NAME,
-} = require("../queues/backup.queue");
-const backupService = require("../services/admin/adminBackup.service");
+const { redisConnection, isQueueEnabled } = require("../config/redis");
+const { BACKUP_QUEUE_NAME } = require("../queues/backup.queue");
+const { processBackupJob } = require("../processors/backup.processor");
 const logger = require("../utils/logger");
 
-const backupWorker = new Worker(
-  BACKUP_QUEUE_NAME,
-  async (job) => {
-    if (job.name !== "scheduled-backup") {
-      throw new Error("Unknown backup job.");
-    }
+let backupWorkerInstance = null;
 
-    const backup = await backupService.createBackup({
-      adminId: null,
-      type: "SCHEDULED",
+const createBackupWorker = () => {
+  if (!isQueueEnabled()) {
+    logger.info("Backup worker skipped because queueing is disabled.");
+    return null;
+  }
+
+  if (backupWorkerInstance) {
+    return backupWorkerInstance;
+  }
+
+  const worker = new Worker(
+    BACKUP_QUEUE_NAME,
+    async (job) => {
+      return processBackupJob(job);
+    },
+    {
+      connection: redisConnection,
+      concurrency: 1,
+    },
+  );
+
+  worker.on("completed", (job) => {
+    logger.info("Scheduled backup job completed.", {
+      jobId: job.id,
     });
-
-    await backupService.cleanupExpiredBackups();
-
-    return {
-      id: backup.id,
-      filename: backup.filename,
-      status: backup.status,
-    };
-  },
-  {
-    connection: redisConnection,
-    concurrency: 1,
-  },
-);
-
-backupWorker.on("completed", (job) => {
-  logger.info("Scheduled backup job completed.", {
-    jobId: job.id,
   });
-});
 
-backupWorker.on("failed", (job, error) => {
-  logger.error("Scheduled backup job failed.", {
-    jobId: job?.id,
-    error: String(error?.message || error).slice(0, 500),
+  worker.on("failed", (job, error) => {
+    logger.error("Scheduled backup job failed.", {
+      jobId: job?.id,
+      error: String(error?.message || error).slice(0, 500),
+    });
   });
-});
+
+  backupWorkerInstance = worker;
+  return worker;
+};
+
+const getBackupWorker = () => backupWorkerInstance;
 
 const closeBackupWorker = async () => {
-  await backupWorker.close();
+  if (backupWorkerInstance) {
+    await backupWorkerInstance.close();
+    backupWorkerInstance = null;
+    logger.info("Backup worker closed.");
+  }
 };
 
 module.exports = {
-  backupWorker,
+  get backupWorker() {
+    return getBackupWorker();
+  },
+  createBackupWorker,
+  getBackupWorker,
   closeBackupWorker,
 };

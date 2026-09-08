@@ -4,6 +4,7 @@ const notificationRepository = require("../repositories/notification.repository"
 const {
   deliverNotification,
 } = require("../services/notification/delivery.service");
+const { processNotificationJob } = require("../processors/notification.processor");
 
 const logger = require("../utils/logger");
 
@@ -179,67 +180,7 @@ const createWorker = (queueName = "notification") => {
     queueName,
 
     async (job) => {
-      const { notificationId } = job.data || {};
-
-      if (!notificationId) {
-        throw new Error("Notification ID is required for processing.");
-      }
-
-      const notification =
-        await notificationRepository.findNotificationById(notificationId);
-
-      if (!notification) {
-        throw new Error(`Notification ${notificationId} not found.`);
-      }
-
-      /**
-       * Mark notification as processing.
-       */
-      await notificationRepository.updateNotificationStatus(
-        notification.id,
-        NOTIFICATION_STATUS.PROCESSING,
-      );
-
-      logger.info("Notification job started.", {
-        notificationId: notification.id,
-        queueName,
-        jobId: job.id,
-        attempt: (job.attemptsMade || 0) + 1,
-      });
-
-      /**
-       * Actual delivery.
-       *
-       * Any delivery error is intentionally thrown so
-       * BullMQ can perform its automatic retry.
-       */
-      await deliverNotification(notification);
-
-      /**
-       * Delivery succeeded.
-       */
-      await notificationRepository.updateNotificationStatus(
-        notification.id,
-        NOTIFICATION_STATUS.SENT,
-      );
-      const campaignRecipient = await findCampaignRecipientByNotificationId(notification.id);
-      if (campaignRecipient) {
-        await updateCampaignRecipient(campaignRecipient.id, {
-          status: "SENT",
-          errorMessage: null,
-        });
-      }
-
-      logger.info("Notification job completed.", {
-        notificationId: notification.id,
-        queueName,
-        jobId: job.id,
-      });
-
-      return {
-        success: true,
-        notificationId: notification.id,
-      };
+      return processNotificationJob(job);
     },
 
     {
@@ -327,10 +268,16 @@ const createWorker = (queueName = "notification") => {
 };
 
 const getWorkerStatus = () => {
+  if (workers.size === 0) {
+    return [
+      { queueName: "notification", status: "STOPPED", running: false },
+      { queueName: "notification-scheduled", status: "STOPPED", running: false },
+    ];
+  }
   return Array.from(workers.entries()).map(([queueName, worker]) => ({
     queueName,
-    status: worker.isRunning() ? "RUNNING" : "STOPPED",
-    running: worker.isRunning(),
+    status: worker && worker.isRunning() ? "RUNNING" : "STOPPED",
+    running: Boolean(worker && worker.isRunning()),
   }));
 };
 

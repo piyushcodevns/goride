@@ -35,20 +35,22 @@ process.on("uncaughtException", (error) => {
 const app = require("./src/app");
 const prisma = require("./src/config/prisma");
 const { closeRedisConnection } = require("./src/config/redis");
-const { ensureBackupSchedule } = require("./src/queues/backup.queue");
-const { createWorker } = require("./src/workers/notification.worker");
+const { startAllWorkers, stopAllWorkers } = require("./src/workers");
+const { startSchedulers, stopSchedulers } = require("./src/schedulers");
+const { closeAllQueues } = require("./src/queues");
 
 const PORT = process.env.PORT || 5000;
 
-const notificationWorkers = [];
-
-try {
-  notificationWorkers.push(createWorker("notification"));
-  notificationWorkers.push(createWorker("notification-scheduled"));
-} catch (error) {
-  logger.warn("Notification workers could not be started.", {
-    error: error.message,
-  });
+// Start inline workers and schedulers (unless running as dedicated worker process)
+if (process.env.WORKER_STANDALONE !== "true") {
+  try {
+    startAllWorkers();
+    startSchedulers();
+  } catch (error) {
+    logger.warn("Background workers or schedulers could not be started.", {
+      error: error.message,
+    });
+  }
 }
 
 // ===============================
@@ -99,16 +101,19 @@ const gracefulShutdown = async (signal) => {
       });
     });
 
-    // 2. Close notification queue workers
-    if (notificationWorkers.length > 0) {
-      await Promise.allSettled(notificationWorkers.map((worker) => worker.close()));
-      logger.info("Notification workers closed.");
-    }
+    // 2. Stop schedulers
+    await stopSchedulers();
 
-    // 3. Disconnect Redis
+    // 3. Close background workers
+    await stopAllWorkers();
+
+    // 4. Close all background queues
+    await closeAllQueues();
+
+    // 5. Disconnect Redis
     await closeRedisConnection();
 
-    // 4. Disconnect Prisma connection pool
+    // 6. Disconnect Prisma connection pool
     await prisma.$disconnect();
     logger.info("Prisma database pool disconnected.");
 
