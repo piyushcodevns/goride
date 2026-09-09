@@ -9,13 +9,13 @@
     <meta name="keywords" content="Driver partner, Driver signup, Earn money Varanasi, Go Ride driver">
     <meta name="author" content="Go Ride">
     <meta name="theme-color" content="#2563EB">
-    <link rel="canonical" href="https://goride.com/driver-signup.html">
+    <link rel="canonical" href="https://goride-frontend-c7p8.onrender.com/driver-signup.html">
 
     <!-- OpenGraph Tags -->
     <meta property="og:title" content="Become a Driver Partner | Go Ride">
     <meta property="og:description" content="Join Go Ride as a driver partner. Earn on your own terms, choose your hours, and make money in Varanasi.">
-    <meta property="og:image" content="https://goride.com/assets/images/og-cover.jpg">
-    <meta property="og:url" content="https://goride.com/driver-signup.html">
+    <meta property="og:image" content="https://goride-frontend-c7p8.onrender.com/assets/svg/logo.svg">
+    <meta property="og:url" content="https://goride-frontend-c7p8.onrender.com/driver-signup.html">
     <meta property="og:type" content="website">
 
     <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
@@ -75,19 +75,46 @@
     <main class="auth-section">
         <div class="container">
             <div class="auth-wrapper reveal">
-                <div class="auth-card" style="max-width: 560px;">
+                <div class="auth-card" style="max-width: 600px;">
                     <div class="auth-header">
                         <img src="assets/svg/logo.svg" alt="Go Ride logo" class="auth-logo" loading="lazy" decoding="async">
                         <h2>Drive &amp; Earn with Go Ride</h2>
-                        <p>Partner with Go Ride in Varanasi. Choose your hours and earn with every trip.</p>
+                        <p>Partner with Go Ride in Varanasi. Choose your hours, earn with every trip, and enjoy dedicated fleet support.</p>
+                    </div>
+
+                    <!-- Driver Status Banner (if already registered) -->
+                    <div id="driver-status-card" style="display: none; padding: 1.5rem; border-radius: var(--radius-md); background: var(--color-primary-light); border: 1px solid rgba(37,99,235,0.2); margin-bottom: 1.5rem;">
+                        <h3 style="margin-top: 0; color: var(--color-primary); font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🚗</span> Driver Partner Account Active
+                        </h3>
+                        <p id="driver-status-msg" style="margin: 0.5rem 0 1rem; font-size: 0.92rem; color: var(--color-text-primary);"></p>
+                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                            <a href="profile.html" class="primary-btn" style="padding: 0.5rem 1.25rem; font-size: 0.88rem;">Go to Profile</a>
+                            <a href="booking.html" class="btn-secondary" style="padding: 0.5rem 1.25rem; font-size: 0.88rem;">Customer Portal</a>
+                        </div>
+                    </div>
+
+                    <!-- Onboarding Steps & Privacy Commitment (Visible to everyone) -->
+                    <div class="driver-onboarding-guide" style="margin-bottom: 1.75rem; padding: 1.25rem; background: var(--color-surface-muted, #F8FAFC); border: 1px solid var(--color-border, #E2E8F0); border-radius: var(--radius-md);">
+                        <h3 style="font-size: 1.05rem; margin-top: 0; margin-bottom: 0.75rem; color: var(--color-text-primary);">How Driver Onboarding Works</h3>
+                        <ol style="padding-left: 1.25rem; margin: 0 0 1rem; color: var(--color-text-secondary); font-size: 0.9rem; line-height: 1.6;">
+                            <li><strong>Create Your Account:</strong> Sign in with your registered Go Ride customer account.</li>
+                            <li><strong>Review Requirements:</strong> Hold an active commercial or private transport vehicle license.</li>
+                            <li><strong>In-Person Fleet Verification:</strong> Document verification (Driving License, Vehicle RC, and Identity) is completed in-person with Go Ride fleet officers to guarantee data safety and identity privacy.</li>
+                        </ol>
+
+                        <div style="display: flex; gap: 0.6rem; align-items: flex-start; padding: 0.75rem; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: var(--radius-sm); font-size: 0.82rem; color: #1E40AF; line-height: 1.5;">
+                            <span style="font-size: 1rem;">🛡️</span>
+                            <span><strong>Privacy Protection Notice:</strong> Go Ride never collects national identity numbers (such as Aadhaar or raw license numbers) on public web forms. Official KYC verification is conducted securely during direct onboarding.</span>
+                        </div>
                     </div>
 
                     <!-- Auth Required State -->
-                    <div id="driver-auth-gate" style="display: none; text-align: center; padding: 1.5rem 0;">
-                        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🔒</div>
-                        <h3 style="margin-bottom: 0.5rem;">Sign In Required</h3>
-                        <p style="color: var(--color-text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
-                            You need an active Go Ride customer account to apply as a driver partner.
+                    <div id="driver-auth-gate" style="display: none; text-align: center; padding: 1rem 0 1.5rem;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔒</div>
+                        <h3 style="margin-bottom: 0.5rem;">Sign In to Register Interest</h3>
+                        <p style="color: var(--color-text-secondary); margin-bottom: 1.25rem; font-size: 0.92rem;">
+                            Please sign in to verify your contact information and submit your driver partner registration.
                         </p>
                         <a href="login.html?returnUrl=driver-signup.html" class="primary-btn" style="display: inline-block; padding: 0.75rem 2rem;">
                             Sign In to Continue
@@ -97,76 +124,37 @@
                         </p>
                     </div>
 
-                    <!-- Driver Status Banner (if already registered) -->
-                    <div id="driver-status-card" style="display: none; padding: 1.5rem; border-radius: var(--radius-md); background: var(--color-primary-light); border: 1px solid rgba(37,99,235,0.2); margin-bottom: 1.5rem;">
-                        <h3 style="margin-top: 0; color: var(--color-primary); font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span>🚗</span> Driver Profile Active
-                        </h3>
-                        <p id="driver-status-msg" style="margin: 0.5rem 0 1rem; font-size: 0.92rem; color: var(--color-text-primary);"></p>
-                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                            <a href="profile.html" class="primary-btn" style="padding: 0.5rem 1.25rem; font-size: 0.88rem;">Go to Profile</a>
-                            <a href="booking.html" class="nav-btn nav-btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.88rem;">Customer Portal</a>
+                    <!-- Driver Partner Interest / Readiness Form (Authenticated Users) -->
+                    <div id="driver-interest-container" style="display: none;">
+                        <!-- Current User Info Badge -->
+                        <div id="driver-applicant-info" style="padding: 0.75rem 1rem; background: var(--color-gray-100, #F3F4F6); border-radius: var(--radius-md); margin-bottom: 1.25rem; font-size: 0.88rem; color: var(--color-text-secondary);">
+                            Applicant Account: <strong id="applicant-name" style="color: var(--color-text-primary);"></strong>
+                            <span id="applicant-email" style="display: block; font-size: 0.82rem; margin-top: 0.2rem;"></span>
+                        </div>
+
+                        <div style="padding: 1.25rem; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+                            <h4 style="margin: 0 0 0.5rem; color: #166534; font-size: 0.98rem; display: flex; align-items: center; gap: 0.4rem;">
+                                <span>✅</span> Partner Verification Office
+                            </h4>
+                            <p style="margin: 0 0 0.75rem; font-size: 0.88rem; color: #15803D; line-height: 1.5;">
+                                Driver registration is processed at our Varanasi operations hub. To schedule your vehicle inspection and document onboarding:
+                            </p>
+                            <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.86rem; color: #166534; line-height: 1.6;">
+                                <li><strong>Location:</strong> Go Ride Partner Center, Cantt, Varanasi, UP 221002</li>
+                                <li><strong>Operating Hours:</strong> Monday – Saturday, 9:00 AM – 6:00 PM</li>
+                                <li><strong>Support Line:</strong> +91 542 222 0100</li>
+                            </ul>
+                        </div>
+
+                        <div style="text-align: center; margin-top: 1.25rem;">
+                            <a href="contact.html" class="primary-btn" style="display: inline-block; padding: 0.75rem 1.75rem; text-decoration: none;">
+                                Contact Partner Support
+                            </a>
                         </div>
                     </div>
 
-                    <!-- Registration Form -->
-                    <form id="driver-form" class="auth-form" novalidate style="display: none;">
-                        <!-- Current User Info Badge -->
-                        <div id="driver-applicant-info" style="padding: 0.75rem 1rem; background: var(--color-gray-100); border-radius: var(--radius-md); margin-bottom: 1.25rem; font-size: 0.88rem; color: var(--color-text-secondary);">
-                            Applying as: <strong id="applicant-name" style="color: var(--color-text-primary);"></strong>
-                            <span id="applicant-email" style="display: block; font-size: 0.82rem;"></span>
-                        </div>
-
-                        <!-- DL input -->
-                        <div class="input-group">
-                            <label for="drv-dl">Driving License Number</label>
-                            <div class="input-wrapper">
-                                <span class="input-icon" aria-hidden="true">🪪</span>
-                                <input type="text" id="drv-dl" name="licenseNumber" placeholder="e.g. UP6520240012345" required minlength="5" maxlength="30" autocomplete="off">
-                            </div>
-                            <small class="error-msg" id="drv-dl-error" style="display:none; color: #DC2626; font-size: 0.78rem; margin-top: 0.25rem;"></small>
-                        </div>
-
-                        <!-- Aadhaar input -->
-                        <div class="input-group">
-                            <label for="drv-aadhar">Aadhaar Number (12 Digits)</label>
-                            <div class="input-wrapper">
-                                <span class="input-icon" aria-hidden="true">🔢</span>
-                                <input type="text" id="drv-aadhar" name="aadharNumber" placeholder="12-digit Aadhaar number" required pattern="\d{12}" maxlength="12" inputmode="numeric" autocomplete="off">
-                            </div>
-                            <small class="error-msg" id="drv-aadhar-error" style="display:none; color: #DC2626; font-size: 0.78rem; margin-top: 0.25rem;"></small>
-                        </div>
-
-                        <!-- Experience input -->
-                        <div class="input-group">
-                            <label for="drv-experience">Driving Experience (Years)</label>
-                            <div class="input-wrapper">
-                                <span class="input-icon" aria-hidden="true">⏱️</span>
-                                <input type="number" id="drv-experience" name="experience" placeholder="Years of experience (e.g. 3)" required min="0" max="60" step="1">
-                            </div>
-                            <small class="error-msg" id="drv-experience-error" style="display:none; color: #DC2626; font-size: 0.78rem; margin-top: 0.25rem;"></small>
-                        </div>
-
-                        <!-- Terms Checkbox -->
-                        <div class="auth-row" style="margin-top: 0.5rem; margin-bottom: 1.25rem;">
-                            <label class="remember-checkbox">
-                                <input type="checkbox" id="agree-terms" name="agree" required>
-                                <span class="checkbox-box"></span>
-                                <span class="checkbox-text">I confirm all details are accurate and agree to the <a href="terms.html" target="_blank">Driver Partner Terms</a></span>
-                            </label>
-                        </div>
-
-                        <!-- Form status banner -->
-                        <div id="driver-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-sm); background: #FEE2E2; color: #991B1B; font-size: 0.88rem; margin-bottom: 1rem;"></div>
-
-                        <!-- Submit button -->
-                        <button type="submit" id="driver-submit-btn" class="primary-btn auth-submit-btn">
-                            Apply to Drive
-                        </button>
-                    </form>
-
-                    <div class="auth-footer">
-                        <p>Questions about driving with Go Ride? <a href="contact.html">Contact Support</a></p>
+                    <div class="auth-footer" style="margin-top: 1.5rem;">
+                        <p>Questions about driving with Go Ride? <a href="contact.html">Contact Fleet Support</a></p>
                     </div>
                 </div>
             </div>
@@ -228,19 +216,11 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const api = window.GoRide && window.GoRide.api;
-            const toast = (window.GoRide && window.GoRide.showToast) || window.showToast;
 
             const authGate = document.getElementById('driver-auth-gate');
             const statusCard = document.getElementById('driver-status-card');
             const statusMsg = document.getElementById('driver-status-msg');
-            const form = document.getElementById('driver-form');
-            const submitBtn = document.getElementById('driver-submit-btn');
-            const errorBanner = document.getElementById('driver-form-error');
-
-            const dlInput = document.getElementById('drv-dl');
-            const aadharInput = document.getElementById('drv-aadhar');
-            const expInput = document.getElementById('drv-experience');
-            const termsCheckbox = document.getElementById('agree-terms');
+            const interestContainer = document.getElementById('driver-interest-container');
 
             // 1. Verify Authentication
             if (!api || !api.isAuthenticated()) {
@@ -253,7 +233,7 @@
             if (currentUser) {
                 const nameEl = document.getElementById('applicant-name');
                 const emailEl = document.getElementById('applicant-email');
-                if (nameEl) nameEl.textContent = currentUser.fullName || currentUser.name || "Valued User";
+                if (nameEl) nameEl.textContent = currentUser.fullName || currentUser.name || "Valued Partner";
                 if (emailEl) emailEl.textContent = `${currentUser.email || ""} • ${currentUser.phone || ""}`;
             }
 
@@ -262,8 +242,10 @@
                 const existing = await api.get('/api/driver/profile');
                 if (existing && existing.data) {
                     const drv = existing.data;
-                    statusCard.style.display = 'block';
-                    statusMsg.innerHTML = `You have already registered as a driver partner. Current Application Status: <strong>${drv.status}</strong>.<br>License: ${drv.licenseNumber || "Recorded"} | Experience: ${drv.experience || 0} years.`;
+                    if (statusCard) statusCard.style.display = 'block';
+                    if (statusMsg) {
+                        statusMsg.innerHTML = `You have an active driver partner registration.<br>Application Status: <strong>${drv.status || "ACTIVE"}</strong> | Experience: ${drv.experience || 0} years.`;
+                    }
                     return;
                 }
             } catch (err) {
@@ -273,97 +255,8 @@
                 }
             }
 
-            // Show Form for fresh applicant
-            form.style.display = 'block';
-
-            // Helpers for inline validation
-            const setFieldError = (elId, msg) => {
-                const errEl = document.getElementById(elId);
-                if (errEl) {
-                    errEl.textContent = msg;
-                    errEl.style.display = msg ? 'block' : 'none';
-                }
-            };
-
-            const clearAllErrors = () => {
-                setFieldError('drv-dl-error', '');
-                setFieldError('drv-aadhar-error', '');
-                setFieldError('drv-experience-error', '');
-                if (errorBanner) {
-                    errorBanner.style.display = 'none';
-                    errorBanner.textContent = '';
-                }
-            };
-
-            // Form Submit Handler
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                clearAllErrors();
-
-                const dlVal = dlInput.value.trim().toUpperCase();
-                const aadharVal = aadharInput.value.trim();
-                const expVal = expInput.value.trim();
-                const termsVal = termsCheckbox.checked;
-
-                let hasError = false;
-
-                if (!dlVal || dlVal.length < 5 || dlVal.length > 30) {
-                    setFieldError('drv-dl-error', 'Please enter a valid Driving License number (5-30 characters).');
-                    hasError = true;
-                }
-
-                if (!aadharVal || !/^\d{12}$/.test(aadharVal)) {
-                    setFieldError('drv-aadhar-error', 'Aadhaar number must be exactly 12 numeric digits.');
-                    hasError = true;
-                }
-
-                const expNum = parseInt(expVal, 10);
-                if (isNaN(expNum) || expNum < 0 || expNum > 60) {
-                    setFieldError('drv-experience-error', 'Please enter driving experience between 0 and 60 years.');
-                    hasError = true;
-                }
-
-                if (!termsVal) {
-                    if (toast) toast("You must agree to the Driver Partner Terms.", "error");
-                    hasError = true;
-                }
-
-                if (hasError) return;
-
-                const origBtnText = submitBtn.innerHTML;
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = `<span>⏳</span> Submitting Application...`;
-
-                try {
-                    const payload = {
-                        licenseNumber: dlVal,
-                        aadharNumber: aadharVal,
-                        experience: expNum
-                    };
-
-                    const response = await api.post('/api/driver/register', payload);
-
-                    if (response && response.success) {
-                        if (toast) toast("Driver application submitted successfully!", "success");
-                        form.reset();
-                        form.style.display = 'none';
-                        statusCard.style.display = 'block';
-                        statusMsg.innerHTML = `Your application has been received and is currently <strong>PENDING</strong> review by our operations team. We will notify you once verified.`;
-                    } else {
-                        throw new Error((response && response.message) || "Failed to register driver profile.");
-                    }
-                } catch (err) {
-                    const msg = err.message || "Failed to submit driver application. Please try again.";
-                    if (errorBanner) {
-                        errorBanner.textContent = msg;
-                        errorBanner.style.display = 'block';
-                    }
-                    if (toast) toast(msg, "error");
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = origBtnText;
-                }
-            });
+            // Show Onboarding info for authenticated applicant
+            if (interestContainer) interestContainer.style.display = 'block';
         });
     </script>
 </body>
