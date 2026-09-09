@@ -204,6 +204,37 @@ app.use("/api/admin/ai", adminAiRoutes);
 
 app.use("/health", healthRoutes);
 
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: GoRide API service status
+ *     description: Returns runtime service health and API version metadata.
+ *     tags: [System]
+ *     responses:
+ *       200:
+ *         description: Service is operational.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "🚖 GoRide Backend API Running"
+ *                 version:
+ *                   type: string
+ *                   example: "1.0.0"
+ *                 status:
+ *                   type: string
+ *                   example: "OK"
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ */
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,

@@ -20,6 +20,31 @@ const router = express.Router();
 
 router.use(authenticate);
 
+/**
+ * @swagger
+ * /api/notifications/devices:
+ *   post:
+ *     summary: Register push notification device token
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token, platform]
+ *             properties:
+ *               token:
+ *                 type: string
+ *               platform:
+ *                 type: string
+ *                 enum: [ANDROID, IOS, WEB]
+ *     responses:
+ *       200:
+ *         description: Device registered successfully
+ */
 router.post(
   "/devices",
   validate(pushDeviceSchema),

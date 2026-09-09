@@ -28,8 +28,41 @@ const {
  */
 
 /**
- * GET /api/admin/vehicles
- * All vehicles
+ * @swagger
+ * /api/admin/vehicles:
+ *   get:
+ *     summary: List all registered vehicles
+ *     tags: [Admin Vehicle Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, APPROVED, REJECTED, SUSPENDED]
+ *       - in: query
+ *         name: vehicleType
+ *         schema:
+ *           type: string
+ *           enum: [AUTO, BIKE, CAR, SEDAN, SUV, EV]
+ *     responses:
+ *       200:
+ *         description: Vehicles retrieved successfully
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Permission denied
  */
 router.get(
   "/",
@@ -39,8 +72,24 @@ router.get(
 );
 
 /**
- * GET /api/admin/vehicles/:id
- * Vehicle details
+ * @swagger
+ * /api/admin/vehicles/{id}:
+ *   get:
+ *     summary: Get vehicle details by ID
+ *     tags: [Admin Vehicle Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Vehicle details retrieved successfully
+ *       404:
+ *         description: Vehicle not found
  */
 router.get(
   "/:id",
@@ -50,8 +99,37 @@ router.get(
 );
 
 /**
- * PATCH /api/admin/vehicles/:id
- * Update vehicle
+ * @swagger
+ * /api/admin/vehicles/{id}:
+ *   patch:
+ *     summary: Update vehicle attributes
+ *     tags: [Admin Vehicle Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               brand:
+ *                 type: string
+ *               model:
+ *                 type: string
+ *               color:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Vehicle updated successfully
+ *       400:
+ *         description: Invalid input
  */
 router.patch(
   "/:id",
@@ -61,8 +139,24 @@ router.patch(
 );
 
 /**
- * POST /api/admin/vehicles/:id/approve
- * Approve vehicle
+ * @swagger
+ * /api/admin/vehicles/{id}/approve:
+ *   post:
+ *     summary: Approve a pending vehicle registration
+ *     tags: [Admin Vehicle Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Vehicle approved successfully
+ *       400:
+ *         description: Vehicle cannot be approved
  */
 router.post(
   "/:id/approve",
@@ -72,8 +166,32 @@ router.post(
 );
 
 /**
- * POST /api/admin/vehicles/:id/reject
- * Reject vehicle
+ * @swagger
+ * /api/admin/vehicles/{id}/reject:
+ *   post:
+ *     summary: Reject a pending vehicle registration
+ *     tags: [Admin Vehicle Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [reason]
+ *             properties:
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Vehicle rejected successfully
  */
 router.post(
   "/:id/reject",
@@ -83,8 +201,22 @@ router.post(
 );
 
 /**
- * GET /api/admin/vehicles/:id/documents
- * Get vehicle documents
+ * @swagger
+ * /api/admin/vehicles/{id}/documents:
+ *   get:
+ *     summary: Get all verification documents for a vehicle
+ *     tags: [Admin Vehicle Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Vehicle documents retrieved successfully
  */
 router.get(
   "/:id/documents",
@@ -94,8 +226,22 @@ router.get(
 );
 
 /**
- * PATCH /api/admin/vehicles/documents/:id/approve
- * Approve vehicle document
+ * @swagger
+ * /api/admin/vehicles/documents/{id}/approve:
+ *   patch:
+ *     summary: Approve a specific vehicle document
+ *     tags: [Admin Vehicle Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Document approved successfully
  */
 router.patch(
   "/documents/:id/approve",
@@ -105,8 +251,32 @@ router.patch(
 );
 
 /**
- * PATCH /api/admin/vehicles/documents/:id/reject
- * Reject vehicle document
+ * @swagger
+ * /api/admin/vehicles/documents/{id}/reject:
+ *   patch:
+ *     summary: Reject a specific vehicle document
+ *     tags: [Admin Vehicle Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [reason]
+ *             properties:
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Document rejected successfully
  */
 router.patch(
   "/documents/:id/reject",
@@ -116,8 +286,22 @@ router.patch(
 );
 
 /**
- * DELETE /api/admin/vehicles/:id
- * Delete vehicle
+ * @swagger
+ * /api/admin/vehicles/{id}:
+ *   delete:
+ *     summary: Delete a vehicle record
+ *     tags: [Admin Vehicle Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Vehicle deleted successfully
  */
 router.delete(
   "/:id",

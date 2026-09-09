@@ -36,7 +36,38 @@ const {
 } = require("../../validators/admin/adminRide.validator");
 
 /**
- * GET /api/admin/rides
+ * @swagger
+ * tags:
+ *   name: Admin Ride Management
+ *   description: Admin ride lifecycle monitoring and control APIs
+ */
+
+/**
+ * @swagger
+ * /api/admin/rides:
+ *   get:
+ *     summary: List all rides with filters and pagination
+ *     tags: [Admin Ride Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Rides retrieved successfully
  */
 router.get(
   "/",
@@ -47,7 +78,16 @@ router.get(
 );
 
 /**
- * GET /api/admin/rides/stats
+ * @swagger
+ * /api/admin/rides/stats:
+ *   get:
+ *     summary: Get ride aggregated statistics
+ *     tags: [Admin Ride Management]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Ride statistics retrieved successfully
  */
 router.get(
   "/stats",
@@ -57,7 +97,22 @@ router.get(
 );
 
 /**
- * GET /api/admin/rides/user/:userId
+ * @swagger
+ * /api/admin/rides/user/{userId}:
+ *   get:
+ *     summary: Get all rides for a specific user
+ *     tags: [Admin Ride Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User rides retrieved successfully
  */
 router.get(
   "/user/:userId",
@@ -68,7 +123,22 @@ router.get(
 );
 
 /**
- * GET /api/admin/rides/driver/:driverId
+ * @swagger
+ * /api/admin/rides/driver/{driverId}:
+ *   get:
+ *     summary: Get all rides for a specific driver
+ *     tags: [Admin Ride Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: driverId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Driver rides retrieved successfully
  */
 router.get(
   "/driver/:driverId",
@@ -79,7 +149,32 @@ router.get(
 );
 
 /**
- * POST /api/admin/rides/:id/assign
+ * @swagger
+ * /api/admin/rides/{id}/assign:
+ *   post:
+ *     summary: Assign a driver to a ride
+ *     tags: [Admin Ride Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [driverId]
+ *             properties:
+ *               driverId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Driver assigned successfully
  */
 router.post(
   "/:id/assign",
@@ -91,7 +186,32 @@ router.post(
 );
 
 /**
- * POST /api/admin/rides/:id/reassign
+ * @swagger
+ * /api/admin/rides/{id}/reassign:
+ *   post:
+ *     summary: Reassign ride to a different driver
+ *     tags: [Admin Ride Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [driverId]
+ *             properties:
+ *               driverId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Ride reassigned successfully
  */
 router.post(
   "/:id/reassign",
@@ -103,7 +223,22 @@ router.post(
 );
 
 /**
- * POST /api/admin/rides/:id/force-complete
+ * @swagger
+ * /api/admin/rides/{id}/force-complete:
+ *   post:
+ *     summary: Force complete an active ride
+ *     tags: [Admin Ride Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Ride force completed successfully
  */
 router.post(
   "/:id/force-complete",
@@ -114,7 +249,24 @@ router.post(
 );
 
 /**
- * GET /api/admin/rides/:id
+ * @swagger
+ * /api/admin/rides/{id}:
+ *   get:
+ *     summary: Get ride details by ID
+ *     tags: [Admin Ride Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Ride details retrieved successfully
+ *       404:
+ *         description: Ride not found
  */
 router.get(
   "/:id",
@@ -125,7 +277,32 @@ router.get(
 );
 
 /**
- * PATCH /api/admin/rides/:id/status
+ * @swagger
+ * /api/admin/rides/{id}/status:
+ *   patch:
+ *     summary: Update ride status
+ *     tags: [Admin Ride Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Ride status updated successfully
  */
 router.patch(
   "/:id/status",
@@ -137,7 +314,22 @@ router.patch(
 );
 
 /**
- * POST /api/admin/rides/:id/cancel
+ * @swagger
+ * /api/admin/rides/{id}/cancel:
+ *   post:
+ *     summary: Cancel a ride administratively
+ *     tags: [Admin Ride Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Ride cancelled successfully
  */
 router.post(
   "/:id/cancel",
@@ -148,7 +340,22 @@ router.post(
 );
 
 /**
- * GET /api/admin/rides/:id/timeline
+ * @swagger
+ * /api/admin/rides/{id}/timeline:
+ *   get:
+ *     summary: Get ride status transition timeline
+ *     tags: [Admin Ride Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Ride timeline retrieved successfully
  */
 router.get(
   "/:id/timeline",
@@ -159,7 +366,22 @@ router.get(
 );
 
 /**
- * GET /api/admin/rides/:id/logs
+ * @swagger
+ * /api/admin/rides/{id}/logs:
+ *   get:
+ *     summary: Get ride system activity logs
+ *     tags: [Admin Ride Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Ride logs retrieved successfully
  */
 router.get(
   "/:id/logs",

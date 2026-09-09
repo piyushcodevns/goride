@@ -82,14 +82,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // ----------------------------------------------------
     // Form Submit Handler
     // ----------------------------------------------------
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const isEmailOk = validateEmail();
         const isPasswordOk = validatePassword();
 
         if (!isEmailOk || !isPasswordOk) {
-            window.showToast("Please enter valid credentials.", "error");
+            const toastFn = (window.GoRide && window.GoRide.showToast) || window.showToast;
+            if (toastFn) toastFn("Please enter valid credentials.", "error");
             if (!isEmailOk) emailInput.focus();
             else passwordInput.focus();
             return;
@@ -101,30 +102,47 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.innerHTML = `<span>⏳</span> Signing In...`;
 
         const emailVal = emailInput.value.trim().toLowerCase();
+        const passwordVal = passwordInput.value;
         const rememberMe = rememberCheckbox.checked;
+        const toastFn = (window.GoRide && window.GoRide.showToast) || window.showToast;
 
-        setTimeout(() => {
-            // Simulated login rules
-            if (emailVal === 'error@goride.com') {
-                window.showToast("Invalid credentials. Please try again.", "error");
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = oldBtnText;
-                passwordInput.value = '';
-                passwordInput.focus();
-            } else {
+        try {
+            const api = (window.GoRide && window.GoRide.api);
+            if (!api) {
+                throw new Error("API helper not loaded.");
+            }
+
+            const response = await api.post("/api/auth/login", {
+                email: emailVal,
+                password: passwordVal
+            });
+
+            if (response && response.data && response.data.token) {
+                api.setToken(response.data.token);
+                api.setCurrentUser(response.data.user);
+
                 if (rememberMe) {
                     localStorage.setItem('goride_user_email', emailVal);
                 } else {
                     localStorage.removeItem('goride_user_email');
                 }
-                
-                window.showToast("Login Successful! Redirecting to booking portal...", "success");
-                
+
+                if (toastFn) toastFn("Login Successful! Redirecting to booking portal...", "success");
+
                 setTimeout(() => {
                     window.location.href = 'booking.html';
-                }, 1000);
+                }, 800);
+            } else {
+                throw new Error(response.message || "Login failed.");
             }
-        }, 1500);
+        } catch (err) {
+            const msg = err.message || "Invalid credentials. Please try again.";
+            if (toastFn) toastFn(msg, "error");
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = oldBtnText;
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
     });
 
     // Populate email if remember me was used in previous sessions

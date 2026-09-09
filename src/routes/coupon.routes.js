@@ -219,6 +219,24 @@ router.get(
   couponController.getCouponReport,
 );
 
+/**
+ * @swagger
+ * /api/coupons/{id}/usages:
+ *   get:
+ *     summary: Get coupon usage history (Admin)
+ *     tags: [Coupons]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Coupon usages fetched successfully
+ */
 router.get(
   "/:id/usages",
   adminAuthMiddleware,

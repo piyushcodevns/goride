@@ -29,6 +29,17 @@ router.get("/", getHealth);
  *         description: Application process is alive
  */
 router.get("/live", getLiveness);
+
+/**
+ * @swagger
+ * /health/liveness:
+ *   get:
+ *     summary: Application liveness probe (alias)
+ *     tags: [Health & Monitoring]
+ *     responses:
+ *       200:
+ *         description: Application process is alive
+ */
 router.get("/liveness", getLiveness);
 
 /**
@@ -44,6 +55,19 @@ router.get("/liveness", getLiveness);
  *         description: Critical dependency is unavailable
  */
 router.get("/ready", getReadiness);
+
+/**
+ * @swagger
+ * /health/readiness:
+ *   get:
+ *     summary: Application readiness probe (alias)
+ *     tags: [Health & Monitoring]
+ *     responses:
+ *       200:
+ *         description: Application dependencies are ready
+ *       503:
+ *         description: Critical dependency is unavailable
+ */
 router.get("/readiness", getReadiness);
 
 module.exports = router;

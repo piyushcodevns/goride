@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ----------------------------------------------------
     // Form Submit Handler
     // ----------------------------------------------------
-    registerForm.addEventListener('submit', (e) => {
+    registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const isNameOk = validateName();
@@ -161,14 +161,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const isPhoneOk = validatePhone();
         const isPasswordOk = validatePassword();
         const agreeTerms = agreeCheckbox.checked;
+        const toastFn = (window.GoRide && window.GoRide.showToast) || window.showToast;
 
         if (!agreeTerms) {
-            window.GoRide.showToast("Please agree to the Terms & Conditions.", "error");
+            if (toastFn) toastFn("Please agree to the Terms & Conditions.", "error");
             return;
         }
 
         if (!isNameOk || !isEmailOk || !isPhoneOk || !isPasswordOk) {
-            window.GoRide.showToast("Please correct the errors in the registration form.", "error");
+            if (toastFn) toastFn("Please correct the errors in the registration form.", "error");
             return;
         }
 
@@ -177,21 +178,49 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.disabled = true;
         submitBtn.innerHTML = `<span>⏳</span> Creating Account...`;
 
-        setTimeout(() => {
-            const emailVal = emailInput.value.trim().toLowerCase();
-            
-            if (emailVal === 'error@goride.com') {
-                window.GoRide.showToast("Email address already registered.", "error");
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = oldBtnText;
-                emailInput.focus();
-            } else {
-                window.GoRide.showToast("Account created successfully! Redirecting to Sign In...", "success");
-                
+        const nameVal = nameInput.value.trim();
+        const emailVal = emailInput.value.trim().toLowerCase();
+        const phoneVal = phoneInput.value.trim().replace(/[\s\-+()]/g, '');
+        const passwordVal = passwordInput.value;
+
+        try {
+            const api = (window.GoRide && window.GoRide.api);
+            if (!api) {
+                throw new Error("API helper not loaded.");
+            }
+
+            const response = await api.post("/api/auth/register", {
+                fullName: nameVal,
+                email: emailVal,
+                phone: phoneVal,
+                password: passwordVal
+            });
+
+            if (response && response.success) {
+                // If token returned, optionally save
+                if (response.data && response.data.token) {
+                    api.setToken(response.data.token);
+                    api.setCurrentUser(response.data.user);
+                }
+
+                if (toastFn) toastFn("Account created successfully! Redirecting to Sign In...", "success");
+
                 setTimeout(() => {
                     window.location.href = 'login.html';
-                }, 1500);
+                }, 1000);
+            } else {
+                throw new Error(response.message || "Registration failed.");
             }
-        }, 1500);
+        } catch (err) {
+            const msg = err.message || "Failed to create account. Please try again.";
+            if (toastFn) toastFn(msg, "error");
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = oldBtnText;
+            if (msg.toLowerCase().includes("email")) {
+                emailInput.focus();
+            } else if (msg.toLowerCase().includes("phone")) {
+                phoneInput.focus();
+            }
+        }
     });
 });

@@ -118,3 +118,15 @@ document.querySelectorAll('a[href="booking.html"]').forEach(btn => {
     }, 700);
   });
 });
+
+// Dynamic Navbar Auth Sync
+document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('goride_token');
+  if (token) {
+    const loginBtns = document.querySelectorAll('a.login-btn[href="login.html"]');
+    loginBtns.forEach(btn => {
+      btn.href = 'profile.html';
+      btn.textContent = 'Profile';
+    });
+  }
+});

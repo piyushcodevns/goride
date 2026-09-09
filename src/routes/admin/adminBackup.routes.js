@@ -199,6 +199,28 @@ router.delete(
 );
 
 
+/**
+ * @swagger
+ * /api/admin/backups/{id}/verify:
+ *   get:
+ *     summary: Verify backup file integrity and SHA-256 checksum
+ *     tags: [Admin Backup]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Backup integrity verification result
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Backup not found
+ */
 router.get(
   "/:id/verify",
   requirePermission(ADMIN_PERMISSIONS.BACKUP_VIEW),

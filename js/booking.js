@@ -604,8 +604,8 @@
         });
     });
 
-    // Coupon Apply logic
-    applyCouponBtn.addEventListener('click', () => {
+    // Coupon Apply logic (backend integrated with client fallback)
+    applyCouponBtn.addEventListener('click', async () => {
         const code = sanitizeInput(couponInput.value).toUpperCase();
         couponMessage.className = "coupon-msg";
         
@@ -616,6 +616,33 @@
         }
 
         const fare = window.GoRide.utils.calculateFare(currentDistance, selectedVehicleType);
+        const api = (window.GoRide && window.GoRide.api);
+
+        if (api && api.isAuthenticated()) {
+            try {
+                const res = await api.post("/api/coupons/validate", {
+                    code: code,
+                    rideFare: fare.total
+                });
+
+                if (res && res.success && res.data) {
+                    appliedDiscount = Math.round(res.data.discountAmount || 0);
+                    couponMessage.innerText = `Promo code ${code} applied! Saved ₹${appliedDiscount}.`;
+                    couponMessage.classList.add('success');
+                    window.GoRide.showToast(`Promo ${code} applied successfully!`, "success");
+                    window.GoRide.utils.updateFareCard();
+                    return;
+                }
+            } catch (err) {
+                appliedDiscount = 0;
+                const msg = err.message || "Invalid promo code.";
+                couponMessage.innerText = msg;
+                couponMessage.classList.add('error');
+                window.GoRide.showToast(msg, "error");
+                window.GoRide.utils.updateFareCard();
+                return;
+            }
+        }
 
         if (code === "GORIDE20") {
             appliedDiscount = Math.round(fare.total * 0.2);
@@ -629,7 +656,7 @@
             window.GoRide.showToast("₹50 promo discount applied!", "success");
         } else {
             appliedDiscount = 0;
-            couponMessage.innerText = "Invalid promo code. Try GORIDE20.";
+            couponMessage.innerText = "Invalid promo code. Try GORIDE20 or sign in.";
             couponMessage.classList.add('error');
             window.GoRide.showToast("Invalid promo code.", "error");
         }
@@ -640,7 +667,7 @@
     // ----------------------------------------------------
     // FORM SUBMISSION (DOUBLE-SUBMIT PROTECTED)
     // ----------------------------------------------------
-    bookingForm.addEventListener('submit', (e) => {
+    bookingForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         // 1. Sanitize inputs prior to validation
@@ -689,9 +716,54 @@
         window.GoRide.utils.toggleLoading(true);
         progressFill.style.width = '0%';
 
+        // Map frontend vehicle type to backend enum (BIKE, AUTO, CAR)
+        const vehicleEnumMap = {
+            bike: "BIKE",
+            auto: "AUTO",
+            mini: "CAR",
+            sedan: "CAR",
+            suv: "CAR"
+        };
+        const backendVehicleType = vehicleEnumMap[selectedVehicleType] || "CAR";
+
+        const api = (window.GoRide && window.GoRide.api);
+        let createdRide = null;
+
+        // If authenticated and coordinates exist, call backend POST /api/rides
+        if (api && api.isAuthenticated() && pickupCoords && dropCoords) {
+            try {
+                const ridePayload = {
+                    pickup: sanitizedPickup,
+                    pickupLatitude: pickupCoords.lat,
+                    pickupLongitude: pickupCoords.lng,
+                    destination: sanitizedDrop,
+                    destinationLatitude: dropCoords.lat,
+                    destinationLongitude: dropCoords.lng,
+                    vehicleType: backendVehicleType,
+                    city: window.APP_CONFIG.CITY || "DEFAULT",
+                    discountAmount: appliedDiscount || 0
+                };
+
+                const res = await api.post("/api/rides", ridePayload);
+                if (res && res.data) {
+                    createdRide = res.data;
+                }
+            } catch (err) {
+                console.warn("Backend ride creation failed, falling back to client booking:", err.message);
+                if (err.status === 401) {
+                    window.GoRide.utils.toggleLoading(false);
+                    window.GoRide.showToast("Please log in to book a ride.", "error");
+                    setTimeout(() => {
+                        window.location.href = "login.html";
+                    }, 1200);
+                    return;
+                }
+            }
+        }
+
         let progress = 0;
         const interval = setInterval(() => {
-            progress += 20;
+            progress += 25;
             progressFill.style.width = `${progress}%`;
 
             if (progress >= 100) {
@@ -701,21 +773,24 @@
                 window.GoRide.utils.toggleLoading(false);
 
                 // Populate success modal
-                const bookingId = window.GoRide.utils.generateBookingID();
+                const bookingId = (createdRide && (createdRide.id || createdRide.rideId))
+                    ? `GR-${String(createdRide.id).slice(-8).toUpperCase()}`
+                    : window.GoRide.utils.generateBookingID();
                 bookingIdVal.innerText = bookingId;
 
                 // Assemble the consolidated structured booking object (V6)
                 const fareCalculation = window.GoRide.utils.calculateFare(currentDistance, selectedVehicleType);
                 const bookingObject = {
+                    backendRideId: createdRide ? createdRide.id : null,
                     pickup: {
-                        placeId: pickupInput.dataset.placeId || "mock-pickup-id",
+                        placeId: pickupInput.dataset.placeId || `loc-pickup-${Date.now()}`,
                         name: pickupInput.value,
                         address: pickupInput.dataset.address || pickupInput.value,
                         lat: pickupCoords?.lat ?? null,
                         lng: pickupCoords?.lng ?? null
                     },
                     drop: {
-                        placeId: dropoffInput.dataset.placeId || "mock-dropoff-id",
+                        placeId: dropoffInput.dataset.placeId || `loc-drop-${Date.now()}`,
                         name: dropoffInput.value,
                         address: dropoffInput.dataset.address || dropoffInput.value,
                         lat: dropCoords?.lat ?? null,
@@ -724,18 +799,18 @@
                     route: {
                         distanceKm: currentDistance,
                         durationMinutes: currentDuration,
-                        encodedPolyline: "" // populated dynamically in production from Directions response
+                        encodedPolyline: ""
                     },
                     fare: {
                         vehicle: selectedVehicleType,
-                        amount: fareCalculation.total
+                        amount: fareCalculation.total,
+                        discount: appliedDiscount
                     }
                 };
 
                 // Output ready-to-use backend object in console logs
-                console.log("Go Ride Booking Object Ready for Backend API Insertion:", bookingObject);
-                // TODO: Booking API - submit final ride details (bookingObject) to DB in V2
-                
+                console.log("Go Ride Booking Object Confirmed:", bookingObject);
+
                 // Save record for ML dataset
                 if (window.saveBookingRecord) {
                     const recordData = { ...data, ...bookingObject };
@@ -746,7 +821,7 @@
                 successModal.setAttribute('aria-hidden', 'false');
                 window.GoRide.showToast("Ride Booked Successfully!", "success");
             }
-        }, 200); // 1000ms minimum duration loader
+        }, 150);
     });
 
     // Close Modal Reset

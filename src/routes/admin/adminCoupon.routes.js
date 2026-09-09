@@ -31,10 +31,36 @@ const {
   getAllCouponsQuerySchema,
 } = require("../../validators/coupon.validator");
 
-// =====================================================
-// COUPON LIST
-// =====================================================
+/**
+ * @swagger
+ * tags:
+ *   name: Admin Coupon Management
+ *   description: Admin coupon creation, lifecycle, limits, and analytics APIs
+ */
 
+/**
+ * @swagger
+ * /api/admin/coupons:
+ *   get:
+ *     summary: List all coupons with filters
+ *     tags: [Admin Coupon Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *     responses:
+ *       200:
+ *         description: Coupons retrieved successfully
+ */
 router.get(
   "/",
   adminAuthMiddleware,
@@ -43,10 +69,18 @@ router.get(
   getAllCoupons,
 );
 
-// =====================================================
-// COUPON REPORT
-// =====================================================
-
+/**
+ * @swagger
+ * /api/admin/coupons/reports:
+ *   get:
+ *     summary: Generate comprehensive coupon usage and discount report
+ *     tags: [Admin Coupon Management]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Coupon report generated successfully
+ */
 router.get(
   "/reports",
   adminAuthMiddleware,
@@ -54,10 +88,18 @@ router.get(
   getCouponReport,
 );
 
-// =====================================================
-// EXPIRED COUPONS
-// =====================================================
-
+/**
+ * @swagger
+ * /api/admin/coupons/expired:
+ *   get:
+ *     summary: List all expired coupons
+ *     tags: [Admin Coupon Management]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Expired coupons retrieved successfully
+ */
 router.get(
   "/expired",
   adminAuthMiddleware,
@@ -65,10 +107,28 @@ router.get(
   getExpiredCoupons,
 );
 
-// =====================================================
-// CREATE COUPON
-// =====================================================
-
+/**
+ * @swagger
+ * /api/admin/coupons:
+ *   post:
+ *     summary: Create a new discount coupon
+ *     tags: [Admin Coupon Management]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateCouponRequest'
+ *     responses:
+ *       201:
+ *         description: Coupon created successfully
+ *       400:
+ *         description: Validation failed
+ *       409:
+ *         description: Coupon code already exists
+ */
 router.post(
   "/",
   adminAuthMiddleware,
@@ -77,10 +137,26 @@ router.post(
   createCoupon,
 );
 
-// =====================================================
-// COUPON DETAILS
-// =====================================================
-
+/**
+ * @swagger
+ * /api/admin/coupons/{id}:
+ *   get:
+ *     summary: Get coupon details by ID
+ *     tags: [Admin Coupon Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Coupon details retrieved successfully
+ *       404:
+ *         description: Coupon not found
+ */
 router.get(
   "/:id",
   adminAuthMiddleware,
@@ -89,10 +165,24 @@ router.get(
   getCouponById,
 );
 
-// =====================================================
-// COUPON USAGES
-// =====================================================
-
+/**
+ * @swagger
+ * /api/admin/coupons/{id}/usages:
+ *   get:
+ *     summary: Get usage logs for a specific coupon
+ *     tags: [Admin Coupon Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Coupon usages retrieved successfully
+ */
 router.get(
   "/:id/usages",
   adminAuthMiddleware,
@@ -101,10 +191,24 @@ router.get(
   getCouponUsages,
 );
 
-// =====================================================
-// COUPON USAGE ANALYTICS
-// =====================================================
-
+/**
+ * @swagger
+ * /api/admin/coupons/{id}/analytics:
+ *   get:
+ *     summary: Get performance and redemption analytics for a coupon
+ *     tags: [Admin Coupon Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Coupon analytics retrieved successfully
+ */
 router.get(
   "/:id/analytics",
   adminAuthMiddleware,
@@ -113,10 +217,30 @@ router.get(
   getCouponUsageAnalytics,
 );
 
-// =====================================================
-// UPDATE COUPON
-// =====================================================
-
+/**
+ * @swagger
+ * /api/admin/coupons/{id}:
+ *   patch:
+ *     summary: Update coupon rules or limits
+ *     tags: [Admin Coupon Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateCouponRequest'
+ *     responses:
+ *       200:
+ *         description: Coupon updated successfully
+ */
 router.patch(
   "/:id",
   adminAuthMiddleware,
@@ -126,10 +250,24 @@ router.patch(
   updateCoupon,
 );
 
-// =====================================================
-// ACTIVATE COUPON
-// =====================================================
-
+/**
+ * @swagger
+ * /api/admin/coupons/{id}/activate:
+ *   patch:
+ *     summary: Activate a deactivated coupon
+ *     tags: [Admin Coupon Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Coupon activated successfully
+ */
 router.patch(
   "/:id/activate",
   adminAuthMiddleware,
@@ -138,10 +276,24 @@ router.patch(
   activateCoupon,
 );
 
-// =====================================================
-// DEACTIVATE COUPON
-// =====================================================
-
+/**
+ * @swagger
+ * /api/admin/coupons/{id}/deactivate:
+ *   patch:
+ *     summary: Deactivate a coupon
+ *     tags: [Admin Coupon Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Coupon deactivated successfully
+ */
 router.patch(
   "/:id/deactivate",
   adminAuthMiddleware,
@@ -150,10 +302,24 @@ router.patch(
   deactivateCoupon,
 );
 
-// =====================================================
-// DELETE COUPON
-// =====================================================
-
+/**
+ * @swagger
+ * /api/admin/coupons/{id}:
+ *   delete:
+ *     summary: Delete a coupon
+ *     tags: [Admin Coupon Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Coupon deleted successfully
+ */
 router.delete(
   "/:id",
   adminAuthMiddleware,

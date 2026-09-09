@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>My Profile | Go Ride</title>
+    <meta name="description" content="Manage your Go Ride profile, personal details, and view your ride booking history.">
+    <meta name="theme-color" content="#2563EB">
+
+    <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+        .profile-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .profile-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E2E8F0;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        .profile-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #2563EB;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .profile-info h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #0F172A;
+        }
+        .profile-info p {
+            margin: 4px 0 0;
+            color: #64748B;
+            font-size: 0.9rem;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 0.88rem;
+            color: #334155;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            background: #fff;
+            color: #0F172A;
+            box-sizing: border-box;
+        }
+        .form-group input:disabled {
+            background: #F1F5F9;
+            color: #64748B;
+            cursor: not-allowed;
+        }
+        .ride-history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .ride-history-item {
+            padding: 14px;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background: #F8FAFC;
+        }
+        .ride-history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+        .ride-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-COMPLETED { background: #DCFCE7; color: #15803D; }
+        .badge-CANCELLED { background: #FEE2E2; color: #B91C1C; }
+        .badge-REQUESTED, .badge-ACCEPTED, .badge-ARRIVED, .badge-IN_PROGRESS {
+            background: #DBEAFE; color: #1D4ED8;
+        }
+        .ride-locations {
+            font-size: 0.9rem;
+            color: #334155;
+            line-height: 1.4;
+        }
+        .ride-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #64748B;
+            font-weight: 500;
+        }
+        .empty-history {
+            text-align: center;
+            padding: 30px;
+            color: #64748B;
+            font-size: 0.95rem;
+        }
+        .action-btns {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Loader -->
+    <div id="page-loader" aria-hidden="true"></div>
+
+    <!-- Header Navbar -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar" aria-label="Primary navigation">
+                <a class="brand" href="index.html">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo">
+                    <span>Go Ride</span>
+                </a>
+
+                <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
+
+                <ul class="nav-links">
+                    <li><a class="nav-link" href="index.html">Home</a></li>
+                    <li><a class="nav-link" href="services.html">Services</a></li>
+                    <li><a class="nav-link" href="booking.html">Book Ride</a></li>
+                    <li><a class="nav-link" href="about.html">About</a></li>
+                    <li><a class="nav-link" href="contact.html">Contact</a></li>
+                </ul>
+
+                <div class="nav-buttons">
+                    <button type="button" id="logout-btn" class="secondary-btn" style="padding: 8px 16px; font-size: 0.9rem; border-radius: 6px; cursor: pointer;">Logout</button>
+                    <a href="booking.html" class="book-btn">Book Ride</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="profile-container">
+        <h1>My Account</h1>
+        <p style="color: #64748B; margin-bottom: 24px;">Manage your personal profile and view your previous bookings.</p>
+
+        <div class="profile-grid">
+            <!-- Left Column: Personal Profile -->
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div id="user-avatar" class="profile-avatar">U</div>
+                    <div class="profile-info">
+                        <h2 id="display-name">Loading...</h2>
+                        <p id="display-role">Customer</p>
+                    </div>
+                </div>
+
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label for="profile-name">Full Name</label>
+                        <input type="text" id="profile-name" required minlength="3">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profile-email">Email Address</label>
+                        <input type="email" id="profile-email" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profile-phone">Phone Number</label>
+                        <input type="tel" id="profile-phone" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profile-gender">Gender</label>
+                        <select id="profile-gender">
+                            <option value="">Not Specified</option>
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="action-btns">
+                        <button type="submit" id="save-profile-btn" class="primary-btn" style="padding: 10px 20px; font-size: 0.95rem; border: none; border-radius: 6px; cursor: pointer;">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right Column: Ride History -->
+            <div class="profile-card">
+                <h2 style="font-size: 1.15rem; margin-top: 0; margin-bottom: 16px; color: #0F172A;">Recent Rides</h2>
+                <div id="ride-history-container">
+                    <ul id="ride-history-list" class="ride-history-list">
+                        <li class="empty-history">Loading your ride history...</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer" style="margin-top: 60px;">
+        <div class="container">
+            <div class="footer-bottom">© 2026 Go Ride Technologies. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="js/config.js" defer></script>
+    <script src="js/toast.js" defer></script>
+    <script src="js/helpers.js" defer></script>
+    <script src="js/main.js" defer></script>
+    <script src="js/profile.js" defer></script>
+</body>
+</html>

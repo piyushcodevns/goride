@@ -33,7 +33,27 @@ const {
  */
 
 /**
- * GET /api/admin/pricing
+ * @swagger
+ * /api/admin/pricing:
+ *   get:
+ *     summary: List all pricing configurations
+ *     tags: [Admin Pricing Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *     responses:
+ *       200:
+ *         description: Pricing rules retrieved successfully
  */
 router.get(
   "/",
@@ -44,7 +64,24 @@ router.get(
 );
 
 /**
- * GET /api/admin/pricing/:id
+ * @swagger
+ * /api/admin/pricing/{id}:
+ *   get:
+ *     summary: Get pricing configuration details by ID
+ *     tags: [Admin Pricing Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Pricing configuration retrieved successfully
+ *       404:
+ *         description: Pricing configuration not found
  */
 router.get(
   "/:id",
@@ -55,7 +92,32 @@ router.get(
 );
 
 /**
- * POST /api/admin/pricing
+ * @swagger
+ * /api/admin/pricing:
+ *   post:
+ *     summary: Create a new pricing configuration rule
+ *     tags: [Admin Pricing Management]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [vehicleType, baseFare, perKmRate, perMinuteRate]
+ *             properties:
+ *               vehicleType:
+ *                 type: string
+ *               baseFare:
+ *                 type: number
+ *               perKmRate:
+ *                 type: number
+ *               perMinuteRate:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Pricing configuration created successfully
  */
 router.post(
   "/",
@@ -66,7 +128,35 @@ router.post(
 );
 
 /**
- * PATCH /api/admin/pricing/:id
+ * @swagger
+ * /api/admin/pricing/{id}:
+ *   patch:
+ *     summary: Update a pricing configuration rule
+ *     tags: [Admin Pricing Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               baseFare:
+ *                 type: number
+ *               perKmRate:
+ *                 type: number
+ *               perMinuteRate:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Pricing configuration updated successfully
  */
 router.patch(
   "/:id",
@@ -77,7 +167,22 @@ router.patch(
 );
 
 /**
- * DELETE /api/admin/pricing/:id
+ * @swagger
+ * /api/admin/pricing/{id}:
+ *   delete:
+ *     summary: Delete a pricing configuration rule
+ *     tags: [Admin Pricing Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Pricing configuration deleted successfully
  */
 router.delete(
   "/:id",

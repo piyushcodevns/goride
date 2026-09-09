@@ -37,8 +37,50 @@ router.get("/roles", requirePermission(permissions.ROLE_VIEW), controller.listRo
  *       400: { description: Invalid role. }
  *       404: { description: Role not found. }
  */
+/**
+ * @swagger
+ * /api/admin/rbac/roles:
+ *   post:
+ *     summary: Create an administrator role
+ *     tags: [Admin RBAC]
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [role, permissions]
+ *             properties:
+ *               role: { type: string }
+ *               permissions:
+ *                 type: array
+ *                 items: { type: string }
+ *     responses:
+ *       201: { description: Role created successfully. }
+ *       400: { description: Invalid role or duplicate. }
+ *       403: { description: Role creation denied. }
+ */
 router.post("/roles", requirePermission(permissions.ROLE_CREATE), controller.createRole);
 router.get("/roles/:role", requirePermission(permissions.ROLE_VIEW), controller.getRole);
+
+/**
+ * @swagger
+ * /api/admin/rbac/roles/{role}:
+ *   delete:
+ *     summary: Delete an administrator role
+ *     tags: [Admin RBAC]
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: role
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Role deleted successfully. }
+ *       403: { description: Role deletion denied. }
+ *       404: { description: Role not found. }
+ */
 router.delete("/roles/:role", requirePermission(permissions.ROLE_DELETE), controller.deleteRole);
 /**
  * @swagger
@@ -80,6 +122,34 @@ router.get("/permissions", requirePermission(permissions.PERMISSION_VIEW), contr
  *       403: { description: Permission management denied. }
  */
 router.put("/roles/:role/permissions", requirePermission(permissions.PERMISSION_MANAGE), controller.replaceRolePermissions);
+
+/**
+ * @swagger
+ * /api/admin/rbac/roles/{role}:
+ *   patch:
+ *     summary: Update an administrator role and its permissions
+ *     tags: [Admin RBAC]
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: role
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               permissions:
+ *                 type: array
+ *                 items: { type: string }
+ *     responses:
+ *       200: { description: Role updated successfully. }
+ *       400: { description: Invalid input. }
+ *       403: { description: Permission denied. }
+ */
 router.patch("/roles/:role", requirePermission(permissions.ROLE_UPDATE), controller.replaceRolePermissions);
 /**
  * @swagger
