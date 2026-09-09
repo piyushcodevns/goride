@@ -6,6 +6,7 @@
     // Authoritative pricing is always calculated by backend /api/fare/calculate
     // ----------------------------------------------------
     window.APP_CONFIG = {
+        API_BASE_URL: "https://goride-tqd6.onrender.com",
         CITY: "Varanasi",
         BACKEND_CITY: "DEFAULT",
         COUNTRY: "IN",
