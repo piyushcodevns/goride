@@ -20,9 +20,12 @@ const register = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    return res.status(400).json({
+    const statusCode = error.statusCode || (error.name === "ZodError" ? 400 : 400);
+    const message = (error.name === "ZodError" && error.errors?.[0]?.message) || error.message;
+
+    return res.status(statusCode).json({
       success: false,
-      message: error.message,
+      message,
     });
   }
 };
@@ -39,9 +42,12 @@ const login = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    return res.status(401).json({
+    const statusCode = error.statusCode || (error.name === "ZodError" ? 400 : 401);
+    const message = (error.name === "ZodError" && error.errors?.[0]?.message) || error.message;
+
+    return res.status(statusCode).json({
       success: false,
-      message: error.message,
+      message,
     });
   }
 };

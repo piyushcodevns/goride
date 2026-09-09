@@ -146,27 +146,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Form Submission
-        const oldBtnText = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `<span>⏳</span> Sending Message...`;
+        const toastFn = (window.GoRide && window.GoRide.showToast) || window.showToast;
+        if (toastFn) {
+            toastFn("Inquiry validated. Online message submission is currently offline; please contact support directly at support@goride.com or +91 542 222 0100.", "info");
+        }
+        contactForm.reset();
 
-        setTimeout(() => {
-            const toastFn = (window.GoRide && window.GoRide.showToast) || window.showToast;
-            if (toastFn) {
-                toastFn("Thank you! Your message has been received. Our team will contact you shortly.", "success");
-            }
-            contactForm.reset();
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = oldBtnText;
-
-            // Clear validation styles
-            clearValidation(nameInput);
-            clearValidation(emailInput);
-            clearValidation(phoneInput);
-            clearValidation(subjectInput);
-            clearValidation(inquirySelect);
-            clearValidation(messageInput);
-        }, 600);
+        // Clear validation styles
+        clearValidation(nameInput);
+        clearValidation(emailInput);
+        clearValidation(phoneInput);
+        clearValidation(subjectInput);
+        clearValidation(inquirySelect);
+        clearValidation(messageInput);
     });
 });

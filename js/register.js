@@ -123,23 +123,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const validatePhone = () => {
         const val = phoneInput.value.trim().replace(/[\s\-+()]/g, '');
-        const phoneRegex = /^[0-9]{10,12}$/;
+        const phoneRegex = /^[6-9]\d{9}$/;
         if (val === '') {
             return showError(phoneInput, "Phone number is required.");
         }
         if (!phoneRegex.test(val)) {
-            return showError(phoneInput, "Please enter a valid 10-12 digit phone number.");
+            return showError(phoneInput, "Enter a valid 10-digit Indian phone number starting with 6-9.");
         }
         return clearError(phoneInput);
     };
 
     const validatePassword = () => {
         const val = passwordInput.value;
+        const pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#]).+$/;
         if (val === '') {
             return showError(passwordInput, "Password is required.");
         }
-        if (val.length < 6) {
-            return showError(passwordInput, "Password must be at least 6 characters.");
+        if (val.length < 8) {
+            return showError(passwordInput, "Password must be at least 8 characters.");
+        }
+        if (!pwdRegex.test(val)) {
+            return showError(passwordInput, "Must include uppercase, lowercase, number and special char (@$!%*?&#).");
         }
         return clearError(passwordInput);
     };
@@ -212,7 +216,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(response.message || "Registration failed.");
             }
         } catch (err) {
-            const msg = err.message || "Failed to create account. Please try again.";
+            let msg = err.message || "Failed to create account. Please try again.";
+            if (typeof msg === 'string' && msg.trim().startsWith('[') && msg.trim().endsWith(']')) {
+                try {
+                    const parsed = JSON.parse(msg);
+                    if (Array.isArray(parsed) && parsed[0] && parsed[0].message) {
+                        msg = parsed[0].message;
+                    }
+                } catch (_) {}
+            }
             if (toastFn) toastFn(msg, "error");
             submitBtn.disabled = false;
             submitBtn.innerHTML = oldBtnText;

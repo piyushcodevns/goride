@@ -6,7 +6,7 @@
     if (window.location.protocol.startsWith("http")) {
         if (window.location.port === "5000") {
             defaultBase = "";
-        } else if (window.location.hostname) {
+        } else if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
             defaultBase = `${window.location.protocol}//${window.location.hostname}:5000`;
         }
     }

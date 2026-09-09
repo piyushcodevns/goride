@@ -86,13 +86,20 @@ const registerUser = async (userData) => {
     NotificationFactory.createWelcomeNotification(user),
   );
 
-  await sendEmail({
-    to: user.email,
-    subject: "Welcome to GoRide",
-    html: welcomeTemplate({
-      fullName: user.fullName,
-    }),
-  });
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: "Welcome to GoRide",
+      html: welcomeTemplate({
+        fullName: user.fullName,
+      }),
+    });
+  } catch (emailError) {
+    logger.warn("Welcome email could not be sent during registration:", {
+      userId: user.id,
+      error: emailError.message,
+    });
+  }
 
   const token = generateToken({
     id: user.id,
