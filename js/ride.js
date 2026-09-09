@@ -187,15 +187,27 @@
             driverNameElem.textContent = driverUser.fullName || "Assigned Driver";
             driverAvatar.textContent = (driverUser.fullName || "D").charAt(0).toUpperCase();
 
-            const rating = Number(ride.driver.rating) || 4.9;
-            driverRatingElem.textContent = rating.toFixed(1);
-            driverRidesElem.textContent = `(${ride.driver.totalRides || 50}+ rides)`;
+            const rating = Number(ride.driver.rating);
+            if (!isNaN(rating) && rating > 0) {
+                driverRatingElem.textContent = rating.toFixed(1);
+            } else {
+                driverRatingElem.textContent = "New";
+            }
+
+            if (ride.driver.totalRides !== undefined && ride.driver.totalRides !== null) {
+                driverRidesElem.textContent = `(${ride.driver.totalRides} rides)`;
+            } else {
+                driverRidesElem.textContent = "(Verified Partner)";
+            }
 
             if (ride.driver.vehicle) {
                 const v = ride.driver.vehicle;
-                driverVehicleElem.textContent = `${v.model || v.make || "Vehicle"} • ${v.licensePlate || "Verified"}`;
+                const vehicleParts = [];
+                if (v.make || v.model) vehicleParts.push(`${v.make || ''} ${v.model || ''}`.trim());
+                if (v.licensePlate) vehicleParts.push(v.licensePlate);
+                driverVehicleElem.textContent = vehicleParts.join(" • ") || `${ride.vehicleType || 'Vehicle'} • Verified Partner`;
             } else {
-                driverVehicleElem.textContent = `${ride.vehicleType} • Verified GoRide Partner`;
+                driverVehicleElem.textContent = `${ride.vehicleType || 'Vehicle'} • Verified Partner`;
             }
 
             if (reviewDriverName) {
@@ -402,11 +414,15 @@
             submitReviewBtn.disabled = true;
             submitReviewBtn.textContent = "Submitting...";
 
+            const reviewPayload = {
+                rating: selectedRating
+            };
+            if (comment) {
+                reviewPayload.review = comment;
+            }
+
             try {
-                await api.post(`/api/ride-reviews/${encodeURIComponent(rideId)}`, {
-                    rating: selectedRating,
-                    review: comment || "Great trip, very smooth."
-                });
+                await api.post(`/api/ride-reviews/${encodeURIComponent(rideId)}`, reviewPayload);
 
                 window.GoRide.showToast("Thank you for your rating!", "success");
                 reviewModal.classList.remove("active");

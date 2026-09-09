@@ -46,9 +46,9 @@
 
     <!-- CSS Stylesheets -->
     <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/navbar.css">
     <link rel="stylesheet" href="css/footer.css">
-    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/animations.css">
@@ -100,13 +100,13 @@
                         <p>Enter your details to access your Go Ride account</p>
                     </div>
 
-                    <form id="login-form" class="auth-form" novalidate>
+                    <form id="login-form" class="auth-form" novalidate autocomplete="off">
                         <!-- Email input -->
                         <div class="input-group">
                             <label for="login-email">Email Address</label>
                             <div class="input-wrapper">
                                 <span class="input-icon" aria-hidden="true">✉️</span>
-                                <input type="email" id="login-email" name="email" placeholder="Enter your email..." required autocomplete="email">
+                                <input type="email" id="login-email" name="email" placeholder="Enter your email..." required autocomplete="off" value="">
                             </div>
                         </div>
 
@@ -115,7 +115,7 @@
                             <label for="login-password">Password</label>
                             <div class="input-wrapper">
                                 <span class="input-icon" aria-hidden="true">🔒</span>
-                                <input type="password" id="login-password" name="password" placeholder="Enter your password..." required autocomplete="current-password">
+                                <input type="password" id="login-password" name="password" placeholder="Enter your password..." required autocomplete="new-password" value="">
                                 <button type="button" id="toggle-password" class="password-toggle-btn" aria-label="Show password">👁️</button>
                             </div>
                         </div>
@@ -148,7 +148,7 @@
     <footer class="site-footer">
         <div class="container">
             <div class="footer-grid">
-                <div>
+                <div class="footer-brand">
                     <a class="brand" href="index.html">
                         <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
                         <span>Go Ride</span>
@@ -174,11 +174,12 @@
                     </ul>
                 </div>
                 <div>
-                    <h3>Follow Us</h3>
+                    <h3>Services</h3>
                     <ul>
-                        <li><a>Instagram</a></li>
-                        <li><a>Twitter</a></li>
-                        <li><a>LinkedIn</a></li>
+                        <li><a href="booking.html">City Rides</a></li>
+                        <li><a href="driver-signup.html">Become a Driver</a></li>
+                        <li><a href="rides.html">Ride History</a></li>
+                        <li><a href="notifications.html">Notifications</a></li>
                     </ul>
                 </div>
             </div>

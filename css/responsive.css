@@ -253,8 +253,14 @@
    MOBILE-SPECIFIC BREAKPOINTS
    ========================================== */
 @media (max-width: 480px) {
+  :root {
+    --container-padding: 1rem;
+  }
+
   .container {
-    width: min(100% - 1.5rem, 1160px);
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
   /* Stack two-column layouts on 'About' page for small mobile */
@@ -368,6 +374,11 @@
   .vehicle-item {
     padding: 0.8rem 1rem;
   }
+
+  .booking-card,
+  .booking-map-card {
+    padding: 1.15rem 0.85rem;
+  }
 }
 
 /* Breakpoint: 320px (Small Mobile - e.g. iPhone SE) */
@@ -389,15 +400,23 @@
     font-size: 0.95rem;
   }
 
+  :root {
+    --container-padding: 0.75rem;
+  }
+
   .container {
-    width: min(100% - 1rem, 1160px);
+    width: 100%;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
   }
 
   .why-choose-card,
   .service-card,
   .testimonial-card,
-  .about-stat-card {
-    padding: 1.25rem 1rem;
+  .about-stat-card,
+  .booking-card,
+  .booking-map-card {
+    padding: 1rem 0.75rem;
   }
 
   .download-app-actions {

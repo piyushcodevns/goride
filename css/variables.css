@@ -24,6 +24,7 @@
   /* 1.1. Brand Colors (Primary, Secondary, Accent) */
   --color-primary: #2563EB; /* Blue 600 */
   --color-primary-hover: #1D4ED8; /* Blue 700 */
+  --color-primary-active: #1E40AF; /* Blue 800 */
   --color-primary-light: #EFF6FF; /* Blue 50 */
   --color-secondary: #F59E0B; /* Amber 500 */
   --color-secondary-hover: #D97706; /* Amber 600 */
@@ -41,14 +42,18 @@
   /* 1.3. Background & Surface Colors */
   --color-background: #FFFFFF;
   --color-surface: #F8FAFC;
+  --color-surface-muted: #F1F5F9;
 
   /* 1.4. Text Colors */
-  --color-text-primary: #1F2937; /* Gray 800 */
-  --color-text-secondary: #6B7280; /* Gray 500 */
+  --color-text-primary: #0F172A; /* Slate 900 */
+  --color-text-secondary: #475569; /* Slate 600 */
+  --color-text-muted: #94A3B8; /* Slate 400 */
   --color-text-on-primary: #FFFFFF;
 
-  /* 1.5. Border Color */
-  --color-border: #E5E7EB; /* Gray 200 */
+  /* 1.5. Border & Overlay Colors */
+  --color-border: #E2E8F0; /* Slate 200 */
+  --color-border-strong: #CBD5E1; /* Slate 300 */
+  --color-overlay: rgba(15, 23, 42, 0.6);
 
   /* 1.6. Grayscale Palette */
   --color-gray-50: #F9FAFB;
@@ -85,18 +90,24 @@
   --text: var(--color-text-primary);
   --muted: var(--color-text-secondary);
   --border: var(--color-border);
+  --surface-muted: var(--color-surface-muted);
+  --text-muted: var(--color-text-muted);
   --shadow: var(--shadow-md);
   --surface-alt: var(--color-gray-100);
   --shadow-hover: var(--shadow-lg);
   --font-primary: var(--font-family-body);
   --transition: var(--transition-normal);
+  --primary-active: var(--color-primary-active);
+  --border-strong: var(--color-border-strong);
+  --overlay: var(--color-overlay);
 
   /* ----------------------------------------------------
    * ✍️ 2. TYPOGRAPHY
    * ---------------------------------------------------- */
   /* 2.1. Font Family */
-  --font-family-heading: 'Poppins', sans-serif;
-  --font-family-body: 'Poppins', sans-serif;
+  --font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-heading: var(--font-family-sans);
+  --font-family-body: var(--font-family-sans);
   --font-family-mono: 'Menlo', 'Monaco', 'Courier New', monospace;
 
   /* 2.2. Font Sizes */
@@ -120,6 +131,11 @@
   --line-height-normal: 1.5;
   --line-height-loose: 1.75;
 
+  /* 2.5. Letter Spacing */
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0em;
+  --letter-spacing-wide: 0.025em;
+
   /* ----------------------------------------------------
    * 📏 3. SPACING & SIZING
    * ---------------------------------------------------- */
@@ -128,12 +144,18 @@
   --spacing-sm: 1rem;       /* 16px */
   --spacing-md: 1.5rem;     /* 24px */
   --spacing-lg: 2.5rem;     /* 40px */
-  --spacing-xl: 5rem;       /* 80px */
+  --spacing-xl: 3.5rem;     /* 56px */
+  --spacing-2xl: 4.5rem;    /* 72px */
+  --spacing-3xl: 6rem;      /* 96px */
 
   /* 3.2. Layout Dimensions */
-  --container-width-max: 1160px;
-  --container-padding: 1rem;
-  --navbar-height: 80px;
+  --container-width-max: 1200px;
+  --container-max-width: 1200px;
+  --container-padding: 1.5rem;
+  --page-padding: 1.5rem;
+  --navbar-height: 72px;
+  --header-height: 72px;
+  --section-spacing: 4.5rem;
 
   /* 3.3. Component Heights */
   --button-height-sm: 2.25rem; /* 36px */
@@ -146,10 +168,11 @@
    * ---------------------------------------------------- */
   /* 4.1. Border Radius Scale */
   --radius-sm: 8px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --radius-xl: 32px;
-  --radius-full: 999px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 9999px;
+  --radius-full: 9999px;
 
   /* 4.2. Input Specific Radius */
   --input-radius: var(--radius-sm);
@@ -157,25 +180,32 @@
   /* ----------------------------------------------------
    * 🌑 5. SHADOWS
    * ---------------------------------------------------- */
-  --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 10px 25px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 20px 45px rgba(37, 99, 235, 0.12);
-  --shadow-xl: 0 25px 60px -12px rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+
+  --shadow-subtle: var(--shadow-sm);
+  --shadow-card: var(--shadow-md);
+  --shadow-elevated: var(--shadow-lg);
+  --shadow-modal: var(--shadow-xl);
 
   /* ----------------------------------------------------
    * ⚡ 6. TRANSITIONS
    * ---------------------------------------------------- */
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* ----------------------------------------------------
    * 📚 7. Z-INDEX LAYERS
    * ---------------------------------------------------- */
   --z-index-base: 1;
   --z-index-content: 10;
+  --z-index-header: 1050;
   --z-index-dropdown: 1000;
   --z-index-sticky: 1100;
+  --z-index-drawer: 1150;
   --z-index-modal: 1200;
   --z-index-toast: 1300;
 

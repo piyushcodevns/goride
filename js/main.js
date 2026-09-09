@@ -35,7 +35,7 @@ if (!window.showToast) {
   window.showToast = window.GoRide.showToast;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initMain() {
   // Navigation Menu Toggle (Mobile Drawer)
   const menuToggle = document.querySelector('.menu-toggle');
   const navLinks = document.querySelector('.nav-links');
@@ -107,37 +107,49 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.textContent = 'Profile';
     });
   }
-});
+
+  // Scroll to Top Button
+  const scrollTopBtn = document.getElementById('backToTop');
+  if (scrollTopBtn) {
+    let scrollThrottle = false;
+    window.addEventListener('scroll', () => {
+      if (!scrollThrottle) {
+        window.requestAnimationFrame(() => {
+          if (window.scrollY > 400) {
+            scrollTopBtn.classList.add('is-visible');
+          } else {
+            scrollTopBtn.classList.remove('is-visible');
+          }
+          scrollThrottle = false;
+        });
+        scrollThrottle = true;
+      }
+    });
+
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initMain);
+} else {
+  initMain();
+}
 
 // Page Loader Fade Out
-window.addEventListener('load', () => {
+function dismissLoader() {
   const loader = document.getElementById('page-loader');
   if (loader) {
     setTimeout(() => {
       loader.classList.add('fade-out');
     }, 150);
   }
-});
+}
 
-// Scroll to Top Button
-const scrollTopBtn = document.getElementById('backToTop');
-if (scrollTopBtn) {
-  let scrollThrottle = false;
-  window.addEventListener('scroll', () => {
-    if (!scrollThrottle) {
-      window.requestAnimationFrame(() => {
-        if (window.scrollY > 400) {
-          scrollTopBtn.classList.add('is-visible');
-        } else {
-          scrollTopBtn.classList.remove('is-visible');
-        }
-        scrollThrottle = false;
-      });
-      scrollThrottle = true;
-    }
-  });
-
-  scrollTopBtn.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+if (document.readyState === 'complete') {
+  dismissLoader();
+} else {
+  window.addEventListener('load', dismissLoader);
 }

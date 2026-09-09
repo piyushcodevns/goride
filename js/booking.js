@@ -398,7 +398,8 @@
 
     if (couponInput) {
         couponInput.addEventListener('input', () => {
-            if (!couponInput.value.trim() && appliedCouponCode) {
+            const currentVal = couponInput.value.trim().toUpperCase();
+            if (appliedCouponCode && currentVal !== appliedCouponCode) {
                 appliedDiscount = 0;
                 appliedCouponCode = "";
                 couponMessage.innerText = "";

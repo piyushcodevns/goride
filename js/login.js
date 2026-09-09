@@ -121,11 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 api.setToken(response.data.token);
                 api.setCurrentUser(response.data.user);
 
-                if (rememberMe) {
-                    localStorage.setItem('goride_user_email', emailVal);
-                } else {
-                    localStorage.removeItem('goride_user_email');
-                }
+                // Explicitly ensure no credentials or personal emails persist in localStorage
+                localStorage.removeItem('goride_user_email');
 
                 if (toastFn) toastFn("Login Successful! Redirecting to booking portal...", "success");
 
@@ -147,10 +144,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Populate email if remember me was used in previous sessions
-    const savedEmail = localStorage.getItem('goride_user_email');
-    if (savedEmail) {
-        emailInput.value = savedEmail;
-        rememberCheckbox.checked = true;
-    }
+    // Ensure initial login inputs start strictly empty on page load
+    if (emailInput) emailInput.value = '';
+    if (passwordInput) passwordInput.value = '';
+    if (rememberCheckbox) rememberCheckbox.checked = false;
+    localStorage.removeItem('goride_user_email');
 });

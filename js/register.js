@@ -223,4 +223,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // Ensure registration form inputs start strictly empty on page load
+    if (nameInput) nameInput.value = '';
+    if (emailInput) emailInput.value = '';
+    if (phoneInput) phoneInput.value = '';
+    if (passwordInput) passwordInput.value = '';
+    if (agreeCheckbox) agreeCheckbox.checked = false;
 });

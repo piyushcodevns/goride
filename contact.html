@@ -27,9 +27,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/navbar.css">
     <link rel="stylesheet" href="css/footer.css">
-    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/animations.css">
 
@@ -187,21 +187,21 @@
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="contact-name">Full Name <span aria-hidden="true">*</span></label>
-                                    <input type="text" id="contact-name" name="name" required aria-required="true" autocomplete="name" minlength="3" maxlength="50" pattern="[A-Za-z\s]+" placeholder="John Doe">
+                                    <input type="text" id="contact-name" name="name" required aria-required="true" autocomplete="name" minlength="3" maxlength="50" pattern="[A-Za-z\s]+" placeholder="Enter your full name...">
                                 </div>
                                 <div class="form-group">
                                     <label for="contact-email">Email <span aria-hidden="true">*</span></label>
-                                    <input type="email" id="contact-email" name="email" required aria-required="true" autocomplete="email" placeholder="john@goride.com">
+                                    <input type="email" id="contact-email" name="email" required aria-required="true" autocomplete="email" placeholder="Enter your email address...">
                                 </div>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="contact-phone">Phone <span aria-hidden="true">*</span></label>
-                                    <input type="tel" id="contact-phone" name="phone" required aria-required="true" autocomplete="tel" pattern="[0-9]{10}" maxlength="10" minlength="10" placeholder="9876543210">
+                                    <input type="tel" id="contact-phone" name="phone" required aria-required="true" autocomplete="tel" pattern="[0-9]{10}" maxlength="10" minlength="10" placeholder="Enter 10-digit mobile number...">
                                 </div>
                                 <div class="form-group">
                                     <label for="contact-subject">Subject <span aria-hidden="true">*</span></label>
-                                    <input type="text" id="contact-subject" name="subject" required aria-required="true" maxlength="100" placeholder="Issue Topic">
+                                    <input type="text" id="contact-subject" name="subject" required aria-required="true" maxlength="100" placeholder="Subject of your inquiry...">
                                 </div>
                             </div>
                             <div class="form-group">
@@ -395,7 +395,7 @@
     <footer class="site-footer">
         <div class="container">
             <div class="footer-grid">
-                <div>
+                <div class="footer-brand">
                     <a class="brand" href="index.html">
                         <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
                         <span>Go Ride</span>
@@ -421,11 +421,12 @@
                     </ul>
                 </div>
                 <div>
-                    <h3>Follow Us</h3>
+                    <h3>Services</h3>
                     <ul>
-                        <li><a>Instagram</a></li>
-                        <li><a>Twitter</a></li>
-                        <li><a>LinkedIn</a></li>
+                        <li><a href="booking.html">City Rides</a></li>
+                        <li><a href="driver-signup.html">Become a Driver</a></li>
+                        <li><a href="rides.html">Ride History</a></li>
+                        <li><a href="notifications.html">Notifications</a></li>
                     </ul>
                 </div>
             </div>
