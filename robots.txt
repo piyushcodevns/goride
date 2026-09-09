@@ -6,4 +6,4 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /logs/
 
-Sitemap: https://goride.com/sitemap.xml
+Sitemap: https://goride-frontend-c7p8.onrender.com/sitemap.xml
