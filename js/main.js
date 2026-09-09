@@ -1,55 +1,113 @@
-// Establish the global namespace
-window.GoRide = { utils: {}, config: {} };
+"use strict";
 
-const menuToggle = document.querySelector('.menu-toggle');
-const navLinks = document.querySelector('.nav-links');
+// Establish the global namespace safely without clobbering
+window.GoRide = window.GoRide || {};
+window.GoRide.utils = window.GoRide.utils || {};
+window.GoRide.config = window.GoRide.config || {};
 
-if (menuToggle && navLinks) {
-  menuToggle.addEventListener('click', () => {
-    navLinks.classList.toggle('active');
-  });
+// Reusable Toast System (fallback if helpers.js / toast.js not yet loaded)
+if (!window.GoRide.showToast) {
+  window.GoRide.showToast = (message, type = 'info') => {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toast-container';
+      container.className = 'toast-container';
+      container.setAttribute('aria-live', 'polite');
+      document.body.appendChild(container);
+    }
 
-  navLinks.querySelectorAll('a').forEach((link) => {
-    link.addEventListener('click', () => navLinks.classList.remove('active'));
-  });
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+
+    toast.offsetHeight; // Force reflow
+    toast.classList.add('is-visible');
+
+    setTimeout(() => {
+      toast.classList.remove('is-visible');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  };
+}
+if (!window.showToast) {
+  window.showToast = window.GoRide.showToast;
 }
 
-const faqItems = document.querySelectorAll('.faq-item');
+document.addEventListener('DOMContentLoaded', () => {
+  // Navigation Menu Toggle (Mobile Drawer)
+  const menuToggle = document.querySelector('.menu-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  const navButtons = document.querySelector('.nav-buttons');
 
-faqItems.forEach((item) => {
-  const button = item.querySelector('.faq-question');
-
-  if (!button) return;
-
-  const toggleFaq = () => {
-    const isOpen = item.classList.contains('is-open');
-
-    faqItems.forEach((entry) => {
-      entry.classList.remove('is-open');
-      const entryButton = entry.querySelector('.faq-question');
-      if (entryButton) {
-        entryButton.setAttribute('aria-expanded', 'false');
-      }
+  if (menuToggle && navLinks) {
+    menuToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+      if (navButtons) navButtons.classList.toggle('active');
+      const expanded = navLinks.classList.contains('active');
+      menuToggle.setAttribute('aria-expanded', expanded);
     });
 
-    if (!isOpen) {
-      item.classList.add('is-open');
-      button.setAttribute('aria-expanded', 'true');
-    }
-  };
+    navLinks.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('active');
+        if (navButtons) navButtons.classList.remove('active');
+      });
+    });
 
-  button.addEventListener('click', toggleFaq);
-  button.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      toggleFaq();
+    if (navButtons) {
+      navButtons.querySelectorAll('a, button').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          navLinks.classList.remove('active');
+          navButtons.classList.remove('active');
+        });
+      });
     }
+  }
+
+  // FAQ Accordion
+  const faqItems = document.querySelectorAll('.faq-item');
+  faqItems.forEach((item) => {
+    const button = item.querySelector('.faq-question');
+    if (!button) return;
+
+    const toggleFaq = () => {
+      const isOpen = item.classList.contains('is-open');
+
+      faqItems.forEach((entry) => {
+        entry.classList.remove('is-open');
+        const entryButton = entry.querySelector('.faq-question');
+        if (entryButton) {
+          entryButton.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      if (!isOpen) {
+        item.classList.add('is-open');
+        button.setAttribute('aria-expanded', 'true');
+      }
+    };
+
+    button.addEventListener('click', toggleFaq);
+    button.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        toggleFaq();
+      }
+    });
   });
-});
 
-// ==========================================
-// PORTFOLIO UX ENHANCEMENTS
-// ==========================================
+  // Dynamic Navbar Auth Sync fallback if helpers.js not loaded
+  const token = localStorage.getItem('goride_token');
+  if (token && (!window.GoRide.ui || !window.GoRide.ui.updateNavbar)) {
+    const loginBtns = document.querySelectorAll('a.login-btn[href="login.html"]');
+    loginBtns.forEach(btn => {
+      btn.href = 'profile.html';
+      btn.textContent = 'Profile';
+    });
+  }
+});
 
 // Page Loader Fade Out
 window.addEventListener('load', () => {
@@ -60,26 +118,6 @@ window.addEventListener('load', () => {
     }, 150);
   }
 });
-
-// Reusable Toast System
-window.GoRide.showToast = (message, type = 'info') => {
-  const container = document.getElementById('toast-container');
-  if (!container) return;
-
-  const toast = document.createElement('div');
-  toast.classList.add('toast', `toast-${type}`);
-  toast.innerText = message;
-  container.appendChild(toast);
-
-  // Trigger reflow
-  toast.offsetHeight;
-  toast.classList.add('is-visible');
-
-  setTimeout(() => {
-    toast.classList.remove('is-visible');
-    toast.addEventListener('transitionend', () => toast.remove());
-  }, 3000);
-};
 
 // Scroll to Top Button
 const scrollTopBtn = document.getElementById('backToTop');
@@ -103,30 +141,3 @@ if (scrollTopBtn) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 }
-
-// Toast Handlers for booking redirects
-document.querySelectorAll('a[href="booking.html"]').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    // Skip toast redirect if already on the booking page
-    if (window.location.pathname.endsWith('booking.html')) {
-      return;
-    }
-    e.preventDefault();
-    window.GoRide.showToast("Redirecting to booking portal...", "success");
-    setTimeout(() => {
-      window.location.href = btn.getAttribute('href');
-    }, 700);
-  });
-});
-
-// Dynamic Navbar Auth Sync
-document.addEventListener('DOMContentLoaded', () => {
-  const token = localStorage.getItem('goride_token');
-  if (token) {
-    const loginBtns = document.querySelectorAll('a.login-btn[href="login.html"]');
-    loginBtns.forEach(btn => {
-      btn.href = 'profile.html';
-      btn.textContent = 'Profile';
-    });
-  }
-});

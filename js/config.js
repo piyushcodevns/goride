@@ -2,10 +2,12 @@
 
 (function() {
     // ----------------------------------------------------
-    // CENTRALIZED APP CONFIGURATION CONSTANTS (V6)
+    // CENTRALIZED APP CONFIGURATION CONSTANTS
+    // Authoritative pricing is always calculated by backend /api/fare/calculate
     // ----------------------------------------------------
     window.APP_CONFIG = {
         CITY: "Varanasi",
+        BACKEND_CITY: "DEFAULT",
         COUNTRY: "IN",
         
         // Varanasi Cantt Center coordinates
@@ -15,7 +17,7 @@
         },
         
         DEFAULT_MAP_ZOOM: 13,
-        SERVICE_RADIUS_KM: 25, // 25 km geofence radius
+        SERVICE_RADIUS_KM: 25, // 25 km geofence service area
         
         // Strict boundary coordinates for Varanasi service area
         MAP_BOUNDS: {
@@ -25,16 +27,7 @@
             east: 83.10
         },
         
-        // Consolidated Fare Matrix
-        FARE: {
-            bike: { base: 40, perKm: 8 },
-            auto: { base: 50, perKm: 10 },
-            mini: { base: 70, perKm: 12 },
-            sedan: { base: 100, perKm: 16 },
-            suv: { base: 150, perKm: 20 }
-        },
-        
-        // API URLs and parameters
+        // External Geocoding & Routing Providers
         API: {
             PHOTON: "https://photon.komoot.io/api",
             NOMINATIM: "https://nominatim.openstreetmap.org",
@@ -46,8 +39,8 @@
         
         // UI Constants
         UI: {
-            TRANSITION_SPEED: 300, // in ms (.3s ease)
-            MIN_LOADER_DELAY: 1000 // min matching loader delay
+            TRANSITION_SPEED: 300, // ms (.3s ease)
+            MIN_LOADER_DELAY: 800  // matching loader overlay
         }
     };
 })();

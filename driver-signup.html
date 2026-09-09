@@ -75,55 +75,46 @@
     <main class="auth-section">
         <div class="container">
             <div class="auth-wrapper reveal">
-                <div class="auth-card" style="max-width: 550px;">
+                <div class="auth-card" style="max-width: 560px;">
                     <div class="auth-header">
                         <img src="assets/svg/logo.svg" alt="Go Ride logo" class="auth-logo" loading="lazy" decoding="async">
-                        <h2>Drive & Earn with Go Ride</h2>
-                        <p>Partner with us to enjoy flexible hours and great earnings in Varanasi</p>
+                        <h2>Drive &amp; Earn with Go Ride</h2>
+                        <p>Partner with Go Ride in Varanasi. Choose your hours and earn with every trip.</p>
                     </div>
 
-                    <form id="driver-form" class="auth-form" novalidate>
-                        <!-- Name input -->
-                        <div class="input-group">
-                            <label for="drv-name">Full Name</label>
-                            <div class="input-wrapper">
-                                <span class="input-icon" aria-hidden="true">👤</span>
-                                <input type="text" id="drv-name" name="name" placeholder="Enter your full name..." required autocomplete="name">
-                            </div>
-                        </div>
+                    <!-- Auth Required State -->
+                    <div id="driver-auth-gate" style="display: none; text-align: center; padding: 1.5rem 0;">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🔒</div>
+                        <h3 style="margin-bottom: 0.5rem;">Sign In Required</h3>
+                        <p style="color: var(--color-text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                            You need an active Go Ride customer account to apply as a driver partner.
+                        </p>
+                        <a href="login.html?returnUrl=driver-signup.html" class="primary-btn" style="display: inline-block; padding: 0.75rem 2rem;">
+                            Sign In to Continue
+                        </a>
+                        <p style="margin-top: 1rem; font-size: 0.88rem; color: var(--color-text-secondary);">
+                            Don't have an account? <a href="register.html">Create one here</a>
+                        </p>
+                    </div>
 
-                        <!-- Email input -->
-                        <div class="input-group">
-                            <label for="drv-email">Email Address</label>
-                            <div class="input-wrapper">
-                                <span class="input-icon" aria-hidden="true">✉️</span>
-                                <input type="email" id="drv-email" name="email" placeholder="Enter your email..." required autocomplete="email">
-                            </div>
+                    <!-- Driver Status Banner (if already registered) -->
+                    <div id="driver-status-card" style="display: none; padding: 1.5rem; border-radius: var(--radius-md); background: var(--color-primary-light); border: 1px solid rgba(37,99,235,0.2); margin-bottom: 1.5rem;">
+                        <h3 style="margin-top: 0; color: var(--color-primary); font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🚗</span> Driver Profile Active
+                        </h3>
+                        <p id="driver-status-msg" style="margin: 0.5rem 0 1rem; font-size: 0.92rem; color: var(--color-text-primary);"></p>
+                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                            <a href="profile.html" class="primary-btn" style="padding: 0.5rem 1.25rem; font-size: 0.88rem;">Go to Profile</a>
+                            <a href="booking.html" class="nav-btn nav-btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.88rem;">Customer Portal</a>
                         </div>
+                    </div>
 
-                        <!-- Phone input -->
-                        <div class="input-group">
-                            <label for="drv-phone">Phone Number</label>
-                            <div class="input-wrapper">
-                                <span class="input-icon" aria-hidden="true">📞</span>
-                                <input type="tel" id="drv-phone" name="phone" placeholder="Enter phone number..." required autocomplete="tel">
-                            </div>
-                        </div>
-
-                        <!-- Vehicle Type Dropdown -->
-                        <div class="input-group">
-                            <label for="drv-vehicle">Vehicle Type</label>
-                            <div class="input-wrapper">
-                                <span class="input-icon" aria-hidden="true">🏍️</span>
-                                <select id="drv-vehicle" name="vehicle" required>
-                                    <option value="" disabled selected>Select your vehicle type...</option>
-                                    <option value="bike">Motorcycle (Go Bike)</option>
-                                    <option value="auto">Auto Rickshaw (Go Auto)</option>
-                                    <option value="mini">Mini Hatchback (Go Mini)</option>
-                                    <option value="sedan">Sedan (Go Sedan)</option>
-                                    <option value="suv">SUV (Go SUV)</option>
-                                </select>
-                            </div>
+                    <!-- Registration Form -->
+                    <form id="driver-form" class="auth-form" novalidate style="display: none;">
+                        <!-- Current User Info Badge -->
+                        <div id="driver-applicant-info" style="padding: 0.75rem 1rem; background: var(--color-gray-100); border-radius: var(--radius-md); margin-bottom: 1.25rem; font-size: 0.88rem; color: var(--color-text-secondary);">
+                            Applying as: <strong id="applicant-name" style="color: var(--color-text-primary);"></strong>
+                            <span id="applicant-email" style="display: block; font-size: 0.82rem;"></span>
                         </div>
 
                         <!-- DL input -->
@@ -131,18 +122,42 @@
                             <label for="drv-dl">Driving License Number</label>
                             <div class="input-wrapper">
                                 <span class="input-icon" aria-hidden="true">🪪</span>
-                                <input type="text" id="drv-dl" name="license" placeholder="e.g. UP65202X0000000" required>
+                                <input type="text" id="drv-dl" name="licenseNumber" placeholder="e.g. UP6520240012345" required minlength="5" maxlength="30" autocomplete="off">
                             </div>
+                            <small class="error-msg" id="drv-dl-error" style="display:none; color: #DC2626; font-size: 0.78rem; margin-top: 0.25rem;"></small>
+                        </div>
+
+                        <!-- Aadhaar input -->
+                        <div class="input-group">
+                            <label for="drv-aadhar">Aadhaar Number (12 Digits)</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon" aria-hidden="true">🔢</span>
+                                <input type="text" id="drv-aadhar" name="aadharNumber" placeholder="12-digit Aadhaar number" required pattern="\d{12}" maxlength="12" inputmode="numeric" autocomplete="off">
+                            </div>
+                            <small class="error-msg" id="drv-aadhar-error" style="display:none; color: #DC2626; font-size: 0.78rem; margin-top: 0.25rem;"></small>
+                        </div>
+
+                        <!-- Experience input -->
+                        <div class="input-group">
+                            <label for="drv-experience">Driving Experience (Years)</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon" aria-hidden="true">⏱️</span>
+                                <input type="number" id="drv-experience" name="experience" placeholder="Years of experience (e.g. 3)" required min="0" max="60" step="1">
+                            </div>
+                            <small class="error-msg" id="drv-experience-error" style="display:none; color: #DC2626; font-size: 0.78rem; margin-top: 0.25rem;"></small>
                         </div>
 
                         <!-- Terms Checkbox -->
-                        <div class="auth-row">
+                        <div class="auth-row" style="margin-top: 0.5rem; margin-bottom: 1.25rem;">
                             <label class="remember-checkbox">
                                 <input type="checkbox" id="agree-terms" name="agree" required>
                                 <span class="checkbox-box"></span>
-                                <span class="checkbox-text">I agree to the driver <a href="terms.html" target="_blank">Terms &amp; Conditions</a></span>
+                                <span class="checkbox-text">I confirm all details are accurate and agree to the <a href="terms.html" target="_blank">Driver Partner Terms</a></span>
                             </label>
                         </div>
+
+                        <!-- Form status banner -->
+                        <div id="driver-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-sm); background: #FEE2E2; color: #991B1B; font-size: 0.88rem; margin-bottom: 1rem;"></div>
 
                         <!-- Submit button -->
                         <button type="submit" id="driver-submit-btn" class="primary-btn auth-submit-btn">
@@ -151,7 +166,7 @@
                     </form>
 
                     <div class="auth-footer">
-                        <p>Already registered? <a href="login.html">Sign In here</a></p>
+                        <p>Questions about driving with Go Ride? <a href="contact.html">Contact Support</a></p>
                     </div>
                 </div>
             </div>
@@ -193,38 +208,154 @@
         </div>
     </footer>
 
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
     <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/helpers.js"></script>
     <script src="js/main.js" defer></script>
     <script src="js/animations.js" defer></script>
     <script src="js/toast.js" defer></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            const api = window.GoRide && window.GoRide.api;
+            const toast = (window.GoRide && window.GoRide.showToast) || window.showToast;
+
+            const authGate = document.getElementById('driver-auth-gate');
+            const statusCard = document.getElementById('driver-status-card');
+            const statusMsg = document.getElementById('driver-status-msg');
             const form = document.getElementById('driver-form');
-            if (form) {
-                form.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    
-                    const name = document.getElementById('drv-name').value.trim();
-                    const email = document.getElementById('drv-email').value.trim();
-                    const phone = document.getElementById('drv-phone').value.trim();
-                    const vehicle = document.getElementById('drv-vehicle').value;
-                    const dl = document.getElementById('drv-dl').value.trim();
-                    const agree = document.getElementById('agree-terms').checked;
+            const submitBtn = document.getElementById('driver-submit-btn');
+            const errorBanner = document.getElementById('driver-form-error');
 
-                    if (!name || !email || !phone || !vehicle || !dl) {
-                        window.showToast("Please fill in all details.", "error");
-                        return;
-                    }
-                    if (!agree) {
-                        window.showToast("You must agree to the Terms & Conditions.", "error");
-                        return;
-                    }
+            const dlInput = document.getElementById('drv-dl');
+            const aadharInput = document.getElementById('drv-aadhar');
+            const expInput = document.getElementById('drv-experience');
+            const termsCheckbox = document.getElementById('agree-terms');
 
-                    // Success Mock submission
-                    window.showToast("Application submitted successfully!", "success");
-                    form.reset();
-                });
+            // 1. Verify Authentication
+            if (!api || !api.isAuthenticated()) {
+                if (authGate) authGate.style.display = 'block';
+                return;
             }
+
+            // Populate current user info
+            const currentUser = api.getCurrentUser();
+            if (currentUser) {
+                const nameEl = document.getElementById('applicant-name');
+                const emailEl = document.getElementById('applicant-email');
+                if (nameEl) nameEl.textContent = currentUser.fullName || currentUser.name || "Valued User";
+                if (emailEl) emailEl.textContent = `${currentUser.email || ""} • ${currentUser.phone || ""}`;
+            }
+
+            // 2. Check if already registered as driver
+            try {
+                const existing = await api.get('/api/driver/profile');
+                if (existing && existing.data) {
+                    const drv = existing.data;
+                    statusCard.style.display = 'block';
+                    statusMsg.innerHTML = `You have already registered as a driver partner. Current Application Status: <strong>${drv.status}</strong>.<br>License: ${drv.licenseNumber || "Recorded"} | Experience: ${drv.experience || 0} years.`;
+                    return;
+                }
+            } catch (err) {
+                // 404 is expected for fresh applicants
+                if (err.status && err.status !== 404) {
+                    console.warn("Could not check driver status:", err.message);
+                }
+            }
+
+            // Show Form for fresh applicant
+            form.style.display = 'block';
+
+            // Helpers for inline validation
+            const setFieldError = (elId, msg) => {
+                const errEl = document.getElementById(elId);
+                if (errEl) {
+                    errEl.textContent = msg;
+                    errEl.style.display = msg ? 'block' : 'none';
+                }
+            };
+
+            const clearAllErrors = () => {
+                setFieldError('drv-dl-error', '');
+                setFieldError('drv-aadhar-error', '');
+                setFieldError('drv-experience-error', '');
+                if (errorBanner) {
+                    errorBanner.style.display = 'none';
+                    errorBanner.textContent = '';
+                }
+            };
+
+            // Form Submit Handler
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                clearAllErrors();
+
+                const dlVal = dlInput.value.trim().toUpperCase();
+                const aadharVal = aadharInput.value.trim();
+                const expVal = expInput.value.trim();
+                const termsVal = termsCheckbox.checked;
+
+                let hasError = false;
+
+                if (!dlVal || dlVal.length < 5 || dlVal.length > 30) {
+                    setFieldError('drv-dl-error', 'Please enter a valid Driving License number (5-30 characters).');
+                    hasError = true;
+                }
+
+                if (!aadharVal || !/^\d{12}$/.test(aadharVal)) {
+                    setFieldError('drv-aadhar-error', 'Aadhaar number must be exactly 12 numeric digits.');
+                    hasError = true;
+                }
+
+                const expNum = parseInt(expVal, 10);
+                if (isNaN(expNum) || expNum < 0 || expNum > 60) {
+                    setFieldError('drv-experience-error', 'Please enter driving experience between 0 and 60 years.');
+                    hasError = true;
+                }
+
+                if (!termsVal) {
+                    if (toast) toast("You must agree to the Driver Partner Terms.", "error");
+                    hasError = true;
+                }
+
+                if (hasError) return;
+
+                const origBtnText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<span>⏳</span> Submitting Application...`;
+
+                try {
+                    const payload = {
+                        licenseNumber: dlVal,
+                        aadharNumber: aadharVal,
+                        experience: expNum
+                    };
+
+                    const response = await api.post('/api/driver/register', payload);
+
+                    if (response && response.success) {
+                        if (toast) toast("Driver application submitted successfully!", "success");
+                        form.reset();
+                        form.style.display = 'none';
+                        statusCard.style.display = 'block';
+                        statusMsg.innerHTML = `Your application has been received and is currently <strong>PENDING</strong> review by our operations team. We will notify you once verified.`;
+                    } else {
+                        throw new Error((response && response.message) || "Failed to register driver profile.");
+                    }
+                } catch (err) {
+                    const msg = err.message || "Failed to submit driver application. Please try again.";
+                    if (errorBanner) {
+                        errorBanner.textContent = msg;
+                        errorBanner.style.display = 'block';
+                    }
+                    if (toast) toast(msg, "error");
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = origBtnText;
+                }
+            });
         });
     </script>
 </body>

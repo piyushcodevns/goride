@@ -130,7 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (toastFn) toastFn("Login Successful! Redirecting to booking portal...", "success");
 
                 setTimeout(() => {
-                    window.location.href = 'booking.html';
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const returnUrl = urlParams.get('returnUrl') || 'booking.html';
+                    window.location.href = returnUrl;
                 }, 800);
             } else {
                 throw new Error(response.message || "Login failed.");

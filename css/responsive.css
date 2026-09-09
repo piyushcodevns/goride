@@ -124,6 +124,25 @@
 
   .nav-buttons {
     display: none;
+    order: 4;
+    width: 100%;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .nav-buttons.active {
+    display: flex;
+  }
+
+  .nav-buttons .login-btn,
+  .nav-buttons .book-btn,
+  .nav-buttons .nav-btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
   }
 
   .hero {

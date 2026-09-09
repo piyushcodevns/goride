@@ -178,12 +178,12 @@
                             <h3 class="subsection-title">Select Ride Type</h3>
                             <div class="vehicles-list" role="radiogroup" aria-label="Select ride type">
                                 <!-- Vehicle Item: Bike -->
-                                <div class="vehicle-item active" role="radio" aria-checked="true" tabindex="0" data-type="bike" data-base-fare="40" data-per-km="8">
+                                <div class="vehicle-item active" role="radio" aria-checked="true" tabindex="0" data-type="bike">
                                     <div class="vehicle-info">
                                         <span class="vehicle-icon" aria-hidden="true">🛵</span>
                                         <div>
                                             <h4>Bike</h4>
-                                            <p class="eta">Nearby • 2 min away</p>
+                                            <p class="eta">Nearby • Fast &amp; Affordable</p>
                                         </div>
                                     </div>
                                     <div class="vehicle-price">
@@ -193,12 +193,12 @@
                                 </div>
 
                                 <!-- Vehicle Item: Auto -->
-                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="auto" data-base-fare="50" data-per-km="10">
+                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="auto">
                                     <div class="vehicle-info">
                                         <span class="vehicle-icon" aria-hidden="true">🛺</span>
                                         <div>
                                             <h4>Auto</h4>
-                                            <p class="eta">Nearby • 3 min away</p>
+                                            <p class="eta">Nearby • Convenient</p>
                                         </div>
                                     </div>
                                     <div class="vehicle-price">
@@ -208,12 +208,12 @@
                                 </div>
 
                                 <!-- Vehicle Item: Mini -->
-                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="mini" data-base-fare="70" data-per-km="12">
+                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="mini">
                                     <div class="vehicle-info">
                                         <span class="vehicle-icon" aria-hidden="true">🚗</span>
                                         <div>
                                             <h4>Mini</h4>
-                                            <p class="eta">Nearby • 4 min away</p>
+                                            <p class="eta">Nearby • AC Compact</p>
                                         </div>
                                     </div>
                                     <div class="vehicle-price">
@@ -223,12 +223,12 @@
                                 </div>
 
                                 <!-- Vehicle Item: Sedan -->
-                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="sedan" data-base-fare="100" data-per-km="16">
+                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="sedan">
                                     <div class="vehicle-info">
                                         <span class="vehicle-icon" aria-hidden="true">🚘</span>
                                         <div>
                                             <h4>Sedan</h4>
-                                            <p class="eta">Nearby • 5 min away</p>
+                                            <p class="eta">Nearby • Spacious &amp; Comfortable</p>
                                         </div>
                                     </div>
                                     <div class="vehicle-price">
@@ -238,12 +238,12 @@
                                 </div>
 
                                 <!-- Vehicle Item: SUV -->
-                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="suv" data-base-fare="150" data-per-km="20">
+                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="suv">
                                     <div class="vehicle-info">
                                         <span class="vehicle-icon" aria-hidden="true">🚙</span>
                                         <div>
                                             <h4>SUV</h4>
-                                            <p class="eta">Nearby • 6 min away</p>
+                                            <p class="eta">Nearby • 6-Seater Family</p>
                                         </div>
                                     </div>
                                     <div class="vehicle-price">
@@ -296,32 +296,36 @@
                         <div class="fare-summary-container">
                             <div class="subsection-header">
                                 <h3 class="subsection-title">Fare Breakdown</h3>
-                                <span class="demo-badge">Demo Estimate</span>
+                                <span class="live-fare-badge" id="fare-status-badge">Select Route for Live Fare</span>
                             </div>
                             <div class="fare-card" role="region" aria-label="Fare summary detail">
                                 <div class="fare-row-detail">
                                     <span>Distance</span>
-                                    <span id="distance-val">0.0 KM</span>
+                                    <span id="distance-val">—</span>
                                 </div>
                                 <div class="fare-row-detail">
                                     <span>ETA</span>
-                                    <span id="eta-val">0 Mins</span>
+                                    <span id="eta-val">—</span>
                                 </div>
                                 <div class="fare-row-detail">
                                     <span>Base Fare</span>
-                                    <span id="base-fare-val">₹0.00</span>
+                                    <span id="base-fare-val">—</span>
                                 </div>
                                 <div class="fare-row-detail">
                                     <span>Distance Fare</span>
-                                    <span id="distance-fare-val">₹0.00</span>
+                                    <span id="distance-fare-val">—</span>
                                 </div>
                                 <div class="fare-row-detail">
                                     <span>Taxes &amp; Fees</span>
-                                    <span id="taxes-val">₹0.00</span>
+                                    <span id="taxes-val">—</span>
+                                </div>
+                                <div class="fare-row-detail discount" id="discount-fare-row" style="display: none; color: #16A34A;">
+                                    <span>Coupon Discount</span>
+                                    <span id="discount-val">-₹0.00</span>
                                 </div>
                                 <div class="fare-row-detail total">
                                     <span>Estimated Total</span>
-                                    <span id="total-fare-val">₹0.00</span>
+                                    <span id="total-fare-val">—</span>
                                 </div>
                             </div>
                         </div>
@@ -422,7 +426,10 @@
                     <strong class="accent-text">3 Mins</strong>
                 </div>
             </div>
-            <button type="button" id="close-modal-btn" class="primary-btn modal-btn">Done</button>
+            <div class="modal-actions" style="display: flex; gap: 12px; margin-top: 20px;">
+                <a href="ride.html" id="track-ride-btn" class="primary-btn modal-btn" style="flex: 1; text-align: center; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Track Ride</a>
+                <button type="button" id="close-modal-btn" class="secondary-btn modal-btn" style="flex: 1;">Book Another</button>
+            </div>
         </div>
     </div>
 

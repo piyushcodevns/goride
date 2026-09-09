@@ -1,15 +1,20 @@
 "use strict";
 
 (function() {
-    // Default API base URL: current origin if served together, or http://localhost:5000 in dev
-    const DEFAULT_API_BASE = (window.location.protocol.startsWith("http") && window.location.port !== "" && window.location.port !== "5000")
-        ? `${window.location.protocol}//${window.location.hostname}:5000`
-        : "";
+    // Determine API Base URL intelligently
+    let defaultBase = "http://localhost:5000";
+    if (window.location.protocol.startsWith("http")) {
+        if (window.location.port === "5000") {
+            defaultBase = "";
+        } else if (window.location.hostname) {
+            defaultBase = `${window.location.protocol}//${window.location.hostname}:5000`;
+        }
+    }
 
     window.GoRide = window.GoRide || {};
 
     const ApiHelper = {
-        BASE_URL: (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) || DEFAULT_API_BASE,
+        BASE_URL: (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) || defaultBase,
 
         getToken: function() {
             return localStorage.getItem("goride_token") || "";
@@ -125,10 +130,177 @@
             });
         },
 
+        patch: function(endpoint, body, headers = {}) {
+            return this.request(endpoint, {
+                method: "PATCH",
+                headers,
+                body: body ? JSON.stringify(body) : undefined
+            });
+        },
+
         delete: function(endpoint, headers = {}) {
             return this.request(endpoint, { method: "DELETE", headers });
         }
     };
 
+    // UI Formatting and navigation helpers
+    const UIHelpers = {
+        formatCurrency: function(amount) {
+            const val = Number(amount) || 0;
+            return `₹${val.toFixed(2)}`;
+        },
+
+        formatDate: function(dateStr) {
+            if (!dateStr) return "N/A";
+            try {
+                const d = new Date(dateStr);
+                return d.toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+            } catch (e) {
+                return dateStr;
+            }
+        },
+
+        formatStatus: function(status) {
+            if (!status) return { label: "UNKNOWN", className: "badge-secondary" };
+            const map = {
+                "REQUESTED": { label: "Requested", className: "badge-warning" },
+                "SEARCHING": { label: "Searching Driver", className: "badge-info" },
+                "DRIVER_ASSIGNED": { label: "Driver Assigned", className: "badge-info" },
+                "ACCEPTED": { label: "Accepted", className: "badge-primary" },
+                "ARRIVED": { label: "Driver Arrived", className: "badge-primary" },
+                "STARTED": { label: "On Trip", className: "badge-primary" },
+                "COMPLETED": { label: "Completed", className: "badge-success" },
+                "CANCELLED": { label: "Cancelled", className: "badge-danger" },
+                "REJECTED": { label: "Rejected", className: "badge-secondary" },
+                "PENDING": { label: "Pending", className: "badge-warning" },
+                "SUCCESS": { label: "Success", className: "badge-success" },
+                "FAILED": { label: "Failed", className: "badge-danger" },
+                "REFUNDED": { label: "Refunded", className: "badge-secondary" }
+            };
+            return map[status] || { label: status, className: "badge-secondary" };
+        },
+
+        showToast: function(message, type = "info") {
+            if (window.GoRide && typeof window.GoRide.showToast === "function" && window.GoRide.showToast !== UIHelpers.showToast) {
+                window.GoRide.showToast(message, type);
+                return;
+            }
+            let container = document.getElementById("toast-container");
+            if (!container) {
+                container = document.createElement("div");
+                container.id = "toast-container";
+                container.className = "toast-container";
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement("div");
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add("fade-out");
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        },
+
+        updateNavbar: function() {
+            const navButtons = document.querySelector(".nav-buttons");
+            const navLinks = document.querySelector(".nav-links");
+            const isAuth = ApiHelper.isAuthenticated();
+            const user = ApiHelper.getCurrentUser();
+
+            if (navButtons) {
+                if (isAuth && user) {
+                    const firstName = (user.fullName || "Account").split(" ")[0];
+                    navButtons.innerHTML = `
+                        <a href="notifications.html" class="nav-btn nav-btn-outline nav-btn-notif" title="Notifications" style="position: relative;">
+                            <span>🔔</span>
+                            <span id="nav-unread-badge" class="nav-badge" style="display: none; position: absolute; top: -5px; right: -5px; background: #DC2626; color: #fff; font-size: 0.68rem; font-weight: 700; border-radius: 999px; padding: 2px 6px; min-width: 16px; text-align: center; line-height: 1.1;">0</span>
+                        </a>
+                        <a href="rides.html" class="nav-btn nav-btn-outline" title="My Rides">
+                            <span>🚗 My Rides</span>
+                        </a>
+                        <a href="profile.html" class="nav-btn nav-btn-profile" title="Profile">
+                            <span class="user-avatar-mini">${firstName.charAt(0).toUpperCase()}</span>
+                            <span>${firstName}</span>
+                        </a>
+                        <button type="button" id="nav-logout-btn" class="nav-btn nav-btn-logout" title="Log Out">Logout</button>
+                    `;
+
+                    // Fetch unread count for badge
+                    ApiHelper.get("/api/notifications/unread-count").then(res => {
+                        const count = (res && res.data && res.data.unreadCount) || 0;
+                        const badge = document.getElementById("nav-unread-badge");
+                        if (badge) {
+                            if (count > 0) {
+                                badge.textContent = count > 99 ? "99+" : count;
+                                badge.style.display = "inline-block";
+                            } else {
+                                badge.style.display = "none";
+                            }
+                        }
+                    }).catch(() => {});
+
+                    const logoutBtn = document.getElementById("nav-logout-btn");
+                    if (logoutBtn) {
+                        logoutBtn.addEventListener("click", () => {
+                            ApiHelper.clearAuth();
+                            UIHelpers.showToast("Logged out successfully.", "info");
+                            setTimeout(() => {
+                                window.location.href = "index.html";
+                            }, 500);
+                        });
+                    }
+                } else {
+                    navButtons.innerHTML = `
+                        <a href="login.html" class="login-btn">Login</a>
+                        <a href="booking.html" class="book-btn">Book Ride</a>
+                    `;
+                }
+            }
+
+            if (navLinks && isAuth) {
+                const becomeDriver = navLinks.querySelector('a[href="driver-signup.html"]');
+                const targetParent = becomeDriver ? becomeDriver.parentElement : null;
+
+                const existingRidesLink = navLinks.querySelector('a[href="rides.html"]');
+                if (!existingRidesLink) {
+                    const li = document.createElement("li");
+                    li.innerHTML = '<a class="nav-link" href="rides.html">My Rides</a>';
+                    if (targetParent) {
+                        navLinks.insertBefore(li, targetParent);
+                    } else {
+                        navLinks.appendChild(li);
+                    }
+                }
+
+                const existingNotifLink = navLinks.querySelector('a[href="notifications.html"]');
+                if (!existingNotifLink) {
+                    const li = document.createElement("li");
+                    li.innerHTML = '<a class="nav-link" href="notifications.html">Notifications</a>';
+                    if (targetParent) {
+                        navLinks.insertBefore(li, targetParent);
+                    } else {
+                        navLinks.appendChild(li);
+                    }
+                }
+            }
+        }
+    };
+
     window.GoRide.api = ApiHelper;
+    window.GoRide.ui = UIHelpers;
+    window.GoRide.showToast = UIHelpers.showToast;
+
+    // Run updateNavbar on DOMContentLoaded
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", UIHelpers.updateNavbar);
+    } else {
+        UIHelpers.updateNavbar();
+    }
 })();

@@ -66,13 +66,13 @@
             fetch(url, { signal })
                 .then(res => res.json())
                 .then(data => {
-                    const results = (data.features || []).map(feature => {
+                    const results = (data.features || []).map((feature, idx) => {
                         const props = feature.properties;
                         const mainText = props.name;
                         const secText = [props.street, props.city, props.state].filter(Boolean).join(', ') || "Varanasi, Uttar Pradesh";
                         
                         return {
-                            placeId: `photon-${props.osm_id || Math.random()}`,
+                            placeId: `photon-${props.osm_id || (Date.now() + '_' + idx)}`,
                             name: mainText,
                             address: `${mainText}, ${secText}`,
                             lat: parseFloat(feature.geometry.coordinates[1]),

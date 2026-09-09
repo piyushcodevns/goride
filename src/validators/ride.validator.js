@@ -43,7 +43,7 @@ const createRideSchema = z
       .min(-180, "Invalid destination longitude.")
       .max(180, "Invalid destination longitude."),
 
-    vehicleType: z.enum(["BIKE", "AUTO", "CAR"], {
+    vehicleType: z.enum(["BIKE", "AUTO", "CAR", "SUV"], {
       required_error: "Vehicle type is required.",
       invalid_type_error: "Invalid vehicle type.",
     }),

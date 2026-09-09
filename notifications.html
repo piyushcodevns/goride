@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Notifications | Go Ride</title>
+    <meta name="description" content="Manage and view your Go Ride ride alerts, system updates, and promotional messages.">
+    <meta name="theme-color" content="#2563EB">
+
+    <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+
+    <style>
+        .notif-hero {
+            background: linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%);
+            color: #ffffff;
+            padding: 2.5rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .notif-hero h1 {
+            font-size: 1.85rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem;
+            color: #ffffff;
+        }
+
+        .notif-hero p {
+            color: #DBEAFE;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .notif-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .tab-btn {
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            padding: 0.55rem 1.25rem;
+            border-radius: var(--radius-full);
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background: var(--color-gray-100);
+            color: var(--color-text-primary);
+        }
+
+        .tab-btn.active {
+            background: var(--color-primary);
+            color: #ffffff;
+            border-color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .mark-all-btn {
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            color: var(--color-text-primary);
+            padding: 0.55rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all var(--transition-fast);
+        }
+
+        .mark-all-btn:hover {
+            background: var(--color-gray-100);
+            border-color: var(--color-gray-300);
+        }
+
+        .notifications-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .notif-card {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            padding: 1.25rem 1.5rem;
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+
+        .notif-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: rgba(37, 99, 235, 0.3);
+        }
+
+        .notif-card.is-unread {
+            background: #F8FAFC;
+            border-left: 4px solid var(--color-primary);
+        }
+
+        .notif-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            background: var(--color-primary-light);
+            color: var(--color-primary);
+        }
+
+        .notif-content {
+            flex-grow: 1;
+        }
+
+        .notif-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.35rem;
+            flex-wrap: wrap;
+        }
+
+        .notif-title {
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin: 0;
+        }
+
+        .notif-time {
+            font-size: 0.8rem;
+            color: var(--color-text-secondary);
+        }
+
+        .notif-message {
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+            margin: 0 0 0.65rem;
+            line-height: 1.5;
+        }
+
+        .notif-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .notif-action-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--color-primary);
+            text-decoration: underline;
+        }
+
+        .notif-action-btn.delete-btn {
+            color: #DC2626;
+        }
+
+        .unread-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            margin-left: 6px;
+        }
+
+        /* Empty & Loading States */
+        .notif-empty-state {
+            text-align: center;
+            padding: 4rem 1.5rem;
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            border: 1px dashed var(--color-border);
+            margin-bottom: 3rem;
+        }
+
+        .notif-empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .notif-empty-state h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-text-primary);
+        }
+
+        .notif-empty-state p {
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+            max-width: 420px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .notif-skeleton {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            border: 1px solid var(--color-border);
+            margin-bottom: 1rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        .skeleton-line {
+            height: 12px;
+            background: var(--color-gray-200);
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .notif-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .notif-pagination button {
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            padding: 0.5rem 1.25rem;
+            border-radius: var(--radius-full);
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .notif-pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .notif-pagination button:not(:disabled):hover {
+            background: var(--color-gray-100);
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Loader -->
+    <div id="page-loader" aria-hidden="true"></div>
+
+    <!-- Reusable Navbar -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar" aria-label="Primary navigation">
+                <a class="brand" href="index.html">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                    <span>Go Ride</span>
+                </a>
+
+                <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
+
+                <ul class="nav-links">
+                    <li><a class="nav-link" href="index.html">Home</a></li>
+                    <li><a class="nav-link" href="services.html">Services</a></li>
+                    <li><a class="nav-link" href="index.html#safety">Safety</a></li>
+                    <li><a class="nav-link" href="about.html">About</a></li>
+                    <li><a class="nav-link" href="contact.html">Contact</a></li>
+                    <li><a class="nav-link highlight-link" href="driver-signup.html">Become Driver</a></li>
+                </ul>
+
+                <div class="nav-buttons">
+                    <a href="login.html" class="login-btn">Login</a>
+                    <a href="booking.html" class="book-btn">Book Ride</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <div class="notif-hero">
+        <div class="container">
+            <h1>Notifications &amp; Alerts</h1>
+            <p>Stay informed about your ride statuses, receipts, and platform updates.</p>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="container">
+        <!-- Auth Gate for unauthenticated users -->
+        <div id="notif-auth-gate" style="display: none; text-align: center; padding: 4rem 1.5rem; background: #fff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); margin-bottom: 3rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+            <h2 style="margin-bottom: 0.5rem;">Sign In to View Notifications</h2>
+            <p style="color: var(--color-text-secondary); max-width: 440px; margin: 0 auto 1.5rem;">
+                Please sign in to your Go Ride account to see your real-time alerts, ride status notifications, and updates.
+            </p>
+            <a href="login.html?returnUrl=notifications.html" class="primary-btn" style="display: inline-block; padding: 0.75rem 2rem;">
+                Sign In
+            </a>
+        </div>
+
+        <div id="notif-authenticated-section" style="display: none;">
+            <!-- Controls Bar -->
+            <div class="notif-controls">
+                <div class="filter-tabs">
+                    <button class="tab-btn active" data-filter="all">All</button>
+                    <button class="tab-btn" data-filter="unread">Unread (<span id="unread-counter-badge">0</span>)</button>
+                </div>
+
+                <div>
+                    <button id="mark-all-read-btn" class="mark-all-btn" type="button">
+                        <span>✓✓</span> Mark All as Read
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading Skeleton -->
+            <div id="notif-loading" style="display: none;">
+                <div class="notif-skeleton">
+                    <div class="skeleton-line" style="width: 40%;"></div>
+                    <div class="skeleton-line" style="width: 80%;"></div>
+                    <div class="skeleton-line" style="width: 25%;"></div>
+                </div>
+                <div class="notif-skeleton">
+                    <div class="skeleton-line" style="width: 35%;"></div>
+                    <div class="skeleton-line" style="width: 75%;"></div>
+                    <div class="skeleton-line" style="width: 30%;"></div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="notif-empty" class="notif-empty-state" style="display: none;">
+                <div class="notif-empty-icon">🔔</div>
+                <h3>No Notifications</h3>
+                <p>You are all caught up! Updates regarding your booked rides and account activity will appear here.</p>
+                <a href="booking.html" class="primary-btn" style="display: inline-block; padding: 0.65rem 1.5rem;">Book a Ride</a>
+            </div>
+
+            <!-- List -->
+            <div id="notif-list" class="notifications-list"></div>
+
+            <!-- Pagination -->
+            <div id="notif-pagination" class="notif-pagination" style="display: none;">
+                <button id="prev-page-btn" type="button">Previous</button>
+                <span id="page-indicator" style="font-size: 0.9rem; color: var(--color-text-secondary);">Page 1 of 1</span>
+                <button id="next-page-btn" type="button">Next</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <a class="brand" href="index.html">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                        <span>Go Ride</span>
+                    </a>
+                    <p>Ride smarter, ride better with dependable travel for every journey in Varanasi.</p>
+                </div>
+                <div>
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="booking.html">Book Ride</a></li>
+                        <li><a href="terms.html">Terms &amp; Conditions</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="rides.html">My Rides</a></li>
+                        <li><a href="notifications.html">Notifications</a></li>
+                        <li><a href="profile.html">Profile</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">&copy; 2026 Go Ride Technologies. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/helpers.js"></script>
+    <script src="js/main.js" defer></script>
+    <script src="js/animations.js" defer></script>
+    <script src="js/toast.js" defer></script>
+    <script src="js/notifications.js" defer></script>
+</body>
+</html>

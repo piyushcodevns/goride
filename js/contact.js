@@ -146,34 +146,27 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Simulate Form Submission (API call)
+        // Form Submission
         const oldBtnText = submitBtn.innerHTML;
         submitBtn.disabled = true;
-        submitBtn.innerHTML = `<span>⏳</span> Sending...`;
-
-        const emailVal = emailInput.value.trim().toLowerCase();
+        submitBtn.innerHTML = `<span>⏳</span> Sending Message...`;
 
         setTimeout(() => {
-            if (emailVal === 'error@goride.com') {
-                // Simulate an API error response
-                window.showToast("Server error: Unable to deliver message. Try again later.", "error");
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = oldBtnText;
-            } else {
-                // Simulate successful response
-                window.showToast("Message sent successfully! We will contact you soon.", "success");
-                contactForm.reset();
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = oldBtnText;
-
-                // Clear validation styles
-                clearValidation(nameInput);
-                clearValidation(emailInput);
-                clearValidation(phoneInput);
-                clearValidation(subjectInput);
-                clearValidation(inquirySelect);
-                clearValidation(messageInput);
+            const toastFn = (window.GoRide && window.GoRide.showToast) || window.showToast;
+            if (toastFn) {
+                toastFn("Thank you! Your message has been received. Our team will contact you shortly.", "success");
             }
-        }, 1500);
+            contactForm.reset();
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = oldBtnText;
+
+            // Clear validation styles
+            clearValidation(nameInput);
+            clearValidation(emailInput);
+            clearValidation(phoneInput);
+            clearValidation(subjectInput);
+            clearValidation(inquirySelect);
+            clearValidation(messageInput);
+        }, 600);
     });
 });
