@@ -1,105 +1,95 @@
 /* ==========================================================================
-   GO RIDE - AUTHENTICATION STYLES (PROFESSIONAL PRODUCTION V2)
+   GO RIDE - AUTHENTICATION STYLES (PREMIUM COMMERCIAL V3)
    ========================================================================== */
 
-/* Auth Layout Section with Ride-Booking Ambient Theme */
+/* Auth Layout Section: Deep atmospheric GoRide blue theme */
 .auth-section {
   position: relative;
+  min-height: calc(100vh - 76px);
   padding: clamp(2.5rem, 5vw, 4.5rem) 1rem;
-  min-height: calc(100vh - 76px - 280px);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #F8FAFC;
-  background-image:
-    /* Atmospheric depth and lighting overlays */
-    radial-gradient(ellipse 80% 50% at 50% -5%, rgba(37, 99, 235, 0.12) 0%, transparent 70%),
-    radial-gradient(circle 480px at 12% 88%, rgba(16, 185, 129, 0.08) 0%, transparent 65%),
-    radial-gradient(circle 420px at 88% 28%, rgba(37, 99, 235, 0.09) 0%, transparent 65%),
-    /* Subtle city road & transit grid mesh */
-    linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.07) 1px, transparent 1px),
-    /* Base subtle gradient */
-    linear-gradient(180deg, #F1F5F9 0%, #F8FAFC 50%, #EDF2F7 100%);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px, 100% 100%;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 10%, rgba(37, 99, 235, 0.42) 0%, transparent 70%),
+    radial-gradient(circle 600px at 15% 85%, rgba(16, 185, 129, 0.22) 0%, transparent 60%),
+    radial-gradient(circle 550px at 85% 75%, rgba(30, 64, 175, 0.38) 0%, transparent 60%),
+    linear-gradient(150deg, #0B1528 0%, #172554 40%, #1E3A8A 75%, #1D4ED8 100%);
   overflow: hidden;
+  z-index: 1;
 }
 
-/* Subtle background ambient accents using existing GoRide SVG assets */
-.auth-section::before,
+/* Background Scene: Clearly visible ride/city/road scene with controlled blur */
+.auth-section::before {
+  content: '';
+  position: absolute;
+  inset: -30px;
+  background-image:
+    /* Soft blue overlay gradient to balance lighting, depth, and contrast */
+    linear-gradient(135deg, rgba(15, 23, 42, 0.52) 0%, rgba(30, 58, 138, 0.42) 45%, rgba(37, 99, 235, 0.38) 100%),
+    url('../assets/svg/services-hero.svg');
+  background-position: center 62%;
+  background-repeat: no-repeat;
+  background-size: max(920px, 75vw) auto;
+  filter: blur(4px);
+  transform: scale(1.06);
+  opacity: 0.88;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Atmospheric depth, transit network geometry & soft lighting overlay */
 .auth-section::after {
   content: '';
   position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 50%, transparent 25%, rgba(11, 21, 40, 0.60) 100%),
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 48px 48px, 48px 48px;
   pointer-events: none;
-  z-index: 0;
-  transition: opacity 0.3s ease;
-}
-
-/* Left side: Network route map watermark */
-.auth-section::before {
-  width: 500px;
-  height: 500px;
-  top: -40px;
-  left: max(-80px, calc(50% - 660px));
-  background: url('../assets/svg/about-hero.svg') no-repeat center center;
-  background-size: contain;
-  opacity: 0.16;
-  filter: blur(1.5px);
-}
-
-/* Right side: Ride booking illustration watermark */
-.auth-section::after {
-  width: 460px;
-  height: 460px;
-  bottom: -30px;
-  right: max(-80px, calc(50% - 630px));
-  background: url('../assets/svg/hero-illustration.svg') no-repeat center center;
-  background-size: contain;
-  opacity: 0.12;
-  filter: blur(1.5px);
+  z-index: 1;
 }
 
 .auth-wrapper {
-  max-width: 470px;
+  max-width: 480px;
   margin: 0 auto;
   width: 100%;
   position: relative;
-  z-index: 1;
+  z-index: 5;
 }
 
 /* Controlled soft glow backdrop behind the auth card */
 .auth-wrapper::before {
   content: '';
   position: absolute;
-  inset: -10px;
-  background: radial-gradient(circle at 50% 25%, rgba(37, 99, 235, 0.11) 0%, rgba(16, 185, 129, 0.06) 60%, transparent 80%);
-  border-radius: 28px;
-  filter: blur(18px);
+  inset: -14px;
+  background: radial-gradient(circle at 50% 30%, rgba(37, 99, 235, 0.48) 0%, rgba(16, 185, 129, 0.22) 60%, transparent 85%);
+  border-radius: 34px;
+  filter: blur(28px);
   z-index: -1;
   pointer-events: none;
 }
 
-/* Modernized Card */
+/* Sharp, Crisp, White Glassmorphic Elevation Card */
 .auth-card {
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid rgba(226, 232, 240, 0.95);
-  border-radius: 20px;
-  padding: clamp(2rem, 5vw, 2.75rem) clamp(1.5rem, 5vw, 2.25rem);
+  background: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 22px;
+  padding: clamp(2.2rem, 5vw, 2.85rem) clamp(1.6rem, 5vw, 2.4rem);
   box-shadow:
-    0 1px 3px rgba(15, 23, 42, 0.03),
-    0 10px 28px -4px rgba(15, 23, 42, 0.06),
-    0 24px 48px -12px rgba(37, 99, 235, 0.09);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    0 4px 6px -1px rgba(0, 0, 0, 0.12),
+    0 20px 35px -5px rgba(0, 0, 0, 0.28),
+    0 35px 65px -15px rgba(15, 23, 42, 0.45);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .auth-card:hover {
-  border-color: rgba(37, 99, 235, 0.35);
   box-shadow:
-    0 1px 3px rgba(15, 23, 42, 0.04),
-    0 14px 34px -4px rgba(15, 23, 42, 0.09),
-    0 32px 64px -12px rgba(37, 99, 235, 0.14);
+    0 6px 12px -1px rgba(0, 0, 0, 0.15),
+    0 25px 45px -5px rgba(0, 0, 0, 0.32),
+    0 40px 75px -15px rgba(15, 23, 42, 0.55);
 }
 
 .auth-header {
@@ -499,5 +489,61 @@ select.input-error:focus {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.6rem;
+  }
+}
+
+/* Toast overrides for high-visibility auth notifications */
+.toast-container {
+  position: fixed !important;
+  top: 1.5rem !important;
+  right: 1.5rem !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+  pointer-events: none !important;
+}
+
+.toast {
+  padding: 0.9rem 1.6rem !important;
+  border-radius: 12px !important;
+  font-size: 0.94rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3) !important;
+  pointer-events: auto !important;
+  transform: translateY(-20px) !important;
+  opacity: 0 !important;
+  transition: transform 0.25s ease, opacity 0.2s ease !important;
+}
+
+.toast.is-visible {
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+}
+
+.toast-success {
+  background: #064E3B !important;
+  color: #FFFFFF !important;
+  border-left: 5px solid #10B981 !important;
+}
+
+.toast-error {
+  background: #7F1D1D !important;
+  color: #FFFFFF !important;
+  border-left: 5px solid #EF4444 !important;
+}
+
+@media (max-width: 640px) {
+  .toast-container {
+    top: 1rem !important;
+    right: 1rem !important;
+    left: 1rem !important;
+  }
+  .toast {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
   }
 }

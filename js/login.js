@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return showError(emailInput, "Email address is required.");
         }
         if (!emailRegex.test(val)) {
-            return showError(emailInput, "Please enter a valid email address.");
+            return showError(emailInput, "Invalid email address.");
         }
         return clearError(emailInput);
     };
@@ -128,13 +128,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Explicitly ensure no credentials or personal emails persist in localStorage
                 localStorage.removeItem('goride_user_email');
 
+                // Visual button success state
+                submitBtn.disabled = true;
+                submitBtn.style.background = "linear-gradient(135deg, #10B981 0%, #059669 100%)";
+                submitBtn.innerHTML = `<span>✓</span> Login successful.`;
+
                 if (toastFn) toastFn("Login successful.", "success");
 
                 setTimeout(() => {
                     const urlParams = new URLSearchParams(window.location.search);
                     const returnUrl = urlParams.get('returnUrl') || 'booking.html';
                     window.location.href = returnUrl;
-                }, 800);
+                }, 1000);
             } else {
                 throw new Error(response.message || "Login failed.");
             }
@@ -143,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (toastFn) toastFn(msg, "error");
             showError(passwordInput, msg);
             submitBtn.disabled = false;
+            submitBtn.style.background = '';
             submitBtn.innerHTML = oldBtnText;
             passwordInput.value = '';
             passwordInput.focus();

@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return showError(emailInput, "Email address is required.");
         }
         if (!emailRegex.test(val)) {
-            return showError(emailInput, "Please enter a valid email address.");
+            return showError(emailInput, "Invalid email address.");
         }
         return clearError(emailInput);
     };
@@ -212,11 +212,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     api.setCurrentUser(response.data.user);
                 }
 
+                // Visual button success state
+                submitBtn.disabled = true;
+                submitBtn.style.background = "linear-gradient(135deg, #10B981 0%, #059669 100%)";
+                submitBtn.innerHTML = `<span>✓</span> Account created successfully.`;
+
                 if (toastFn) toastFn("Account created successfully.", "success");
 
                 setTimeout(() => {
                     window.location.href = 'login.html';
-                }, 1000);
+                }, 1200);
             } else {
                 throw new Error(response.message || "Registration failed.");
             }
@@ -232,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (toastFn) toastFn(msg, "error");
             submitBtn.disabled = false;
+            submitBtn.style.background = '';
             submitBtn.innerHTML = oldBtnText;
             if (msg.toLowerCase().includes("email")) {
                 showError(emailInput, "This email already exists.");
