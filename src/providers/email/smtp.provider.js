@@ -1,17 +1,69 @@
-const transporter = require("../../config/mail");
 const EmailProvider = require("./email.provider");
+const { EmailProviderError } = require("../../utils/AppError");
+
+const RESEND_API_URL = "https://api.resend.com/emails";
+const REQUEST_TIMEOUT_MS = 10000;
 
 class SMTPProvider extends EmailProvider {
   async send({ to, subject, html, text }) {
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to,
-      subject,
-      html,
-      text,
-    });
+    const apiKey = process.env.RESEND_API_KEY;
 
-    return info;
+    if (!apiKey) {
+      throw new EmailProviderError("RESEND_API_KEY is not configured.");
+    }
+
+    const payload = {
+      from: process.env.EMAIL_FROM || "GoRide <onboarding@resend.dev>",
+      to: Array.isArray(to) ? to : [to],
+      subject,
+    };
+
+    if (html) {
+      payload.html = html;
+    }
+    if (text) {
+      payload.text = text;
+    }
+
+    let response;
+    try {
+      response = await fetch(RESEND_API_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
+    } catch (networkError) {
+      throw new EmailProviderError(
+        networkError.name === "TimeoutError"
+          ? "Email delivery timed out."
+          : `Email delivery network failure: ${networkError.message}`
+      );
+    }
+
+    if (!response.ok) {
+      let errorMessage = `Resend API returned status ${response.status}`;
+      try {
+        const errorData = await response.json();
+        if (errorData?.message) {
+          errorMessage = errorData.message;
+        }
+      } catch {
+        // Ignore JSON parsing failure for error response
+      }
+      throw new EmailProviderError(errorMessage);
+    }
+
+    const data = await response.json();
+
+    return {
+      id: data.id,
+      messageId: data.id,
+      ...data,
+    };
   }
 }
 
