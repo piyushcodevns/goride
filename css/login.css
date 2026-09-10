@@ -2,7 +2,7 @@
    GO RIDE - AUTHENTICATION STYLES (PREMIUM COMMERCIAL V3)
    ========================================================================== */
 
-/* Auth Layout Section: Deep atmospheric GoRide blue theme */
+/* Auth Layout Section: Master Atmospheric GoRide blue background */
 .auth-section {
   position: relative;
   min-height: 100vh;
@@ -15,133 +15,43 @@
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(ellipse 90% 70% at 50% 10%, rgba(37, 99, 235, 0.42) 0%, transparent 70%),
-    radial-gradient(circle 600px at 15% 85%, rgba(16, 185, 129, 0.22) 0%, transparent 60%),
-    radial-gradient(circle 550px at 85% 75%, rgba(30, 64, 175, 0.38) 0%, transparent 60%),
-    linear-gradient(150deg, #0B1528 0%, #172554 40%, #1E3A8A 75%, #1D4ED8 100%);
+    radial-gradient(ellipse 90% 70% at 50% 10%, rgba(37, 99, 235, 0.14) 0%, transparent 70%),
+    radial-gradient(circle 600px at 15% 85%, rgba(16, 185, 129, 0.08) 0%, transparent 60%),
+    radial-gradient(circle 550px at 85% 75%, rgba(30, 64, 175, 0.12) 0%, transparent 60%),
+    linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #E2E8F0 100%);
   overflow: hidden;
   z-index: 1;
 }
 
-/* Translucent glass navbar floating over atmospheric blue ride scene */
-.header {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 1100 !important;
-  background: rgba(255, 255, 255, 0.14) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
-  box-shadow: 0 4px 24px -2px rgba(15, 23, 42, 0.12) !important;
-  transition: all 0.2s ease !important;
-}
-
-.header.is-scrolled {
-  background: rgba(15, 23, 42, 0.35) !important;
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.24) !important;
-  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.28) !important;
-}
-
-.header .brand span {
-  color: #FFFFFF !important;
-}
-
-.header .nav-link {
-  color: rgba(255, 255, 255, 0.92) !important;
-  font-weight: 500 !important;
-}
-
-.header .nav-link:hover,
-.header .nav-link:focus-visible {
-  color: #FFFFFF !important;
-  background: rgba(255, 255, 255, 0.16) !important;
-}
-
-.header .nav-link.is-active,
-.header .nav-link[aria-current="page"] {
-  color: #FFFFFF !important;
-  background: rgba(255, 255, 255, 0.22) !important;
-  font-weight: 600 !important;
-}
-
-.header .nav-link.highlight-link {
-  color: #FFFFFF !important;
-  background: rgba(16, 185, 129, 0.25) !important;
-  border: 1.5px solid #10B981 !important;
-}
-
-.header .nav-link.highlight-link:hover {
-  background: #10B981 !important;
-  color: #FFFFFF !important;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
-}
-
-.header .login-btn {
-  background: rgba(255, 255, 255, 0.22) !important;
-  color: #FFFFFF !important;
-  border: 1px solid rgba(255, 255, 255, 0.35) !important;
-}
-
-.header .login-btn:hover {
-  background: #FFFFFF !important;
-  color: #2563EB !important;
-}
-
-.header .book-btn {
-  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
-  color: #FFFFFF !important;
-  border: 1px solid rgba(255, 255, 255, 0.35) !important;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
-}
-
-.header .menu-toggle {
-  color: #FFFFFF !important;
-  border-color: rgba(255, 255, 255, 0.35) !important;
-}
-
-@media (max-width: 992px) {
-  .header .nav-links.active,
-  .header .nav-buttons.active {
-    background: rgba(15, 23, 42, 0.88) !important;
-    backdrop-filter: blur(24px) !important;
-    -webkit-backdrop-filter: blur(24px) !important;
-    border-radius: 14px !important;
-    padding: 1rem !important;
-    margin-top: 0.5rem !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  }
-}
-
-/* Background Scene: Clearly visible ride/city/road scene with controlled blur */
+/* Background Scene: Clearly visible ride/city/road scene with ~10% minimal blur softness */
 .auth-section::before {
   content: '';
   position: absolute;
-  inset: -30px;
+  inset: -10px;
   background-image:
-    /* Soft blue overlay gradient to balance lighting, depth, and contrast */
-    linear-gradient(135deg, rgba(15, 23, 42, 0.52) 0%, rgba(30, 58, 138, 0.42) 45%, rgba(37, 99, 235, 0.38) 100%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(219, 234, 254, 0.50) 45%, rgba(191, 219, 254, 0.38) 100%),
     url('../assets/svg/services-hero.svg');
-  background-position: center 62%;
+  background-position: center 60%;
   background-repeat: no-repeat;
-  background-size: max(920px, 75vw) auto;
-  filter: blur(4px);
-  transform: scale(1.06);
-  opacity: 0.88;
+  background-size: max(920px, 72vw) auto;
+  /* Controlled ~10% minimal blur softness: artwork (city, road, car) is clearly visible */
+  filter: blur(1px);
+  -webkit-filter: blur(1px);
+  transform: scale(1.02);
+  opacity: 0.85;
   pointer-events: none;
   z-index: 0;
 }
 
-/* Atmospheric depth, transit network geometry & soft lighting overlay */
+/* Atmospheric depth, subtle transit grid & soft lighting overlay */
 .auth-section::after {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 70% 50% at 50% 50%, transparent 25%, rgba(11, 21, 40, 0.60) 100%),
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    radial-gradient(ellipse 70% 50% at 50% 50%, transparent 35%, rgba(241, 245, 249, 0.45) 100%),
+    linear-gradient(rgba(37, 99, 235, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.03) 1px, transparent 1px);
   background-size: 100% 100%, 48px 48px, 48px 48px;
   pointer-events: none;
   z-index: 1;
@@ -160,31 +70,33 @@
   content: '';
   position: absolute;
   inset: -14px;
-  background: radial-gradient(circle at 50% 30%, rgba(37, 99, 235, 0.48) 0%, rgba(16, 185, 129, 0.22) 60%, transparent 85%);
+  background: radial-gradient(circle at 50% 30%, rgba(37, 99, 235, 0.20) 0%, rgba(16, 185, 129, 0.10) 60%, transparent 85%);
   border-radius: 34px;
-  filter: blur(28px);
+  filter: blur(24px);
   z-index: -1;
   pointer-events: none;
 }
 
-/* Sharp, Crisp, White Glassmorphic Elevation Card */
+/* Sharp, Crisp, White Elevation Card (0% blur on auth card itself) */
 .auth-card {
   background: #FFFFFF;
-  border: 1px solid rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(226, 232, 240, 0.95);
   border-radius: 22px;
   padding: clamp(2.2rem, 5vw, 2.85rem) clamp(1.6rem, 5vw, 2.4rem);
   box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.12),
-    0 20px 35px -5px rgba(0, 0, 0, 0.28),
-    0 35px 65px -15px rgba(15, 23, 42, 0.45);
+    0 4px 6px -1px rgba(15, 23, 42, 0.05),
+    0 20px 35px -5px rgba(15, 23, 42, 0.10),
+    0 35px 65px -15px rgba(37, 99, 235, 0.12);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .auth-card:hover {
   box-shadow:
-    0 6px 12px -1px rgba(0, 0, 0, 0.15),
-    0 25px 45px -5px rgba(0, 0, 0, 0.32),
-    0 40px 75px -15px rgba(15, 23, 42, 0.55);
+    0 6px 12px -1px rgba(15, 23, 42, 0.06),
+    0 25px 45px -5px rgba(15, 23, 42, 0.12),
+    0 40px 75px -15px rgba(37, 99, 235, 0.16);
 }
 
 .auth-header {
@@ -584,61 +496,5 @@ select.input-error:focus {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.6rem;
-  }
-}
-
-/* Toast overrides for high-visibility auth notifications */
-.toast-container {
-  position: fixed !important;
-  top: 1.5rem !important;
-  right: 1.5rem !important;
-  bottom: auto !important;
-  left: auto !important;
-  z-index: 99999 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 0.75rem !important;
-  pointer-events: none !important;
-}
-
-.toast {
-  padding: 0.9rem 1.6rem !important;
-  border-radius: 12px !important;
-  font-size: 0.94rem !important;
-  font-weight: 600 !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3) !important;
-  pointer-events: auto !important;
-  transform: translateY(-20px) !important;
-  opacity: 0 !important;
-  transition: transform 0.25s ease, opacity 0.2s ease !important;
-}
-
-.toast.is-visible {
-  transform: translateY(0) !important;
-  opacity: 1 !important;
-}
-
-.toast-success {
-  background: #064E3B !important;
-  color: #FFFFFF !important;
-  border-left: 5px solid #10B981 !important;
-}
-
-.toast-error {
-  background: #7F1D1D !important;
-  color: #FFFFFF !important;
-  border-left: 5px solid #EF4444 !important;
-}
-
-@media (max-width: 640px) {
-  .toast-container {
-    top: 1rem !important;
-    right: 1rem !important;
-    left: 1rem !important;
-  }
-  .toast {
-    width: 100% !important;
-    text-align: center !important;
-    justify-content: center !important;
   }
 }

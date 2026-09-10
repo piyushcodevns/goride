@@ -451,35 +451,79 @@ textarea:disabled {
   border: 1px solid var(--color-border, #E2E8F0);
 }
 
-.hero {
+/* ==========================================================================
+   GO RIDE - MASTER GLOBAL ATMOSPHERIC BACKGROUND SYSTEM
+   Standardized ride/road/city visual identity across all pages:
+   Home, Login, Register, Forgot Password, Booking, Services, Safety, About, Contact
+   ========================================================================== */
+.hero,
+.booking-hero,
+.about-page-hero,
+.rides-hero,
+.ride-tracking-hero,
+.goride-master-bg {
   position: relative;
-  padding: 4.5rem 0 5rem;
+  background:
+    radial-gradient(ellipse 90% 65% at 50% 12%, rgba(37, 99, 235, 0.12) 0%, transparent 68%),
+    radial-gradient(circle 600px at 15% 85%, rgba(16, 185, 129, 0.08) 0%, transparent 60%),
+    radial-gradient(circle 550px at 85% 75%, rgba(30, 64, 175, 0.10) 0%, transparent 60%),
+    linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 50%, #E2E8F0 100%);
   overflow: hidden;
 }
 
 .hero::before,
-.hero::after {
+.booking-hero::before,
+.about-page-hero::before,
+.rides-hero::before,
+.ride-tracking-hero::before,
+.goride-master-bg::before {
   content: '';
   position: absolute;
-  border-radius: 50%;
-  filter: blur(40px);
+  inset: -10px;
+  background-image:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(219, 234, 254, 0.50) 45%, rgba(191, 219, 254, 0.38) 100%),
+    url('../assets/svg/services-hero.svg');
+  background-position: center 60%;
+  background-repeat: no-repeat;
+  background-size: max(920px, 72vw) auto;
+  /* Controlled ~10% minimal blur softness so city/road/car artwork is crisp and visible */
+  filter: blur(1px);
+  -webkit-filter: blur(1px);
+  opacity: 0.85;
+  transform: scale(1.02);
   pointer-events: none;
+  z-index: 0;
 }
 
-.hero::before {
-  width: 240px;
-  height: 240px;
-  top: -30px;
-  left: -60px;
-  background: rgba(37, 99, 235, 0.16);
+.hero::after,
+.booking-hero::after,
+.about-page-hero::after,
+.rides-hero::after,
+.ride-tracking-hero::after,
+.goride-master-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 50%, transparent 35%, rgba(241, 245, 249, 0.45) 100%),
+    linear-gradient(rgba(37, 99, 235, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 48px 48px, 48px 48px;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.hero::after {
-  width: 220px;
-  height: 220px;
-  right: -20px;
-  bottom: 20px;
-  background: rgba(34, 197, 94, 0.14);
+.hero {
+  padding: 4.5rem 0 5rem;
+}
+
+.hero > *,
+.booking-hero > *,
+.about-page-hero > *,
+.rides-hero > *,
+.ride-tracking-hero > * {
+  position: relative;
+  z-index: 2;
 }
 
 .hero-content {
