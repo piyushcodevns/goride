@@ -64,23 +64,39 @@ const registerUser = async (userData) => {
   const emailExists = await findUserByEmail(validatedData.email);
 
   if (emailExists) {
-    throw new ConflictError("Email already registered.");
+    throw new ConflictError("Email already registered. This email already exists.");
   }
 
   const phoneExists = await findUserByPhone(validatedData.phone);
 
   if (phoneExists) {
-    throw new ConflictError("Phone number already registered.");
+    throw new ConflictError("Phone number already registered. This phone number already exists.");
   }
 
   const hashedPassword = await bcrypt.hash(validatedData.password, SALT_ROUNDS);
 
-  const user = await createUser({
-    fullName: validatedData.fullName,
-    email: validatedData.email,
-    phone: validatedData.phone,
-    password: hashedPassword,
-  });
+  let user;
+  try {
+    user = await createUser({
+      fullName: validatedData.fullName,
+      email: validatedData.email,
+      phone: validatedData.phone,
+      password: hashedPassword,
+    });
+  } catch (err) {
+    if (err.code === "P2002") {
+      const target = err.meta?.target;
+      const targetStr = Array.isArray(target) ? target.join(",") : String(target || "");
+      if (targetStr.includes("email")) {
+        throw new ConflictError("Email already registered. This email already exists.");
+      }
+      if (targetStr.includes("phone")) {
+        throw new ConflictError("Phone number already registered. This phone number already exists.");
+      }
+      throw new ConflictError("User with this email or phone number already exists.");
+    }
+    throw err;
+  }
 
   await notificationService.dispatchNotification(
     NotificationFactory.createWelcomeNotification(user),

@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
         errorEl.innerText = message;
         input.style.borderColor = '#DC2626';
         input.style.boxShadow = '0 0 0 3px rgba(220, 38, 38, 0.12)';
+        input.classList.add('input-error');
+        input.setAttribute('aria-invalid', 'true');
         return false;
     };
 
@@ -49,6 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         input.style.borderColor = '';
         input.style.boxShadow = '';
+        input.classList.remove('input-error');
+        input.removeAttribute('aria-invalid');
         return true;
     };
 
@@ -76,8 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Real-time events
-    emailInput.addEventListener('input', validateEmail);
-    passwordInput.addEventListener('input', validatePassword);
+    emailInput.addEventListener('input', () => { clearError(emailInput); validateEmail(); });
+    passwordInput.addEventListener('input', () => { clearError(passwordInput); validatePassword(); });
 
     // ----------------------------------------------------
     // Form Submit Handler
@@ -151,9 +155,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (rememberCheckbox) rememberCheckbox.checked = false;
     localStorage.removeItem('goride_user_email');
 
-    // Ensure clean state on login page
+    // Stale authentication state check:
+    // If the user has a token, verify if it is genuinely valid with the server.
+    // If expired/invalid, clear it immediately so user does not appear falsely authenticated.
+    // If genuinely valid, redirect to returnUrl or booking.html without breaking valid session.
     const api = (window.GoRide && window.GoRide.api);
-    if (api && typeof api.clearAuth === 'function') {
-        api.clearAuth();
+    if (api && api.isAuthenticated()) {
+        api.get("/api/auth/profile")
+            .then((res) => {
+                if (res && res.success && res.data) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const returnUrl = urlParams.get('returnUrl') || 'booking.html';
+                    window.location.href = returnUrl;
+                } else {
+                    api.clearAuth();
+                }
+            })
+            .catch(() => {
+                api.clearAuth();
+            });
     }
 });

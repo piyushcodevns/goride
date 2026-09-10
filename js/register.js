@@ -84,7 +84,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         errorEl.innerText = message;
+        errorEl.style.display = 'block';
         group.classList.add('has-error');
+        input.classList.add('input-error');
+        input.setAttribute('aria-invalid', 'true');
         return false;
     };
 
@@ -95,6 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
             errorEl.remove();
         }
         group.classList.remove('has-error');
+        input.classList.remove('input-error');
+        input.removeAttribute('aria-invalid');
         return true;
     };
 
@@ -149,10 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Real-time events
-    nameInput.addEventListener('input', validateName);
-    emailInput.addEventListener('input', validateEmail);
-    phoneInput.addEventListener('input', validatePhone);
-    passwordInput.addEventListener('input', validatePassword);
+    nameInput.addEventListener('input', () => { clearError(nameInput); validateName(); });
+    emailInput.addEventListener('input', () => { clearError(emailInput); validateEmail(); });
+    phoneInput.addEventListener('input', () => { clearError(phoneInput); validatePhone(); });
+    passwordInput.addEventListener('input', () => { clearError(passwordInput); validatePassword(); });
 
     // ----------------------------------------------------
     // Form Submit Handler
@@ -229,8 +234,10 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = false;
             submitBtn.innerHTML = oldBtnText;
             if (msg.toLowerCase().includes("email")) {
+                showError(emailInput, "This email already exists.");
                 emailInput.focus();
             } else if (msg.toLowerCase().includes("phone")) {
+                showError(phoneInput, "This phone number already exists.");
                 phoneInput.focus();
             }
         }
