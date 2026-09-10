@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     api.setCurrentUser(response.data.user);
                 }
 
-                if (toastFn) toastFn("Account created successfully! Redirecting to Sign In...", "success");
+                if (toastFn) toastFn("Account created successfully.", "success");
 
                 setTimeout(() => {
                     window.location.href = 'login.html';

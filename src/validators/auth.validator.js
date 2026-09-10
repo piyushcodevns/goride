@@ -50,8 +50,15 @@ const resetPasswordSchema = z
       .min(1, "Reset token is required")
       .max(500, "Invalid reset token"),
     password: passwordSchema,
+    confirmPassword: z.string().optional(),
   })
-  .strict();
+  .refine(
+    (data) => !data.confirmPassword || data.password === data.confirmPassword,
+    {
+      message: "New password and confirm password do not match.",
+      path: ["confirmPassword"],
+    },
+  );
 
 const changePasswordSchema = z
   .object({

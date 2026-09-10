@@ -128,7 +128,11 @@ const loginUser = async (userData) => {
 
   const user = await findUserByEmailWithPassword(email);
 
-  if (!user) {
+  if (!user || !user.password) {
+    throw new UnauthorizedError("Invalid email or password.");
+  }
+
+  if (user.deletedAt || user.isBlocked || user.isActive === false) {
     throw new UnauthorizedError("Invalid email or password.");
   }
 
@@ -165,8 +169,7 @@ const forgotPassword = async (userData) => {
 
   if (!user) {
     return {
-      message:
-        "If an account exists for this email, a password reset email has been sent.",
+      message: "Verification code sent to your email.",
     };
   }
 
@@ -191,14 +194,22 @@ const forgotPassword = async (userData) => {
   });
 
   return {
-    message: "Password reset email sent successfully.",
+    message: "Verification code sent to your email.",
   };
 };
 
 // ================= RESET PASSWORD =================
 
 const resetPassword = async (userData) => {
-  const { token, password } = resetPasswordSchema.parse(userData);
+  const { token, password, confirmPassword } =
+    resetPasswordSchema.parse(userData);
+
+  if (confirmPassword && password !== confirmPassword) {
+    throw new BadRequestError(
+      "New password and confirm password do not match.",
+    );
+  }
+
   const hashedToken = hashToken(token);
 
   const user = await findUserByResetToken(hashedToken);

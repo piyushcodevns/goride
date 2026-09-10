@@ -16,12 +16,12 @@ const register = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "User registered successfully.",
+      message: "Account created successfully.",
       data: result,
     });
   } catch (error) {
     const statusCode = error.statusCode || (error.name === "ZodError" ? 400 : 400);
-    const message = (error.name === "ZodError" && error.errors?.[0]?.message) || error.message;
+    const message = (error.name === "ZodError" && (error.errors?.[0]?.message || error.issues?.[0]?.message)) || error.message;
 
     return res.status(statusCode).json({
       success: false,
@@ -43,7 +43,7 @@ const login = async (req, res) => {
     });
   } catch (error) {
     const statusCode = error.statusCode || (error.name === "ZodError" ? 400 : 401);
-    const message = (error.name === "ZodError" && error.errors?.[0]?.message) || error.message;
+    const message = (error.name === "ZodError" && (error.errors?.[0]?.message || error.issues?.[0]?.message)) || error.message || "Invalid email or password.";
 
     return res.status(statusCode).json({
       success: false,
@@ -70,7 +70,7 @@ const forgotPasswordController = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Password reset token generated successfully.",
+      message: result.message || "Verification code sent to your email.",
       data: result,
     });
   } catch (error) {

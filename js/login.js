@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Explicitly ensure no credentials or personal emails persist in localStorage
                 localStorage.removeItem('goride_user_email');
 
-                if (toastFn) toastFn("Login Successful! Redirecting to booking portal...", "success");
+                if (toastFn) toastFn("Login successful.", "success");
 
                 setTimeout(() => {
                     const urlParams = new URLSearchParams(window.location.search);
@@ -135,8 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(response.message || "Login failed.");
             }
         } catch (err) {
-            const msg = err.message || "Invalid credentials. Please try again.";
+            const msg = err.message || "Invalid email or password.";
             if (toastFn) toastFn(msg, "error");
+            showError(passwordInput, msg);
             submitBtn.disabled = false;
             submitBtn.innerHTML = oldBtnText;
             passwordInput.value = '';
@@ -149,4 +150,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (passwordInput) passwordInput.value = '';
     if (rememberCheckbox) rememberCheckbox.checked = false;
     localStorage.removeItem('goride_user_email');
+
+    // Ensure clean state on login page
+    const api = (window.GoRide && window.GoRide.api);
+    if (api && typeof api.clearAuth === 'function') {
+        api.clearAuth();
+    }
 });

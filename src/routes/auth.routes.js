@@ -47,7 +47,7 @@ const {
  *             $ref: '#/components/schemas/RegisterRequest'
  *     responses:
  *       201:
- *         description: User registered successfully.
+ *         description: Account created successfully.
  *         content:
  *           application/json:
  *             schema:
