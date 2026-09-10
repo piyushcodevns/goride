@@ -14,7 +14,27 @@
 
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
-        toast.innerText = message;
+
+        // Select badge icon according to type
+        let iconSymbol = 'ℹ';
+        if (type === 'success') iconSymbol = '✓';
+        else if (type === 'error') iconSymbol = '✕';
+        else if (type === 'warning') iconSymbol = '⚠';
+
+        // Clean any leading symbols from input string if passed
+        let cleanText = typeof message === 'string' ? message.replace(/^[✓✔✕✖ℹ⚠]\s*/, '') : String(message || '');
+
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'toast-icon';
+        iconSpan.setAttribute('aria-hidden', 'true');
+        iconSpan.textContent = iconSymbol;
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'toast-text';
+        textSpan.textContent = cleanText;
+
+        toast.appendChild(iconSpan);
+        toast.appendChild(textSpan);
         container.appendChild(toast);
 
         // Force reflow to trigger css transition
@@ -28,6 +48,6 @@
             });
         };
 
-        setTimeout(removeToast, 3000);
+        setTimeout(removeToast, 3200);
     };
 })();

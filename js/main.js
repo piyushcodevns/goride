@@ -19,7 +19,25 @@ if (!window.GoRide.showToast) {
 
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    toast.textContent = message;
+
+    let iconSymbol = 'ℹ';
+    if (type === 'success') iconSymbol = '✓';
+    else if (type === 'error') iconSymbol = '✕';
+    else if (type === 'warning') iconSymbol = '⚠';
+
+    let cleanText = typeof message === 'string' ? message.replace(/^[✓✔✕✖ℹ⚠]\s*/, '') : String(message || '');
+
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'toast-icon';
+    iconSpan.setAttribute('aria-hidden', 'true');
+    iconSpan.textContent = iconSymbol;
+
+    const textSpan = document.createElement('span');
+    textSpan.className = 'toast-text';
+    textSpan.textContent = cleanText;
+
+    toast.appendChild(iconSpan);
+    toast.appendChild(textSpan);
     container.appendChild(toast);
 
     toast.offsetHeight; // Force reflow
@@ -27,8 +45,8 @@ if (!window.GoRide.showToast) {
 
     setTimeout(() => {
       toast.classList.remove('is-visible');
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
+      setTimeout(() => toast.remove(), 350);
+    }, 3200);
   };
 }
 if (!window.showToast) {
@@ -106,6 +124,20 @@ function initMain() {
       btn.href = 'profile.html';
       btn.textContent = 'Profile';
     });
+  }
+
+  // Sticky / Glass Header Scroll Effect
+  const header = document.querySelector('.header');
+  if (header) {
+    const handleHeaderScroll = () => {
+      if (window.scrollY > 15) {
+        header.classList.add('is-scrolled');
+      } else {
+        header.classList.remove('is-scrolled');
+      }
+    };
+    window.addEventListener('scroll', handleHeaderScroll, { passive: true });
+    handleHeaderScroll(); // Initialize on page load
   }
 
   // Scroll to Top Button
