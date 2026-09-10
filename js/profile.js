@@ -154,7 +154,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             try {
                 await api.post("/api/auth/change-password", {
                     currentPassword,
-                    newPassword
+                    newPassword,
+                    confirmPassword
                 });
 
                 ui.showToast("Password changed successfully!", "success");
