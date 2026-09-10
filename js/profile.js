@@ -131,20 +131,63 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Change Password
     // ----------------------------------------------------
     if (passwordForm) {
+        const setFieldError = (input, message) => {
+            if (!input) return;
+            input.classList.add("input-error");
+            input.setAttribute("aria-invalid", "true");
+            let errorEl = input.parentElement.querySelector(".field-error");
+            if (!errorEl) {
+                errorEl = document.createElement("div");
+                errorEl.className = "field-error";
+                input.parentElement.appendChild(errorEl);
+            }
+            errorEl.textContent = message;
+        };
+
+        const clearFieldErrors = () => {
+            passwordForm.querySelectorAll(".input-error").forEach((el) => {
+                el.classList.remove("input-error");
+                el.removeAttribute("aria-invalid");
+            });
+            passwordForm.querySelectorAll(".field-error").forEach((el) => el.remove());
+        };
+
+        [currentPassInput, newPassInput, confirmPassInput].forEach((input) => {
+            if (!input) return;
+            input.addEventListener("input", () => {
+                input.classList.remove("input-error");
+                input.removeAttribute("aria-invalid");
+                const err = input.parentElement.querySelector(".field-error");
+                if (err) err.remove();
+            });
+        });
+
         passwordForm.addEventListener("submit", async (e) => {
             e.preventDefault();
+            clearFieldErrors();
 
             const currentPassword = currentPassInput.value;
             const newPassword = newPassInput.value;
             const confirmPassword = confirmPassInput.value;
 
+            if (!currentPassword) {
+                setFieldError(currentPassInput, "Current password is required.");
+                ui.showToast("Please enter your current password.", "error");
+                currentPassInput.focus();
+                return;
+            }
+
             if (newPassword.length < 8) {
+                setFieldError(newPassInput, "New password must be at least 8 characters long.");
                 ui.showToast("New password must be at least 8 characters long.", "error");
+                newPassInput.focus();
                 return;
             }
 
             if (newPassword !== confirmPassword) {
+                setFieldError(confirmPassInput, "New passwords do not match.");
                 ui.showToast("New passwords do not match.", "error");
+                confirmPassInput.focus();
                 return;
             }
 
@@ -158,10 +201,59 @@ document.addEventListener("DOMContentLoaded", async () => {
                     confirmPassword
                 });
 
+                clearFieldErrors();
                 ui.showToast("Password changed successfully!", "success");
                 passwordForm.reset();
             } catch (err) {
-                ui.showToast(err.message || "Failed to change password.", "error");
+                const rawMsg = (err && err.message) || "";
+
+                if (rawMsg.includes("Current password is incorrect")) {
+                    setFieldError(currentPassInput, "Current password is incorrect.");
+                    ui.showToast("Current password is incorrect. Please try again.", "error");
+                    currentPassInput.focus();
+                } else if (rawMsg.includes("different from current password")) {
+                    setFieldError(newPassInput, "New password must be different from current password.");
+                    ui.showToast("New password must be different from current password.", "error");
+                    newPassInput.focus();
+                } else if (rawMsg.includes("do not match")) {
+                    setFieldError(confirmPassInput, "New passwords do not match.");
+                    ui.showToast("New passwords do not match.", "error");
+                    confirmPassInput.focus();
+                } else if (rawMsg.includes("uppercase, lowercase, number")) {
+                    setFieldError(newPassInput, "Password must contain uppercase, lowercase, number, and special character.");
+                    ui.showToast("Please choose a stronger password.", "error");
+                    newPassInput.focus();
+                } else {
+                    let handledZod = false;
+                    try {
+                        if (rawMsg.startsWith("[") && rawMsg.endsWith("]")) {
+                            const parsed = JSON.parse(rawMsg);
+                            if (Array.isArray(parsed)) {
+                                parsed.forEach((issue) => {
+                                    const path = Array.isArray(issue.path) ? issue.path[0] : "";
+                                    if (path === "currentPassword") {
+                                        setFieldError(currentPassInput, "Current password is required.");
+                                    } else if (path === "newPassword") {
+                                        setFieldError(newPassInput, "Password must be at least 8 characters with uppercase, lowercase, number, and special character.");
+                                    } else if (path === "confirmPassword") {
+                                        setFieldError(confirmPassInput, "Password confirmation is required.");
+                                    }
+                                });
+                                ui.showToast("Please correct the errors in the form.", "error");
+                                handledZod = true;
+                            }
+                        }
+                    } catch {
+                        // ignore JSON parse failure
+                    }
+
+                    if (!handledZod) {
+                        const cleanMsg = (rawMsg && !rawMsg.startsWith("{") && !rawMsg.startsWith("["))
+                            ? rawMsg
+                            : "Failed to change password. Please try again.";
+                        ui.showToast(cleanMsg, "error");
+                    }
+                }
             } finally {
                 changePassBtn.disabled = false;
                 changePassBtn.textContent = "Update Password";
