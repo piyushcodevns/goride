@@ -447,7 +447,7 @@
             confirmBookingBtn.innerHTML = `<span>🔒</span> Log In to Confirm Booking`;
         } else if (hasValidCoords && hasValidRoute && hasValidFare && result.valid) {
             confirmBookingBtn.disabled = false;
-            confirmBookingBtn.innerHTML = `Confirm Booking`;
+            confirmBookingBtn.innerHTML = `<span>→</span> Find Rides`;
         } else {
             confirmBookingBtn.disabled = true;
             if (!hasValidCoords || !hasValidRoute) {
@@ -455,8 +455,29 @@
             } else if (!hasValidFare) {
                 confirmBookingBtn.innerHTML = `Calculating Fare...`;
             } else {
-                confirmBookingBtn.innerHTML = `Confirm Booking`;
+                confirmBookingBtn.innerHTML = `<span>→</span> Find Rides`;
             }
+        }
+        updateStepper();
+    }
+
+    function updateStepper() {
+        const plat = pickupInput?.dataset?.lat;
+        const dlat = dropoffInput?.dataset?.lat;
+        const steps = document.querySelectorAll('.booking-stepper .step-item');
+        if (!steps || steps.length < 3) return;
+
+        steps.forEach(s => s.classList.remove('active', 'completed'));
+
+        if (currentServerFare && currentServerFare.finalFare > 0) {
+            steps[0].classList.add('completed');
+            steps[1].classList.add('completed');
+            steps[2].classList.add('active');
+        } else if (plat && dlat) {
+            steps[0].classList.add('completed');
+            steps[1].classList.add('active');
+        } else {
+            steps[0].classList.add('active');
         }
     }
 
@@ -536,6 +557,12 @@
 
         initDateLimits();
         renderFareCard('placeholder');
+
+        const summaryPickup = document.getElementById('summary-pickup-text');
+        if (summaryPickup) summaryPickup.textContent = 'Select pickup point';
+        const summaryDrop = document.getElementById('summary-dropoff-text');
+        if (summaryDrop) summaryDrop.textContent = 'Select destination';
+
         performLiveValidation();
 
         if (window.MapProvider && window.MapProvider.clearRoute) {
@@ -607,7 +634,10 @@
                         if (window.MapProvider && window.MapProvider.addMarker) {
                             window.MapProvider.addMarker(lat, lng, 'pickup');
                         }
-                        
+
+                        const summaryPickup = document.getElementById('summary-pickup-text');
+                        if (summaryPickup) summaryPickup.textContent = pickupInput.value;
+
                         checkAndTriggerRoute();
                         performLiveValidation();
                     },
@@ -625,6 +655,9 @@
                         if (window.MapProvider && window.MapProvider.addMarker) {
                             window.MapProvider.addMarker(25.3263, 82.9866, 'pickup');
                         }
+
+                        const summaryPickup = document.getElementById('summary-pickup-text');
+                        if (summaryPickup) summaryPickup.textContent = pickupInput.value;
 
                         checkAndTriggerRoute();
                         performLiveValidation();
@@ -681,6 +714,14 @@
         const type = inputEl.id === 'pickup-input' ? 'pickup' : 'dropoff';
         if (window.MapProvider && window.MapProvider.addMarker) {
             window.MapProvider.addMarker(item.lat, item.lng, type);
+        }
+
+        if (type === 'pickup') {
+            const summaryPickup = document.getElementById('summary-pickup-text');
+            if (summaryPickup) summaryPickup.textContent = item.name || item.address;
+        } else {
+            const summaryDrop = document.getElementById('summary-dropoff-text');
+            if (summaryDrop) summaryDrop.textContent = item.name || item.address;
         }
 
         checkAndTriggerRoute();

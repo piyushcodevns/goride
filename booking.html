@@ -68,6 +68,7 @@
     <div id="page-loader" aria-hidden="true"></div>
 
     <!-- Reusable Navbar -->
+    <!-- Reusable Navbar -->
     <header class="header">
         <div class="container">
             <nav class="navbar" aria-label="Primary navigation">
@@ -84,6 +85,7 @@
                     <li><a class="nav-link" href="index.html#safety">Safety</a></li>
                     <li><a class="nav-link" href="about.html">About</a></li>
                     <li><a class="nav-link" href="contact.html">Contact</a></li>
+                    <li><a class="nav-link" href="rides.html">My Rides</a></li>
                     <li><a class="nav-link highlight-link" href="driver-signup.html">Become Driver</a></li>
                 </ul>
 
@@ -102,211 +104,336 @@
     <!-- Booking Hero Section -->
     <section class="booking-hero">
         <div class="container">
-            <div class="hero-content reveal">
-                <span class="hero-badge">🚖 Real-time Booking Portal</span>
-                <h1>Book Your <span>Smart Ride</span></h1>
-                <p>Enter your pickup & drop-off locations, choose your preferred ride, and experience safe, reliable travel.</p>
+            <div class="booking-hero-grid">
+                <div class="hero-text-content">
+                    <span class="hero-badge">🚕 Book Your Ride</span>
+                    <h1 class="hero-headline">
+                        Safe Rides, Wherever<br>
+                        <span>You Need To Go</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Experience reliable, prompt, and comfortable transportation tailored to your schedule.
+                    </p>
+                </div>
+                <div class="hero-visual-card" aria-hidden="true">
+                    <img src="assets/svg/services-hero.svg" alt="Go Ride Transportation Scene" class="hero-cinematic-img">
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Booking Form Section -->
+    <!-- Floating Booking Workspace Section -->
     <section class="booking-section">
         <div class="container">
-            <div class="booking-grid">
-                <!-- Left side: Booking Form & Inputs -->
-                <div class="booking-card reveal">
-                    <div class="card-header">
-                        <h2>Plan Your Journey</h2>
-                        <p>Fill in details to calculate fare and find nearby drivers</p>
+            <div class="booking-workspace">
+
+                <!-- 1. Progress Stepper -->
+                <div class="booking-stepper" role="navigation" aria-label="Booking Progress">
+                    <div class="step-item active" aria-current="step">
+                        <span class="step-num">1</span>
+                        <span class="step-label">Ride Details</span>
+                    </div>
+                    <div class="step-connector"></div>
+                    <div class="step-item">
+                        <span class="step-num">2</span>
+                        <span class="step-label">Select Ride</span>
+                    </div>
+                    <div class="step-connector"></div>
+                    <div class="step-item">
+                        <span class="step-num">3</span>
+                        <span class="step-label">Payment</span>
+                    </div>
+                </div>
+
+                <!-- 2. Two-Column Workspace Grid -->
+                <div class="workspace-grid">
+
+                    <!-- LEFT COLUMN: Booking Controls, Ride Options, Payment, CTA -->
+                    <div class="workspace-left">
+                        <form id="booking-form" class="booking-form-element" novalidate>
+
+                            <!-- Ride Mode Toggle: Ride Now vs Schedule Later -->
+                            <div class="booking-toggle-row" role="tablist" aria-label="Booking Mode">
+                                <button type="button" class="toggle-btn active" role="tab" aria-selected="true" data-type="now">
+                                    <span>⚡</span> Ride Now
+                                </button>
+                                <button type="button" class="toggle-btn" role="tab" aria-selected="false" data-type="schedule">
+                                    <span>📅</span> Schedule Later
+                                </button>
+                            </div>
+
+                            <!-- Connected Pickup & Dropoff Inputs -->
+                            <div class="location-picker-group">
+                                <div class="location-route-indicator" aria-hidden="true">
+                                    <span class="loc-dot dot-pickup"></span>
+                                    <span class="loc-line"></span>
+                                    <span class="loc-dot dot-dropoff"></span>
+                                </div>
+                                <div class="location-inputs-col">
+                                    <!-- Pickup Location Group -->
+                                    <div class="input-group">
+                                        <label for="pickup-input" class="loc-label">Pickup Location</label>
+                                        <div class="input-wrapper">
+                                            <span class="input-icon-badge badge-pickup" aria-hidden="true">📍</span>
+                                            <input type="text" id="pickup-input" name="pickup" placeholder="Search pickup location..." required autocomplete="off" inputmode="search" spellcheck="false" aria-autocomplete="list" aria-controls="pickup-suggestions">
+                                            <button type="button" class="current-location-btn" aria-label="Use current location" title="Detect Current Location">🎯</button>
+                                        </div>
+                                        <ul id="pickup-suggestions" class="suggestions-list" role="listbox" aria-label="Pickup location suggestions" aria-live="polite"></ul>
+                                    </div>
+
+                                    <!-- Dropoff Location Group -->
+                                    <div class="input-group">
+                                        <label for="dropoff-input" class="loc-label">Drop-off Location</label>
+                                        <div class="input-wrapper">
+                                            <span class="input-icon-badge badge-dropoff" aria-hidden="true">📍</span>
+                                            <input type="text" id="dropoff-input" name="dropoff" placeholder="Search destination location..." required autocomplete="off" inputmode="search" spellcheck="false" aria-autocomplete="list" aria-controls="dropoff-suggestions">
+                                        </div>
+                                        <ul id="dropoff-suggestions" class="suggestions-list" role="listbox" aria-label="Drop-off location suggestions" aria-live="polite"></ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Date + Time Row -->
+                            <div class="form-row schedule-row">
+                                <div class="input-group">
+                                    <label for="booking-date">Date</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-icon" aria-hidden="true">📅</span>
+                                        <input type="date" id="booking-date" name="date" required>
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="booking-time">Time</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-icon" aria-hidden="true">⏰</span>
+                                        <input type="time" id="booking-time" name="time" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Passengers Selector -->
+                            <div class="passenger-counter-group">
+                                <label for="passenger-count" class="passenger-label">Passengers</label>
+                                <div class="passenger-counter-pill">
+                                    <button type="button" class="counter-btn minus-btn" aria-label="Decrease passenger count" id="dec-passengers">−</button>
+                                    <input type="number" id="passenger-count" name="passengers" value="1" min="1" max="6" readonly aria-live="polite">
+                                    <button type="button" class="counter-btn plus-btn" aria-label="Increase passenger count" id="inc-passengers">+</button>
+                                </div>
+                            </div>
+
+                            <!-- Available Ride Options -->
+                            <div class="vehicle-selection-container">
+                                <div class="subsection-header">
+                                    <h3 class="subsection-title">Available Ride Options</h3>
+                                    <span class="live-fare-badge" id="fare-status-badge">Select Route for Live Fare</span>
+                                </div>
+                                <div class="vehicles-list" role="radiogroup" aria-label="Select ride type">
+
+                                    <!-- Vehicle Item: Bike -->
+                                    <div class="vehicle-item active" role="radio" aria-checked="true" tabindex="0" data-type="bike">
+                                        <div class="vehicle-visual">
+                                            <img src="assets/icons/bike.svg" alt="Bike" class="vehicle-svg-icon" onerror="this.outerHTML='<span class=\'fallback-icon\'>🛵</span>'">
+                                        </div>
+                                        <div class="vehicle-details">
+                                            <div class="vehicle-title-row">
+                                                <h4>Economy Bike</h4>
+                                                <span class="capacity-tag">👤 1</span>
+                                            </div>
+                                            <p class="vehicle-desc">Affordable • Fast • Traffic Buster</p>
+                                        </div>
+                                        <div class="vehicle-pricing">
+                                            <span class="price">₹ --</span>
+                                            <span class="est-label">est.</span>
+                                            <span class="custom-radio"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Vehicle Item: Auto -->
+                                    <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="auto">
+                                        <div class="vehicle-visual">
+                                            <img src="assets/icons/auto.svg" alt="Auto" class="vehicle-svg-icon" onerror="this.outerHTML='<span class=\'fallback-icon\'>🛺</span>'">
+                                        </div>
+                                        <div class="vehicle-details">
+                                            <div class="vehicle-title-row">
+                                                <h4>Go Auto</h4>
+                                                <span class="capacity-tag">👤 3</span>
+                                            </div>
+                                            <p class="vehicle-desc">Nearby • Doorstep Pickup • Convenient</p>
+                                        </div>
+                                        <div class="vehicle-pricing">
+                                            <span class="price">₹ --</span>
+                                            <span class="est-label">est.</span>
+                                            <span class="custom-radio"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Vehicle Item: Mini -->
+                                    <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="mini">
+                                        <div class="vehicle-visual">
+                                            <img src="assets/icons/mini.svg" alt="Mini" class="vehicle-svg-icon" onerror="this.outerHTML='<span class=\'fallback-icon\'>🚗</span>'">
+                                        </div>
+                                        <div class="vehicle-details">
+                                            <div class="vehicle-title-row">
+                                                <h4>Economy Cab</h4>
+                                                <span class="capacity-tag">👤 4</span>
+                                            </div>
+                                            <p class="vehicle-desc">Affordable • Reliable • Everyday AC</p>
+                                        </div>
+                                        <div class="vehicle-pricing">
+                                            <span class="price">₹ --</span>
+                                            <span class="est-label">est.</span>
+                                            <span class="custom-radio"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Vehicle Item: Sedan -->
+                                    <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="sedan">
+                                        <div class="vehicle-visual">
+                                            <img src="assets/icons/sedan.svg" alt="Sedan" class="vehicle-svg-icon" onerror="this.outerHTML='<span class=\'fallback-icon\'>🚘</span>'">
+                                        </div>
+                                        <div class="vehicle-details">
+                                            <div class="vehicle-title-row">
+                                                <h4>Comfort Sedan</h4>
+                                                <span class="capacity-tag">👤 4</span>
+                                            </div>
+                                            <p class="vehicle-desc">More Space • Top Rated Drivers • Quiet Ride</p>
+                                        </div>
+                                        <div class="vehicle-pricing">
+                                            <span class="price">₹ --</span>
+                                            <span class="est-label">est.</span>
+                                            <span class="custom-radio"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Vehicle Item: SUV -->
+                                    <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="suv">
+                                        <div class="vehicle-visual">
+                                            <img src="assets/icons/sedan.svg" alt="SUV" class="vehicle-svg-icon suv-badge-icon" onerror="this.outerHTML='<span class=\'fallback-icon\'>🚙</span>'">
+                                        </div>
+                                        <div class="vehicle-details">
+                                            <div class="vehicle-title-row">
+                                                <h4>Prime SUV</h4>
+                                                <span class="capacity-tag">👤 6</span>
+                                            </div>
+                                            <p class="vehicle-desc">6-Seater • Family &amp; Luggage Friendly</p>
+                                        </div>
+                                        <div class="vehicle-pricing">
+                                            <span class="price">₹ --</span>
+                                            <span class="est-label">est.</span>
+                                            <span class="custom-radio"></span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- Payment Method Section -->
+                            <div class="payment-method-container">
+                                <h3 class="subsection-title">Payment Method</h3>
+                                <div class="payment-options">
+                                    <label class="payment-option active">
+                                        <input type="radio" name="payment" value="upi" checked class="visually-hidden">
+                                        <span class="option-card">
+                                            <span class="payment-icon" aria-hidden="true">📱</span>
+                                            <span class="payment-text">UPI / GPay</span>
+                                        </span>
+                                    </label>
+                                    <label class="payment-option">
+                                        <input type="radio" name="payment" value="card" class="visually-hidden">
+                                        <span class="option-card">
+                                            <span class="payment-icon" aria-hidden="true">💳</span>
+                                            <span class="payment-text">Card</span>
+                                        </span>
+                                    </label>
+                                    <label class="payment-option">
+                                        <input type="radio" name="payment" value="cash" class="visually-hidden">
+                                        <span class="option-card">
+                                            <span class="payment-icon" aria-hidden="true">💵</span>
+                                            <span class="payment-text">Cash</span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Promo Code -->
+                            <div class="coupon-container">
+                                <label for="coupon-input">Promo Code</label>
+                                <div class="coupon-wrapper">
+                                    <input type="text" id="coupon-input" placeholder="Enter coupon (e.g. GORIDE20)" autocomplete="off">
+                                    <button type="button" id="apply-coupon-btn" class="secondary-btn apply-btn">Apply</button>
+                                </div>
+                                <small id="coupon-message" class="coupon-msg" aria-live="polite"></small>
+                            </div>
+
+                            <!-- Primary CTA Button -->
+                            <button type="submit" id="confirm-booking-btn" class="primary-btn confirm-btn booking-cta-btn" disabled>
+                                <span>→</span> Find Rides
+                            </button>
+                        </form>
                     </div>
 
-                    <form id="booking-form" class="booking-form-element" novalidate>
-                        <!-- Pickup Location Group -->
-                        <div class="input-group">
-                            <label for="pickup-input">Pickup Location</label>
-                            <div class="input-wrapper">
-                                <span class="input-icon" aria-hidden="true">📍</span>
-                                <input type="text" id="pickup-input" name="pickup" placeholder="Enter pickup address..." required autocomplete="off" inputmode="search" spellcheck="false" aria-autocomplete="list" aria-controls="pickup-suggestions">
-                                <button type="button" class="current-location-btn" aria-label="Use current location">🎯</button>
-                            </div>
-                            <!-- Suggestions Dropdown -->
-                            <ul id="pickup-suggestions" class="suggestions-list" role="listbox" aria-label="Pickup location suggestions" aria-live="polite"></ul>
-                        </div>
+                    <!-- RIGHT COLUMN: Map, Trip Summary, Fare Breakdown, Trust Strip -->
+                    <div class="workspace-right">
 
-                        <!-- Dropoff Location Group -->
-                        <div class="input-group">
-                            <label for="dropoff-input">Drop-off Location</label>
-                            <div class="input-wrapper">
-                                <span class="input-icon" aria-hidden="true">🏁</span>
-                                <input type="text" id="dropoff-input" name="dropoff" placeholder="Enter destination address..." required autocomplete="off" inputmode="search" spellcheck="false" aria-autocomplete="list" aria-controls="dropoff-suggestions">
-                            </div>
-                            <!-- Suggestions Dropdown -->
-                            <ul id="dropoff-suggestions" class="suggestions-list" role="listbox" aria-label="Drop-off location suggestions" aria-live="polite"></ul>
-                        </div>
-
-                        <!-- Schedule/Time Option -->
-                        <div class="form-row">
-                            <div class="input-group">
-                                <label for="booking-date">Date</label>
-                                <input type="date" id="booking-date" name="date" required>
-                            </div>
-                            <div class="input-group">
-                                <label for="booking-time">Time</label>
-                                <input type="time" id="booking-time" name="time" required>
-                            </div>
-                        </div>
-
-                        <!-- Passengers Selector Group -->
-                        <div class="input-group passenger-counter-group">
-                            <label for="passenger-count">Passengers</label>
-                            <div class="passenger-counter-wrapper">
-                                <button type="button" class="counter-btn minus-btn" aria-label="Decrease passenger count" id="dec-passengers">-</button>
-                                <input type="number" id="passenger-count" name="passengers" value="1" min="1" max="6" readonly aria-live="polite">
-                                <button type="button" class="counter-btn plus-btn" aria-label="Increase passenger count" id="inc-passengers">+</button>
-                            </div>
-                        </div>
-
-                        <!-- Toggle Booking Type (Ride Now vs Schedule) -->
-                        <div class="booking-toggle-row" role="tablist" aria-label="Booking Mode">
-                            <button type="button" class="toggle-btn active" role="tab" aria-selected="true" data-type="now">Ride Now</button>
-                            <button type="button" class="toggle-btn" role="tab" aria-selected="false" data-type="schedule">Schedule Later</button>
-                        </div>
-
-                        <!-- Vehicle Selection Section -->
-                        <div class="vehicle-selection-container">
-                            <h3 class="subsection-title">Select Ride Type</h3>
-                            <div class="vehicles-list" role="radiogroup" aria-label="Select ride type">
-                                <!-- Vehicle Item: Bike -->
-                                <div class="vehicle-item active" role="radio" aria-checked="true" tabindex="0" data-type="bike">
-                                    <div class="vehicle-info">
-                                        <span class="vehicle-icon" aria-hidden="true">🛵</span>
-                                        <div>
-                                            <h4>Bike</h4>
-                                            <p class="eta">Nearby • Fast &amp; Affordable</p>
-                                        </div>
-                                    </div>
-                                    <div class="vehicle-price">
-                                        <span class="price">₹ --</span>
-                                        <span class="capacity" aria-label="Capacity: 1 seat">👤 1</span>
-                                    </div>
+                        <!-- Interactive Map Card -->
+                        <div class="booking-map-card" role="region" aria-label="Route map preview">
+                            <div class="map-container">
+                                <div id="map"></div>
+                                <div id="map-loader" class="map-overlay-wrapper" aria-hidden="true">
+                                    <div class="map-spinner"></div>
+                                    <span>Calculating Route...</span>
                                 </div>
 
-                                <!-- Vehicle Item: Auto -->
-                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="auto">
-                                    <div class="vehicle-info">
-                                        <span class="vehicle-icon" aria-hidden="true">🛺</span>
-                                        <div>
-                                            <h4>Auto</h4>
-                                            <p class="eta">Nearby • Convenient</p>
-                                        </div>
-                                    </div>
-                                    <div class="vehicle-price">
-                                        <span class="price">₹ --</span>
-                                        <span class="capacity" aria-label="Capacity: 3 seats">👤 3</span>
-                                    </div>
+                                <!-- Map Retry Overlay -->
+                                <div id="map-retry" class="map-overlay-wrapper map-retry-wrapper" aria-hidden="true">
+                                    <p>Unable to calculate route.</p>
+                                    <button type="button" id="map-retry-btn" class="secondary-btn apply-btn apply-btn--small">Retry</button>
                                 </div>
 
-                                <!-- Vehicle Item: Mini -->
-                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="mini">
-                                    <div class="vehicle-info">
-                                        <span class="vehicle-icon" aria-hidden="true">🚗</span>
-                                        <div>
-                                            <h4>Mini</h4>
-                                            <p class="eta">Nearby • AC Compact</p>
-                                        </div>
-                                    </div>
-                                    <div class="vehicle-price">
-                                        <span class="price">₹ --</span>
-                                        <span class="capacity" aria-label="Capacity: 4 seats">👤 4</span>
-                                    </div>
-                                </div>
-
-                                <!-- Vehicle Item: Sedan -->
-                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="sedan">
-                                    <div class="vehicle-info">
-                                        <span class="vehicle-icon" aria-hidden="true">🚘</span>
-                                        <div>
-                                            <h4>Sedan</h4>
-                                            <p class="eta">Nearby • Spacious &amp; Comfortable</p>
-                                        </div>
-                                    </div>
-                                    <div class="vehicle-price">
-                                        <span class="price">₹ --</span>
-                                        <span class="capacity" aria-label="Capacity: 4 seats">👤 4</span>
-                                    </div>
-                                </div>
-
-                                <!-- Vehicle Item: SUV -->
-                                <div class="vehicle-item" role="radio" aria-checked="false" tabindex="0" data-type="suv">
-                                    <div class="vehicle-info">
-                                        <span class="vehicle-icon" aria-hidden="true">🚙</span>
-                                        <div>
-                                            <h4>SUV</h4>
-                                            <p class="eta">Nearby • 6-Seater Family</p>
-                                        </div>
-                                    </div>
-                                    <div class="vehicle-price">
-                                        <span class="price">₹ --</span>
-                                        <span class="capacity" aria-label="Capacity: 6 seats">👤 6</span>
-                                    </div>
+                                <!-- Map Offline Overlay -->
+                                <div id="map-offline" class="map-overlay-wrapper map-offline-wrapper" aria-hidden="true">
+                                    <p>You're offline. Route preview unavailable.</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Payment Method Section -->
-                        <div class="payment-method-container">
-                            <h3 class="subsection-title">Payment Method</h3>
-                            <div class="payment-options">
-                                <label class="payment-option active">
-                                    <input type="radio" name="payment" value="upi" checked class="visually-hidden">
-                                    <span class="option-card">
-                                        <span class="payment-icon" aria-hidden="true">📱</span>
-                                        <span class="payment-text">UPI / GPay</span>
-                                    </span>
-                                </label>
-                                <label class="payment-option">
-                                    <input type="radio" name="payment" value="card" class="visually-hidden">
-                                    <span class="option-card">
-                                        <span class="payment-icon" aria-hidden="true">💳</span>
-                                        <span class="payment-text">Card</span>
-                                    </span>
-                                </label>
-                                <label class="payment-option">
-                                    <input type="radio" name="payment" value="cash" class="visually-hidden">
-                                    <span class="option-card">
-                                        <span class="payment-icon" aria-hidden="true">💵</span>
-                                        <span class="payment-text">Cash</span>
-                                    </span>
-                                </label>
+                        <!-- Trip Summary Section -->
+                        <div class="trip-summary-card">
+                            <div class="summary-header">
+                                <h3>Trip Summary</h3>
+                            </div>
+                            <div class="summary-route">
+                                <div class="summary-stop">
+                                    <span class="summary-pin pin-pickup">📍</span>
+                                    <div class="summary-stop-info">
+                                        <small>Pickup Location</small>
+                                        <p id="summary-pickup-text">Select pickup point</p>
+                                    </div>
+                                </div>
+                                <div class="summary-stop">
+                                    <span class="summary-pin pin-dropoff">📍</span>
+                                    <div class="summary-stop-info">
+                                        <small>Drop-off Location</small>
+                                        <p id="summary-dropoff-text">Select destination</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="summary-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-label">Distance</span>
+                                    <strong class="metric-value" id="distance-val">—</strong>
+                                </div>
+                                <div class="metric-divider"></div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Estimated Time</span>
+                                    <strong class="metric-value" id="eta-val">—</strong>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Coupon / Promo Code -->
-                        <div class="coupon-container">
-                            <label for="coupon-input">Promo Code</label>
-                            <div class="coupon-wrapper">
-                                <input type="text" id="coupon-input" placeholder="Enter coupon (e.g. GORIDE20)" autocomplete="off">
-                                <button type="button" id="apply-coupon-btn" class="secondary-btn apply-btn">Apply</button>
-                            </div>
-                            <small id="coupon-message" class="coupon-msg" aria-live="polite"></small>
-                        </div>
-
-                        <!-- Fare Summary Section -->
+                        <!-- Fare Breakdown Detail Card -->
                         <div class="fare-summary-container">
-                            <div class="subsection-header">
-                                <h3 class="subsection-title">Fare Breakdown</h3>
-                                <span class="live-fare-badge" id="fare-status-badge">Select Route for Live Fare</span>
-                            </div>
                             <div class="fare-card" role="region" aria-label="Fare summary detail">
-                                <div class="fare-row-detail">
-                                    <span>Distance</span>
-                                    <span id="distance-val">—</span>
-                                </div>
-                                <div class="fare-row-detail">
-                                    <span>ETA</span>
-                                    <span id="eta-val">—</span>
-                                </div>
                                 <div class="fare-row-detail">
                                     <span>Base Fare</span>
                                     <span id="base-fare-val">—</span>
@@ -330,32 +457,22 @@
                             </div>
                         </div>
 
-                        <!-- Confirm Booking Button -->
-                        <button type="submit" id="confirm-booking-btn" class="primary-btn confirm-btn" disabled>
-                            Confirm Booking
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Right side: Map/Visualization Placeholder -->
-                <div class="booking-map-card reveal" role="region" aria-label="Route map preview">
-                    <div class="map-container">
-                        <div id="map"></div>
-                        <div id="map-loader" class="map-overlay-wrapper" aria-hidden="true">
-                            <div class="map-spinner"></div>
-                            <span>Calculating Route...</span>
+                        <!-- Trust / Service Strip -->
+                        <div class="trust-strip">
+                            <div class="trust-item">
+                                <span class="trust-icon">🛡️</span>
+                                <span>Safe Rides</span>
+                            </div>
+                            <div class="trust-item">
+                                <span class="trust-icon">✓</span>
+                                <span>Verified Drivers</span>
+                            </div>
+                            <div class="trust-item">
+                                <span class="trust-icon">🎧</span>
+                                <span>24/7 Support</span>
+                            </div>
                         </div>
 
-                        <!-- Map Retry Overlay -->
-                        <div id="map-retry" class="map-overlay-wrapper map-retry-wrapper" aria-hidden="true">
-                            <p>Unable to calculate route.</p>
-                            <button type="button" id="map-retry-btn" class="secondary-btn apply-btn apply-btn--small">Retry</button>
-                        </div>
-
-                        <!-- Map Offline Overlay -->
-                        <div id="map-offline" class="map-overlay-wrapper map-offline-wrapper" aria-hidden="true">
-                            <p>You're offline. Route preview unavailable.</p>
-                        </div>
                     </div>
                 </div>
             </div>
