@@ -330,18 +330,38 @@
         });
     }
 
+    // Safe Modal Helpers (Accessible Focus & Visibility Management)
+    function openModal(modal, focusEl) {
+        if (!modal) return;
+        modal.classList.add("active");
+        modal.setAttribute("aria-hidden", "false");
+        if (focusEl && typeof focusEl.focus === "function") {
+            focusEl.focus();
+        }
+    }
+
+    function closeModal(modal, returnFocusEl) {
+        if (!modal) return;
+        if (document.activeElement && modal.contains(document.activeElement)) {
+            document.activeElement.blur();
+        }
+        modal.setAttribute("aria-hidden", "true");
+        modal.classList.remove("active");
+        if (returnFocusEl && typeof returnFocusEl.focus === "function") {
+            returnFocusEl.focus();
+        }
+    }
+
     // Pay Now Modal Controls
     if (payNowBtn) {
         payNowBtn.addEventListener("click", () => {
-            paymentModal.classList.add("active");
-            paymentModal.setAttribute("aria-hidden", "false");
+            openModal(paymentModal, confirmPayBtn);
         });
     }
 
     if (closePayBtn) {
         closePayBtn.addEventListener("click", () => {
-            paymentModal.classList.remove("active");
-            paymentModal.setAttribute("aria-hidden", "true");
+            closeModal(paymentModal, payNowBtn);
         });
     }
 
@@ -361,14 +381,13 @@
                 });
 
                 window.GoRide.showToast("Payment processed successfully!", "success");
-                paymentModal.classList.remove("active");
-                paymentModal.setAttribute("aria-hidden", "true");
+                closeModal(paymentModal, payNowBtn);
                 fetchRide();
             } catch (err) {
                 window.GoRide.showToast(err.message || "Payment failed.", "error");
             } finally {
                 confirmPayBtn.disabled = false;
-                confirmPayBtn.textContent = "Confirm & Pay";
+                confirmPayBtn.textContent = "Complete Payment";
             }
         });
     }
@@ -376,15 +395,17 @@
     // Rating & Review Controls
     if (rateRideBtn) {
         rateRideBtn.addEventListener("click", () => {
-            reviewModal.classList.add("active");
-            reviewModal.setAttribute("aria-hidden", "false");
+            if (!currentRide || currentRide.status !== "COMPLETED") {
+                window.GoRide.showToast("You can only review a completed ride.", "warning");
+                return;
+            }
+            openModal(reviewModal, submitReviewBtn);
         });
     }
 
     if (closeReviewBtn) {
         closeReviewBtn.addEventListener("click", () => {
-            reviewModal.classList.remove("active");
-            reviewModal.setAttribute("aria-hidden", "true");
+            closeModal(reviewModal, rateRideBtn);
         });
     }
 
@@ -425,8 +446,7 @@
                 await api.post(`/api/ride-reviews/${encodeURIComponent(rideId)}`, reviewPayload);
 
                 window.GoRide.showToast("Thank you for your rating!", "success");
-                reviewModal.classList.remove("active");
-                reviewModal.setAttribute("aria-hidden", "true");
+                closeModal(reviewModal);
                 rateRideBtn.style.display = "none";
             } catch (err) {
                 window.GoRide.showToast(err.message || "Failed to submit review.", "error");
