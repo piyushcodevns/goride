@@ -156,8 +156,23 @@ const sendVerificationEmailLimiter = rateLimit({
   },
 });
 
+/**
+ * AI Assistant Chat Limiter
+ */
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 15, // 15 requests per minute per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many AI assistant requests. Please wait a moment before sending another message.",
+  },
+});
+
 module.exports = {
   apiLimiter,
+  aiLimiter,
   fareEstimateLimiter,
   mapsLimiter,
   fileUploadLimiter,

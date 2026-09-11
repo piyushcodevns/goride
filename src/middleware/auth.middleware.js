@@ -62,6 +62,37 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+const optionalAuthenticate = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      const decoded = verifyToken(token);
+      if (decoded?.id && (!decoded.tokenType || decoded.tokenType === "access")) {
+        const user = await prisma.user.findUnique({
+          where: { id: decoded.id },
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phone: true,
+            role: true,
+            isActive: true,
+            isVerified: true,
+          },
+        });
+        if (user && user.isActive) {
+          req.user = user;
+        }
+      }
+    }
+  } catch (_) {
+    // Gracefully continue as unauthenticated guest
+  }
+  return next();
+};
+
 module.exports = {
   authenticate,
+  optionalAuthenticate,
 };

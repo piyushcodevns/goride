@@ -33,6 +33,7 @@ const fareRoutes = require("./routes/fare.routes");
 const fareAuditRoutes = require("./routes/fareAudit.routes");
 const mapsRoutes = require("./routes/maps.routes");
 const notificationRoutes = require("./routes/notification.routes");
+const aiChatRoutes = require("./routes/aiChat.routes");
 const adminAuthRoutes = require("./routes/admin/adminAuth.routes");
 const adminDashboardRoutes = require("./routes/admin/adminDashboard.routes.js");
 const adminUserRoutes = require("./routes/admin/adminUser.routes");
@@ -160,6 +161,8 @@ app.use("/api/fare-audit", fareAuditRoutes);
 app.use("/api/maps", mapsRoutes);
 
 app.use("/api/notifications", notificationRoutes);
+
+app.use("/api/ai", aiChatRoutes);
 
 app.use("/api/admin/auth", adminAuthRoutes);
 
