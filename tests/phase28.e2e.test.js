@@ -89,10 +89,21 @@ describe("PHASE 28: Complete End-to-End Ride Lifecycle & Edge Flows", () => {
     if (adminUser) {
       await prisma.user.delete({ where: { id: adminUser.id } }).catch(() => {});
     }
+    const pendingService = require("../src/services/pendingRegistration.service");
+    await pendingService.closePendingRegistrationClient();
+    await prisma.$disconnect();
   });
 
   test("End-to-End Success Flow: Signup -> Login -> Create -> Accept -> Arrive -> Start -> Complete -> Pay -> Review", async () => {
     // Stage 1: Rider Signup
+    let capturedOtp = null;
+    const emailService = require("../src/services/email.service");
+    emailService.sendEmail.testInterceptor = async ({ html }) => {
+      const m = html?.match(/<h1>(\d{6})<\/h1>/);
+      if (m) capturedOtp = m[1];
+      return { messageId: "test-mock-msg-id" };
+    };
+
     const uniqueEmail = `e2e_rider_${Date.now()}@goride.com`;
     const signupData = {
       fullName: "E2E Test Rider",
@@ -101,14 +112,12 @@ describe("PHASE 28: Complete End-to-End Ride Lifecycle & Edge Flows", () => {
       password: "StrongPassword123!",
     };
     const registerRes = await authService.registerUser(signupData);
-    riderUser = registerRes.user;
-    assert.ok(riderUser.id);
+    assert.equal(registerRes.requiresVerification, true);
 
-    // Verify user email before login
-    await prisma.user.update({
-      where: { id: riderUser.id },
-      data: { emailVerified: true, isVerified: true },
-    });
+    // Verify user email to create user in DB
+    const verifyRes = await authService.verifyEmail(capturedOtp, uniqueEmail);
+    riderUser = verifyRes.user;
+    assert.ok(riderUser.id);
 
     // Stage 2: Rider Login
     const loginRes = await authService.loginUser({

@@ -1,8 +1,7 @@
 const bcrypt = require("bcrypt");
-// const prisma = require("../config/prisma");
+const prisma = require("../config/prisma");
 const notificationService = require("./notification.service");
 const NotificationFactory = require("../factories/notification.factory");
-const { welcomeTemplate } = require("../templates/email/welcome.template");
 
 const {
   passwordResetTemplate,
@@ -32,12 +31,20 @@ const {
   findUserByIdWithPassword,
   changeUserPassword,
 
-  createUser,
   savePasswordResetToken,
   saveEmailVerificationToken,
   updatePassword,
   verifyUserEmail,
 } = require("../repositories/auth.repository");
+
+const {
+  savePendingRegistration,
+  getPendingRegistrationByEmail,
+  getPendingRegistrationByOtp,
+  updatePendingOtp,
+  incrementPendingAttempts,
+  deletePendingRegistration,
+} = require("./pendingRegistration.service");
 
 const generateResetToken = require("../utils/generateToken");
 const hashToken = require("../utils/hashToken");
@@ -52,7 +59,6 @@ const {
   resetPasswordSchema,
   changePasswordSchema,
   verifyEmailSchema,
-  passwordSchema,
 } = require("../validators/auth.validator");
 
 const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS) || 12;
@@ -61,65 +67,87 @@ const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS) || 12;
 
 const registerUser = async (userData) => {
   const validatedData = registerSchema.parse(userData);
+  const normalizedEmail = validatedData.email.trim().toLowerCase();
+  const normalizedPhone = validatedData.phone.trim();
 
-  const emailExists = await findUserByEmail(validatedData.email);
-
-  if (emailExists) {
-    throw new ConflictError("Email already registered. This email already exists.");
+  // Check existing VERIFIED/REAL User conflicts in PostgreSQL
+  const existingEmailUser = await findUserByEmail(normalizedEmail);
+  if (existingEmailUser) {
+    if (existingEmailUser.emailVerified) {
+      throw new ConflictError("Email already registered. This email already exists.");
+    } else {
+      // Clean up legacy unverified user row from PostgreSQL so they are not blocked
+      try {
+        await prisma.user.delete({ where: { id: existingEmailUser.id } });
+      } catch (delErr) {
+        logger.warn("Could not clean up legacy unverified user by email.", {
+          error: delErr?.message,
+        });
+      }
+    }
   }
 
-  const phoneExists = await findUserByPhone(validatedData.phone);
-
-  if (phoneExists) {
-    throw new ConflictError("Phone number already registered. This phone number already exists.");
+  const existingPhoneUser = await findUserByPhone(normalizedPhone);
+  if (existingPhoneUser) {
+    if (existingPhoneUser.emailVerified) {
+      throw new ConflictError("Phone number already registered. This phone number already exists.");
+    } else {
+      try {
+        await prisma.user.delete({ where: { id: existingPhoneUser.id } });
+      } catch (delErr) {
+        logger.warn("Could not clean up legacy unverified user by phone.", {
+          error: delErr?.message,
+        });
+      }
+    }
   }
 
   const hashedPassword = await bcrypt.hash(validatedData.password, SALT_ROUNDS);
 
-  let user;
+  // Generate 6-digit OTP
+  const otp = generateOTP();
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+  // Store in Redis pending registration (Zero records created in PostgreSQL!)
+  await savePendingRegistration({
+    email: normalizedEmail,
+    phone: normalizedPhone,
+    fullName: validatedData.fullName,
+    password: hashedPassword,
+    otp,
+    expiresAt,
+  });
+
+  // Send verification email with OTP
   try {
-    user = await createUser({
-      fullName: validatedData.fullName,
-      email: validatedData.email,
-      phone: validatedData.phone,
-      password: hashedPassword,
+    await sendEmail({
+      to: normalizedEmail,
+      subject: "GoRide Email Verification",
+      html: emailVerificationTemplate({ otp }),
     });
-  } catch (err) {
-    if (err.code === "P2002") {
-      const target = err.meta?.target;
-      const targetStr = Array.isArray(target) ? target.join(",") : String(target || "");
-      if (targetStr.includes("email")) {
-        throw new ConflictError("Email already registered. This email already exists.");
-      }
-      if (targetStr.includes("phone")) {
-        throw new ConflictError("Phone number already registered. This phone number already exists.");
-      }
-      throw new ConflictError("User with this email or phone number already exists.");
-    }
-    throw err;
+  } catch (emailErr) {
+    // If email delivery fails:
+    // 1. Do NOT create PostgreSQL User (already zero records in PostgreSQL)
+    // 2. Clean up pending registration from Redis
+    await deletePendingRegistration(normalizedEmail, hashToken(otp));
+    logger.error("Failed to send verification email during registration.", {
+      email: normalizedEmail,
+      error: emailErr.message,
+    });
+    throw emailErr;
   }
 
-  await notificationService.dispatchNotification(
-    NotificationFactory.createWelcomeNotification(user),
-  );
-
-  try {
-    await sendVerificationEmail(user.id);
-  } catch (verifyErr) {
-    logger.warn("Verification email could not be sent during registration:", {
-      userId: user.id,
-      error: verifyErr.message,
-    });
-  }
+  logger.info("Registration pending verification OTP sent.", {
+    email: normalizedEmail,
+  });
 
   return {
     message: "Account created. Please verify your email to continue.",
     user: {
-      id: user.id,
-      fullName: user.fullName,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
+      fullName: validatedData.fullName,
+      email: normalizedEmail,
+      phone: normalizedPhone,
+      role: "USER",
     },
     requiresVerification: true,
   };
@@ -131,10 +159,18 @@ const loginUser = async (userData) => {
   const validatedData = loginSchema.parse(userData);
 
   const { email, password } = validatedData;
+  const normalizedEmail = email.trim().toLowerCase();
 
-  const user = await findUserByEmailWithPassword(email);
+  const user = await findUserByEmailWithPassword(normalizedEmail);
 
   if (!user || !user.password) {
+    // Check if there is an unverified pending registration in Redis
+    const pending = await getPendingRegistrationByEmail(normalizedEmail);
+    if (pending) {
+      const error = new UnauthorizedError("Please verify your email before logging in.");
+      error.data = { emailVerified: false, email: normalizedEmail };
+      throw error;
+    }
     throw new UnauthorizedError("Invalid email or password.");
   }
 
@@ -176,8 +212,9 @@ const loginUser = async (userData) => {
 
 const forgotPassword = async (userData) => {
   const { email } = forgotPasswordSchema.parse(userData);
+  const normalizedEmail = email.trim().toLowerCase();
 
-  const user = await findUserByEmail(email);
+  const user = await findUserByEmail(normalizedEmail);
 
   if (!user) {
     return {
@@ -282,61 +319,89 @@ const changePassword = async (userId, passwordData) => {
   };
 };
 
-// ================= SEND VERIFICATION EMAIL =================
+// ================= SEND VERIFICATION EMAIL / RESEND =================
 
 const sendVerificationEmail = async (identifier) => {
-  let user;
+  let email;
   if (typeof identifier === "object" && identifier !== null) {
     if (identifier.email) {
-      user = await findUserByEmail(identifier.email.trim().toLowerCase());
+      email = identifier.email.trim().toLowerCase();
     } else if (identifier.userId) {
-      user = await findUserById(identifier.userId);
+      const u = await findUserById(identifier.userId);
+      email = u?.email;
     }
   } else if (typeof identifier === "string") {
     if (identifier.includes("@")) {
-      user = await findUserByEmail(identifier.trim().toLowerCase());
+      email = identifier.trim().toLowerCase();
     } else {
-      user = await findUserById(identifier);
+      const u = await findUserById(identifier);
+      email = u?.email;
     }
   }
 
-  if (!user) {
+  if (!email) {
     return {
       message: "Verification code sent to your email.",
     };
   }
 
-  if (user.emailVerified) {
+  // 1. Check if user is already verified in PostgreSQL
+  const existingUser = await findUserByEmail(email);
+  if (existingUser && existingUser.emailVerified) {
     throw new ConflictError("Email is already verified.");
   }
 
-  // Generate 6 digit OTP
-  const verificationOTP = generateOTP();
+  // 2. Check pending registration in Redis
+  const pending = await getPendingRegistrationByEmail(email);
+  if (pending) {
+    const newOtp = generateOTP();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-  // Hash OTP before saving in database
-  const hashedToken = hashToken(verificationOTP);
+    await updatePendingOtp({
+      email,
+      newOtp,
+      expiresAt,
+    });
 
-  const emailVerificationExpires = new Date(Date.now() + 15 * 60 * 1000);
+    await sendEmail({
+      to: email,
+      subject: "GoRide Email Verification",
+      html: emailVerificationTemplate({ otp: newOtp }),
+    });
 
-  await saveEmailVerificationToken(
-    user.id,
-    hashedToken,
-    emailVerificationExpires,
-  );
+    logger.info("Resend verification code sent to pending registration.", { email });
 
-  await sendEmail({
-    to: user.email,
-    subject: "GoRide Email Verification",
-    html: emailVerificationTemplate({
-      otp: verificationOTP,
-    }),
-  });
+    return {
+      message: "Verification code sent to your email.",
+    };
+  }
 
-  logger.info("Email verification email sent successfully.", {
-    userId: user.id,
-    email: user.email,
-  });
+  // 3. Fallback: check legacy unverified user in PostgreSQL
+  if (existingUser && !existingUser.emailVerified) {
+    const newOtp = generateOTP();
+    const hashedToken = hashToken(newOtp);
+    const emailVerificationExpires = new Date(Date.now() + 15 * 60 * 1000);
 
+    await saveEmailVerificationToken(
+      existingUser.id,
+      hashedToken,
+      emailVerificationExpires,
+    );
+
+    await sendEmail({
+      to: existingUser.email,
+      subject: "GoRide Email Verification",
+      html: emailVerificationTemplate({ otp: newOtp }),
+    });
+
+    logger.info("Resend verification code sent to legacy unverified user.", { email });
+
+    return {
+      message: "Verification code sent to your email.",
+    };
+  }
+
+  // Anti-enumeration: If neither found, return standard message
   return {
     message: "Verification code sent to your email.",
   };
@@ -344,22 +409,127 @@ const sendVerificationEmail = async (identifier) => {
 
 // ================= VERIFY EMAIL =================
 
-const verifyEmail = async (otp) => {
+const verifyEmail = async (otp, email = null) => {
   const { otp: validatedOtp } = verifyEmailSchema.parse({ otp });
-
   const hashedToken = hashToken(validatedOtp);
 
-  const user = await findUserByEmailVerificationToken(hashedToken);
+  let pending = null;
+  const normalizedEmail = email ? email.trim().toLowerCase() : null;
 
-  if (!user) {
-    throw new BadRequestError("Invalid or expired verification token.");
+  if (normalizedEmail) {
+    pending = await getPendingRegistrationByEmail(normalizedEmail);
+  }
+  if (!pending) {
+    pending = await getPendingRegistrationByOtp(validatedOtp);
   }
 
-  await verifyUserEmail(user.id);
+  if (pending) {
+    if (pending.otpHash !== hashedToken) {
+      await incrementPendingAttempts(pending.email);
+      throw new BadRequestError("Invalid or expired verification token.");
+    }
 
-  return {
-    message: "Email verified successfully.",
-  };
+    if (pending.expiresAt && Number(pending.expiresAt) < Date.now()) {
+      await deletePendingRegistration(pending.email, pending.otpHash);
+      throw new BadRequestError("Invalid or expired verification token.");
+    }
+
+    // Atomic transaction: Re-check uniqueness and create User record in PostgreSQL
+    const user = await prisma.$transaction(async (tx) => {
+      const existingEmail = await tx.user.findUnique({
+        where: { email: pending.email },
+      });
+      if (existingEmail) {
+        if (existingEmail.emailVerified) {
+          throw new ConflictError("Email already registered. This email already exists.");
+        }
+        await tx.user.delete({ where: { id: existingEmail.id } });
+      }
+
+      const existingPhone = await tx.user.findUnique({
+        where: { phone: pending.phone },
+      });
+      if (existingPhone) {
+        if (existingPhone.emailVerified) {
+          throw new ConflictError("Phone number already registered. This phone number already exists.");
+        }
+        await tx.user.delete({ where: { id: existingPhone.id } });
+      }
+
+      return tx.user.create({
+        data: {
+          fullName: pending.fullName,
+          email: pending.email,
+          phone: pending.phone,
+          password: pending.password,
+          emailVerified: true,
+          isVerified: true,
+          role: "USER",
+        },
+      });
+    });
+
+    // Remove pending registration from Redis
+    await deletePendingRegistration(pending.email, pending.otpHash);
+
+    // Dispatch welcome notification
+    try {
+      await notificationService.dispatchNotification(
+        NotificationFactory.createWelcomeNotification(user),
+      );
+    } catch (notifErr) {
+      logger.warn("Could not dispatch welcome notification:", {
+        error: notifErr?.message,
+      });
+    }
+
+    const token = generateToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    logger.info("User created and email verified successfully.", {
+      userId: user.id,
+      email: user.email,
+    });
+
+    return {
+      message: "Email verified successfully.",
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
+      token,
+    };
+  }
+
+  // Fallback for legacy unverified user in PostgreSQL
+  const legacyUser = await findUserByEmailVerificationToken(hashedToken);
+  if (legacyUser) {
+    await verifyUserEmail(legacyUser.id);
+    const token = generateToken({
+      id: legacyUser.id,
+      email: legacyUser.email,
+      role: legacyUser.role,
+    });
+    return {
+      message: "Email verified successfully.",
+      user: {
+        id: legacyUser.id,
+        fullName: legacyUser.fullName,
+        email: legacyUser.email,
+        phone: legacyUser.phone,
+        role: legacyUser.role,
+      },
+      token,
+    };
+  }
+
+  throw new BadRequestError("Invalid or expired verification token.");
 };
 
 module.exports = {

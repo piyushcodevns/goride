@@ -246,9 +246,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error("API service unavailable.");
             }
 
-            const response = await api.post("/api/auth/verify-email", {
-                otp: otpVal
-            });
+            const payload = { otp: otpVal };
+            if (emailParam) {
+                payload.email = emailParam;
+            }
+
+            const response = await api.post("/api/auth/verify-email", payload);
 
             if (response && response.success) {
                 const msg = response.message || "Email verified successfully.";

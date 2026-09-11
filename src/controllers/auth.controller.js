@@ -160,6 +160,7 @@ const sendVerificationEmailController = async (req, res) => {
 const verifyEmailController = async (req, res) => {
   try {
     const otp = req.body?.otp;
+    const email = req.body?.email;
     if (!otp) {
       return res.status(400).json({
         success: false,
@@ -167,7 +168,7 @@ const verifyEmailController = async (req, res) => {
       });
     }
 
-    const result = await verifyEmail(otp);
+    const result = await verifyEmail(otp, email);
 
     return res.status(200).json({
       success: true,
@@ -175,10 +176,11 @@ const verifyEmailController = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    const statusCode = error.statusCode || 400;
+    const statusCode = error.statusCode || (error.name === "ZodError" ? 400 : 400);
+    const message = (error.name === "ZodError" && (error.errors?.[0]?.message || error.issues?.[0]?.message)) || error.message;
     return res.status(statusCode).json({
       success: false,
-      message: error.message,
+      message,
     });
   }
 };

@@ -2,7 +2,7 @@ process.env.NODE_ENV = "test";
 process.env.QUEUE_ENABLED = "false";
 process.env.NOTIFICATION_QUEUE_ENABLED = "false";
 
-const { test, describe } = require("node:test");
+const { test, describe, after } = require("node:test");
 const assert = require("node:assert/strict");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -15,8 +15,13 @@ const emailService = require("../src/services/email.service");
 const hashToken = require("../src/utils/hashToken");
 const { ConflictError, UnauthorizedError, ForbiddenError, BadRequestError } = require("../src/utils/AppError");
 
-// Mock email sending to avoid network delays
-emailService.sendEmail = async () => ({ messageId: "test-mock-msg-id" });
+// Mock email sending and capture OTP
+let capturedAuthOtp = null;
+emailService.sendEmail.testInterceptor = async ({ html }) => {
+  const m = html?.match(/<h1>(\d{6})<\/h1>/);
+  if (m) capturedAuthOtp = m[1];
+  return { messageId: "test-mock-msg-id" };
+};
 
 describe("PHASE 3: Authentication, Session & Token Security", () => {
   const uniqueId = Date.now();
@@ -48,9 +53,14 @@ describe("PHASE 3: Authentication, Session & Token Security", () => {
     assert.equal(result.token, undefined, "JWT token must not be returned on unverified registration");
     assert.equal(result.requiresVerification, true);
 
-    // Verify user in DB is unverified
-    const dbUser = await prisma.user.findUnique({ where: { id: result.user.id } });
-    assert.equal(dbUser.emailVerified, false);
+    // Verify user is NOT in PostgreSQL before OTP verification
+    const dbUser = await prisma.user.findUnique({ where: { email: testEmail } });
+    assert.equal(dbUser, null, "User must NOT exist in DB before OTP verification!");
+
+    // Verify user with OTP creates verified user in DB
+    const verifyRes = await authService.verifyEmail(capturedAuthOtp, testEmail);
+    assert.ok(verifyRes.user);
+    assert.ok(verifyRes.user.id);
   });
 
   test("User Signup: rejects duplicate email with ConflictError", async () => {
@@ -442,5 +452,11 @@ describe("PHASE 3: Authentication, Session & Token Security", () => {
       },
       (err) => err instanceof ForbiddenError && err.message.includes("Account locked"),
     );
+  });
+
+  after(async () => {
+    const pendingService = require("../src/services/pendingRegistration.service");
+    await pendingService.closePendingRegistrationClient();
+    await prisma.$disconnect();
   });
 });

@@ -12,8 +12,16 @@ class SMTPProvider extends EmailProvider {
       throw new EmailProviderError("RESEND_API_KEY is not configured.");
     }
 
+    const fromAddress = process.env.EMAIL_FROM || process.env.RESEND_FROM || "GoRide <onboarding@resend.dev>";
+
+    if (process.env.NODE_ENV === "production" && fromAddress.includes("onboarding@resend.dev")) {
+      logger.warn(
+        "EMAIL_FROM is using Resend testing domain (onboarding@resend.dev). A verified domain in EMAIL_FROM is required in production to deliver to arbitrary recipients."
+      );
+    }
+
     const payload = {
-      from: process.env.EMAIL_FROM || "GoRide <onboarding@resend.dev>",
+      from: fromAddress,
       to: Array.isArray(to) ? to : [to],
       subject,
     };
@@ -54,6 +62,13 @@ class SMTPProvider extends EmailProvider {
       } catch {
         // Ignore JSON parsing failure for error response
       }
+
+      logger.error("Resend API rejected email delivery.", {
+        statusCode: response.status,
+        error: errorMessage,
+        from: fromAddress,
+      });
+
       throw new EmailProviderError(errorMessage);
     }
 
