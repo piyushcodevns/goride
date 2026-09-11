@@ -73,10 +73,14 @@ describe("GoRide Gemini AI Assistant Integration Suite", () => {
 
   beforeEach(() => {
     originalInterceptor = GeminiService.testInterceptor;
+    GeminiService.fetchInterceptor = null;
+    GeminiService.retryDelayMs = null;
   });
 
   afterEach(() => {
     GeminiService.testInterceptor = originalInterceptor;
+    GeminiService.fetchInterceptor = null;
+    GeminiService.retryDelayMs = null;
   });
 
   test("1. Missing message in request body is rejected with 400", async () => {
@@ -254,5 +258,124 @@ describe("GoRide Gemini AI Assistant Integration Suite", () => {
   test("14. Default Gemini model is configured to active model gemini-3.6-flash", () => {
     const geminiConfig = require("../src/config/gemini.config");
     assert.equal(geminiConfig.model, "gemini-3.6-flash");
+  });
+
+  test("15. Transient 503 from Gemini triggers retry and succeeds on subsequent 200", async () => {
+    GeminiService.testInterceptor = null;
+    GeminiService.retryDelayMs = 5;
+    process.env.GEMINI_API_KEY = "test-key";
+
+    let callCount = 0;
+    GeminiService.fetchInterceptor = async () => {
+      callCount++;
+      if (callCount === 1) {
+        return {
+          status: 503,
+          ok: false,
+          json: async () => ({ error: { message: "This model is currently experiencing high demand." } }),
+        };
+      }
+      return {
+        status: 200,
+        ok: true,
+        json: async () => ({
+          candidates: [{ content: { parts: [{ text: "Recovered reply after 503." }] } }],
+        }),
+      };
+    };
+
+    const res = await GeminiService.generateChatResponse({ message: "Test transient 503" });
+    assert.equal(res.reply, "Recovered reply after 503.");
+    assert.equal(res.model, "gemini-3.6-flash");
+    assert.equal(callCount, 2);
+  });
+
+  test("16. Transient 429 from Gemini triggers retry and succeeds on subsequent 200", async () => {
+    GeminiService.testInterceptor = null;
+    GeminiService.retryDelayMs = 5;
+    process.env.GEMINI_API_KEY = "test-key";
+
+    let callCount = 0;
+    GeminiService.fetchInterceptor = async () => {
+      callCount++;
+      if (callCount === 1) {
+        return {
+          status: 429,
+          ok: false,
+          json: async () => ({ error: { message: "Resource exhausted" } }),
+        };
+      }
+      return {
+        status: 200,
+        ok: true,
+        json: async () => ({
+          candidates: [{ content: { parts: [{ text: "Recovered reply after 429." }] } }],
+        }),
+      };
+    };
+
+    const res = await GeminiService.generateChatResponse({ message: "Test transient 429" });
+    assert.equal(res.reply, "Recovered reply after 429.");
+    assert.equal(res.model, "gemini-3.6-flash");
+    assert.equal(callCount, 2);
+  });
+
+  test("17. Persistent 503 exhausts 2 retries and returns final controlled 502", async () => {
+    GeminiService.testInterceptor = null;
+    GeminiService.retryDelayMs = 5;
+    process.env.GEMINI_API_KEY = "test-key";
+
+    let callCount = 0;
+    GeminiService.fetchInterceptor = async () => {
+      callCount++;
+      return {
+        status: 503,
+        ok: false,
+        json: async () => ({ error: { message: "Persistent overload" } }),
+      };
+    };
+
+    await assert.rejects(
+      async () => {
+        await GeminiService.generateChatResponse({ message: "Test persistent 503" });
+      },
+      (err) => {
+        assert.equal(err.statusCode, 502);
+        assert.equal(
+          err.message,
+          "AI Assistant is currently overloaded. Please try again in a moment."
+        );
+        return true;
+      }
+    );
+    assert.equal(callCount, 3);
+  });
+
+  test("18. Non-retryable 400 bad request returns immediately without retrying", async () => {
+    GeminiService.testInterceptor = null;
+    GeminiService.retryDelayMs = 5;
+    process.env.GEMINI_API_KEY = "test-key";
+
+    let callCount = 0;
+    GeminiService.fetchInterceptor = async () => {
+      callCount++;
+      return {
+        status: 400,
+        ok: false,
+        json: async () => ({ error: { message: "Invalid payload argument" } }),
+      };
+    };
+
+    await assert.rejects(
+      async () => {
+        await GeminiService.generateChatResponse({ message: "Test non-retryable 400" });
+      },
+      (err) => {
+        assert.equal(err.statusCode, 400);
+        assert.equal(err.message, "Invalid request to AI Assistant.");
+        return true;
+      }
+    );
+    assert.equal(callCount, 1);
   });
 });

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * GoRide Gemini AI Service
  * Communicates with Google Gemini Generative Language API.
  * Keeps API credentials strictly server-side and enforces strict customer-support guardrails.
@@ -44,6 +44,16 @@ class GeminiService {
    * Optional test interceptor for automated test mocking
    */
   static testInterceptor = null;
+
+  /**
+   * Optional fetch interceptor for HTTP-level mocking in tests
+   */
+  static fetchInterceptor = null;
+
+  /**
+   * Optional retry delay override in ms for testing
+   */
+  static retryDelayMs = null;
 
   /**
    * Generate conversational response from Google Gemini API
@@ -116,58 +126,116 @@ class GeminiService {
 
     const targetModel = geminiConfig.model;
     const apiUrl = `${geminiConfig.baseUrl}/models/${targetModel}:generateContent`;
+    const maxRetries = 2;
 
     let response;
-    try {
-      response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": geminiConfig.apiKey,
-        },
-        body: JSON.stringify(requestPayload),
-        signal: AbortSignal.timeout(geminiConfig.timeoutMs),
-      });
-    } catch (networkErr) {
-      const isTimeout = networkErr.name === "TimeoutError";
-      logger.error("Gemini API connection failure", {
-        error: networkErr.message,
-        isTimeout,
-      });
-      throw new AppError(
-        isTimeout
-          ? "AI Assistant request timed out. Please try again."
-          : "Unable to reach AI Assistant service.",
-        502
-      );
-    }
+    let upstreamErrorMsg = "";
 
-    if (!response.ok) {
-      let upstreamErrorMsg = `Gemini API returned HTTP ${response.status}`;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        const errJson = await response.json();
-        if (errJson?.error?.message) {
-          upstreamErrorMsg = errJson.error.message;
+        const fetchFn =
+          typeof GeminiService.fetchInterceptor === "function"
+            ? GeminiService.fetchInterceptor
+            : fetch;
+
+        response = await fetchFn(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": geminiConfig.apiKey,
+          },
+          body: JSON.stringify(requestPayload),
+          signal: AbortSignal.timeout(geminiConfig.timeoutMs),
+        });
+      } catch (networkErr) {
+        const isTimeout = networkErr.name === "TimeoutError";
+        logger.error("Gemini API connection failure", {
+          attempt: attempt + 1,
+          error: networkErr.message,
+          isTimeout,
+        });
+
+        if (attempt < maxRetries) {
+          const backoffMs =
+            GeminiService.retryDelayMs !== null
+              ? GeminiService.retryDelayMs
+              : Math.pow(2, attempt) * 1000;
+          logger.warn(
+            `Gemini API connection failure on attempt ${attempt + 1}. Retrying in ${backoffMs}ms...`
+          );
+          await new Promise((res) => setTimeout(res, backoffMs));
+          continue;
         }
-      } catch (_) {
-        // Ignore response parse error
+
+        throw new AppError(
+          isTimeout
+            ? "AI Assistant request timed out. Please try again."
+            : "Unable to reach AI Assistant service.",
+          502
+        );
       }
 
-      logger.error("Gemini API returned non-200 error", {
-        status: response.status,
-        message: upstreamErrorMsg,
-      });
+      if (!response.ok) {
+        upstreamErrorMsg = `Gemini API returned HTTP ${response.status}`;
+        try {
+          const errJson = await response.json();
+          if (errJson?.error?.message) {
+            upstreamErrorMsg = errJson.error.message;
+          }
+        } catch (_) {
+          // Ignore response parse error
+        }
 
-      // Handle 429 quota or 400 validation cleanly
-      if (response.status === 429) {
-        throw new AppError("AI Assistant is currently experiencing high demand. Please retry in a moment.", 429);
+        const isRetryable =
+          response.status === 429 || (response.status >= 500 && response.status <= 599);
+
+        if (isRetryable && attempt < maxRetries) {
+          const backoffMs =
+            GeminiService.retryDelayMs !== null
+              ? GeminiService.retryDelayMs
+              : Math.pow(2, attempt) * 1000;
+          logger.warn(
+            `Gemini API returned retryable status ${response.status}. Retrying in ${backoffMs}ms (attempt ${attempt + 1}/${maxRetries})...`,
+            {
+              status: response.status,
+              attempt: attempt + 1,
+              backoffMs,
+            }
+          );
+          await new Promise((res) => setTimeout(res, backoffMs));
+          continue;
+        }
+
+        logger.error("Gemini API returned non-200 error", {
+          status: response.status,
+          message: upstreamErrorMsg,
+          attempts: attempt + 1,
+        });
+
+        // Handle 429 quota or 400 validation cleanly
+        if (response.status === 429) {
+          throw new AppError(
+            "AI Assistant is currently experiencing high demand. Please retry in a moment.",
+            429
+          );
+        }
+
+        if (response.status === 400) {
+          throw new BadRequestError("Invalid request to AI Assistant.");
+        }
+
+        if (response.status >= 500) {
+          throw new AppError(
+            "AI Assistant is currently overloaded. Please try again in a moment.",
+            502
+          );
+        }
+
+        throw new AppError("AI Assistant service error. Please try again later.", 502);
       }
 
-      if (response.status === 400) {
-        throw new BadRequestError("Invalid request to AI Assistant.");
-      }
-
-      throw new AppError("AI Assistant service error. Please try again later.", 502);
+      // Successful response received
+      break;
     }
 
     let responseData;
