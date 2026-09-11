@@ -206,4 +206,78 @@ describe("SMTPProvider (Brevo / Nodemailer)", () => {
     assert.equal(result, true);
     assert.equal(verified, true);
   });
+
+  test("9. Brevo HTTPS API is triggered when BREVO_API_KEY is present", async () => {
+    process.env.BREVO_API_KEY = "test-brevo-api-key";
+
+    const origFetch = global.fetch;
+    let capturedUrl = null;
+    let capturedOptions = null;
+
+    global.fetch = async (url, options) => {
+      capturedUrl = url;
+      capturedOptions = options;
+      return {
+        ok: true,
+        json: async () => ({ messageId: "<brevo-test-msg-id-123@brevo.com>" }),
+      };
+    };
+
+    try {
+      const provider = new SMTPProvider({
+        from: "GoRide <alerts@goride.com>",
+      });
+
+      const result = await provider.send({
+        to: "customer@gmail.com",
+        subject: "Brevo API Subject",
+        html: "<p>Brevo API body</p>",
+      });
+
+      assert.equal(capturedUrl, "https://api.brevo.com/v3/smtp/email");
+      assert.equal(capturedOptions.headers["api-key"], "test-brevo-api-key");
+      const parsedBody = JSON.parse(capturedOptions.body);
+      assert.deepEqual(parsedBody.sender, { name: "GoRide", email: "alerts@goride.com" });
+      assert.deepEqual(parsedBody.to, [{ email: "customer@gmail.com" }]);
+      assert.equal(parsedBody.subject, "Brevo API Subject");
+      assert.equal(parsedBody.htmlContent, "<p>Brevo API body</p>");
+      assert.equal(result.messageId, "<brevo-test-msg-id-123@brevo.com>");
+    } finally {
+      global.fetch = origFetch;
+    }
+  });
+
+  test("10. Brevo HTTPS API rejection maps cleanly to EmailProviderError", async () => {
+    process.env.BREVO_API_KEY = "invalid-key";
+
+    const origFetch = global.fetch;
+    global.fetch = async () => ({
+      ok: false,
+      status: 401,
+      json: async () => ({ message: "Key not found", code: "unauthorized" }),
+    });
+
+    try {
+      const provider = new SMTPProvider();
+
+      await assert.rejects(
+        async () => {
+          await provider.send({
+            to: "someone@gmail.com",
+            subject: "Hi",
+            text: "Hello",
+          });
+        },
+        (err) => {
+          assert.ok(err instanceof EmailProviderError);
+          assert.equal(err.statusCode, 502);
+          assert.match(err.message, /Key not found/);
+          return true;
+        }
+      );
+    } finally {
+      global.fetch = origFetch;
+    }
+  });
 });
+
