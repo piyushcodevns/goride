@@ -137,7 +137,7 @@ describe("GoRide Gemini AI Assistant Integration Suite", () => {
       capturedArgs = args;
       return {
         reply: "GoRide offers Bike, Auto, Mini, Prime Sedan, and SUV options in Varanasi.",
-        model: "gemini-1.5-flash",
+        model: "gemini-3.6-flash",
       };
     };
 
@@ -152,7 +152,7 @@ describe("GoRide Gemini AI Assistant Integration Suite", () => {
     assert.equal(res.body.success, true);
     assert.equal(res.body.data.reply, "GoRide offers Bike, Auto, Mini, Prime Sedan, and SUV options in Varanasi.");
     assert.equal(res.body.data.role, "model");
-    assert.equal(res.body.data.model, "gemini-1.5-flash");
+    assert.equal(res.body.data.model, "gemini-3.6-flash");
 
     // Verify intercepted args
     assert.equal(capturedArgs.message, "What vehicles do you offer?");
@@ -166,7 +166,7 @@ describe("GoRide Gemini AI Assistant Integration Suite", () => {
       capturedArgs = args;
       return {
         reply: "Welcome back! How may I assist your ride today?",
-        model: "gemini-1.5-flash",
+        model: "gemini-3.6-flash",
       };
     };
 
@@ -238,7 +238,7 @@ describe("GoRide Gemini AI Assistant Integration Suite", () => {
   test("13. Rate limiter blocks requests exceeding 15 requests per minute with 429", async () => {
     GeminiService.testInterceptor = async () => ({
       reply: "Fast reply",
-      model: "gemini-1.5-flash",
+      model: "gemini-3.6-flash",
     });
 
     let lastRes = null;
@@ -249,5 +249,10 @@ describe("GoRide Gemini AI Assistant Integration Suite", () => {
     assert.equal(lastRes.status, 429);
     assert.equal(lastRes.body.success, false);
     assert.ok(lastRes.body.message.includes("Too many AI assistant requests"));
+  });
+
+  test("14. Default Gemini model is configured to active model gemini-3.6-flash", () => {
+    const geminiConfig = require("../src/config/gemini.config");
+    assert.equal(geminiConfig.model, "gemini-3.6-flash");
   });
 });

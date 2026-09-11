@@ -1,4 +1,4 @@
-﻿const express = require("express");
+const express = require("express");
 const router = express.Router();
 
 const { chat } = require("../controllers/aiChat.controller");
@@ -72,7 +72,7 @@ const { aiLimiter } = require("../middleware/rateLimit.middleware");
  *                       example: model
  *                     model:
  *                       type: string
- *                       example: gemini-1.5-flash
+ *                       example: gemini-3.6-flash
  *       400:
  *         description: Validation failure (empty message, oversized text, or invalid history format)
  *       429:
