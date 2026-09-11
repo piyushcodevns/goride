@@ -206,21 +206,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response && response.success) {
-                // If token returned, optionally save
-                if (response.data && response.data.token) {
-                    api.setToken(response.data.token);
-                    api.setCurrentUser(response.data.user);
-                }
-
                 // Visual button success state
                 submitBtn.disabled = true;
                 submitBtn.style.background = "linear-gradient(135deg, #10B981 0%, #059669 100%)";
-                submitBtn.innerHTML = `<span>✓</span> Account created successfully.`;
+                submitBtn.innerHTML = `<span>✓</span> Account created. Please verify email...`;
 
-                if (toastFn) toastFn("Account created successfully.", "success");
+                const successMsg = response.message || "Account created. Please verify your email to continue.";
+                if (toastFn) toastFn(successMsg, "success");
 
                 setTimeout(() => {
-                    window.location.href = 'login.html';
+                    window.location.href = `verify-email.html?email=${encodeURIComponent(emailVal)}`;
                 }, 1200);
             } else {
                 throw new Error(response.message || "Registration failed.");

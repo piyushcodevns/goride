@@ -104,6 +104,12 @@ describe("PHASE 28: Complete End-to-End Ride Lifecycle & Edge Flows", () => {
     riderUser = registerRes.user;
     assert.ok(riderUser.id);
 
+    // Verify user email before login
+    await prisma.user.update({
+      where: { id: riderUser.id },
+      data: { emailVerified: true, isVerified: true },
+    });
+
     // Stage 2: Rider Login
     const loginRes = await authService.loginUser({
       email: uniqueEmail,

@@ -151,7 +151,14 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.style.background = '';
             submitBtn.innerHTML = oldBtnText;
             passwordInput.value = '';
-            passwordInput.focus();
+
+            if (msg.toLowerCase().includes("verify your email")) {
+                setTimeout(() => {
+                    window.location.href = `verify-email.html?email=${encodeURIComponent(emailVal)}`;
+                }, 1800);
+            } else {
+                passwordInput.focus();
+            }
         }
     });
 

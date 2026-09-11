@@ -24,6 +24,7 @@ const {
 const {
   findUserByEmail,
   findUserByEmailWithPassword,
+  findUserById,
   findUserByPhone,
   findUserByResetToken,
   findUserByEmailVerificationToken,
@@ -103,27 +104,16 @@ const registerUser = async (userData) => {
   );
 
   try {
-    await sendEmail({
-      to: user.email,
-      subject: "Welcome to GoRide",
-      html: welcomeTemplate({
-        fullName: user.fullName,
-      }),
-    });
-  } catch (emailError) {
-    logger.warn("Welcome email could not be sent during registration:", {
+    await sendVerificationEmail(user.id);
+  } catch (verifyErr) {
+    logger.warn("Verification email could not be sent during registration:", {
       userId: user.id,
-      error: emailError.message,
+      error: verifyErr.message,
     });
   }
 
-  const token = generateToken({
-    id: user.id,
-    email: user.email,
-    role: user.role,
-  });
-
   return {
+    message: "Account created. Please verify your email to continue.",
     user: {
       id: user.id,
       fullName: user.fullName,
@@ -131,7 +121,7 @@ const registerUser = async (userData) => {
       phone: user.phone,
       role: user.role,
     },
-    token,
+    requiresVerification: true,
   };
 };
 
@@ -156,6 +146,12 @@ const loginUser = async (userData) => {
 
   if (!isPasswordValid) {
     throw new UnauthorizedError("Invalid email or password.");
+  }
+
+  if (!user.emailVerified) {
+    const error = new UnauthorizedError("Please verify your email before logging in.");
+    error.data = { emailVerified: false, email: user.email };
+    throw error;
   }
 
   const token = generateToken({
@@ -288,11 +284,26 @@ const changePassword = async (userId, passwordData) => {
 
 // ================= SEND VERIFICATION EMAIL =================
 
-const sendVerificationEmail = async (userId) => {
-  const user = await findUserByIdWithPassword(userId);
+const sendVerificationEmail = async (identifier) => {
+  let user;
+  if (typeof identifier === "object" && identifier !== null) {
+    if (identifier.email) {
+      user = await findUserByEmail(identifier.email.trim().toLowerCase());
+    } else if (identifier.userId) {
+      user = await findUserById(identifier.userId);
+    }
+  } else if (typeof identifier === "string") {
+    if (identifier.includes("@")) {
+      user = await findUserByEmail(identifier.trim().toLowerCase());
+    } else {
+      user = await findUserById(identifier);
+    }
+  }
 
   if (!user) {
-    throw new NotFoundError("User not found.");
+    return {
+      message: "Verification code sent to your email.",
+    };
   }
 
   if (user.emailVerified) {
@@ -327,7 +338,7 @@ const sendVerificationEmail = async (userId) => {
   });
 
   return {
-    message: "Verification email sent successfully.",
+    message: "Verification code sent to your email.",
   };
 };
 

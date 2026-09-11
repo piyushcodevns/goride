@@ -85,6 +85,12 @@ const verifyEmailSchema = z
   })
   .strict();
 
+const resendVerificationSchema = z
+  .object({
+    email: z.string().trim().email("Invalid email address").toLowerCase(),
+  })
+  .strict();
+
 module.exports = {
   registerSchema,
   loginSchema,
@@ -92,5 +98,6 @@ module.exports = {
   resetPasswordSchema,
   changePasswordSchema,
   verifyEmailSchema,
+  resendVerificationSchema,
   passwordSchema,
 };

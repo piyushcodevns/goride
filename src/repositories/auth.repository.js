@@ -128,6 +128,7 @@ const verifyUserEmail = async (userId) => {
     },
     data: {
       emailVerified: true,
+      isVerified: true,
       emailVerificationToken: null,
       emailVerificationExpires: null,
     },

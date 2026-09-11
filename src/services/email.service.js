@@ -7,6 +7,9 @@ const emailProvider = new SMTPProvider();
 
 const sendEmail = async ({ to, subject, html, text }) => {
   if (process.env.NODE_ENV === "test") {
+    if (typeof sendEmail.testInterceptor === "function") {
+      return sendEmail.testInterceptor({ to, subject, html, text });
+    }
     return { messageId: "test-mock-message-id" };
   }
 

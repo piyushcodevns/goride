@@ -33,7 +33,7 @@ describe("PHASE 3: Authentication, Session & Token Security", () => {
     assert.equal(nonMatch, false);
   });
 
-  test("User Signup: successfully registers new user and returns JWT", async () => {
+  test("User Signup: successfully registers new user in unverified state", async () => {
     const result = await authService.registerUser({
       fullName: "Auth Test User",
       email: testEmail,
@@ -45,12 +45,12 @@ describe("PHASE 3: Authentication, Session & Token Security", () => {
     assert.equal(result.user.email, testEmail);
     assert.equal(result.user.phone, testPhone);
     assert.equal(result.user.role, "USER");
-    assert.ok(result.token, "JWT token must be returned on registration");
+    assert.equal(result.token, undefined, "JWT token must not be returned on unverified registration");
+    assert.equal(result.requiresVerification, true);
 
-    // Verify token validity
-    const decoded = verifyToken(result.token);
-    assert.equal(decoded.id, result.user.id);
-    assert.equal(decoded.email, testEmail);
+    // Verify user in DB is unverified
+    const dbUser = await prisma.user.findUnique({ where: { id: result.user.id } });
+    assert.equal(dbUser.emailVerified, false);
   });
 
   test("User Signup: rejects duplicate email with ConflictError", async () => {
@@ -123,7 +123,13 @@ describe("PHASE 3: Authentication, Session & Token Security", () => {
     );
   });
 
-  test("User Login: successfully logs in with valid credentials", async () => {
+  test("User Login: successfully logs in with valid credentials after verification", async () => {
+    // Verify user before login
+    await prisma.user.update({
+      where: { email: testEmail },
+      data: { emailVerified: true, isVerified: true },
+    });
+
     const result = await authService.loginUser({
       email: testEmail,
       password: testPassword,
@@ -178,6 +184,8 @@ describe("PHASE 3: Authentication, Session & Token Security", () => {
         email: resetUserEmail,
         phone: `7${Math.floor(100000000 + Math.random() * 900000000)}`,
         password: await bcrypt.hash("InitialPassword@123", 10),
+        emailVerified: true,
+        isVerified: true,
       },
     });
 
@@ -240,6 +248,8 @@ describe("PHASE 3: Authentication, Session & Token Security", () => {
         password: await bcrypt.hash(oldPassword, 10),
         role: "USER",
         isActive: true,
+        emailVerified: true,
+        isVerified: true,
       },
     });
 

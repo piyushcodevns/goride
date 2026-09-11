@@ -321,9 +321,24 @@ router.post(
   changePasswordController,
 );
 
+const optionalAuthenticate = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    return authenticate(req, res, next);
+  }
+  next();
+};
+
 router.post(
   "/send-verification-email",
-  authenticate,
+  optionalAuthenticate,
+  sendVerificationEmailLimiter,
+  sendVerificationEmailController,
+);
+
+router.post(
+  "/resend-verification",
+  optionalAuthenticate,
   sendVerificationEmailLimiter,
   sendVerificationEmailController,
 );

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Verify Your Email | Go Ride</title>
+    <meta name="description" content="Verify your Go Ride account email address to activate booking capabilities.">
+    <meta name="theme-color" content="#2563EB">
+
+    <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <!-- Page Loader -->
+    <div id="page-loader" aria-hidden="true"></div>
+
+    <!-- Reusable Navbar -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar" aria-label="Primary navigation">
+                <a class="brand" href="index.html">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                    <span>Go Ride</span>
+                </a>
+
+                <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
+
+                <ul class="nav-links">
+                    <li><a class="nav-link" href="index.html">Home</a></li>
+                    <li><a class="nav-link" href="services.html">Services</a></li>
+                    <li><a class="nav-link" href="index.html#safety">Safety</a></li>
+                    <li><a class="nav-link" href="about.html">About</a></li>
+                    <li><a class="nav-link" href="contact.html">Contact</a></li>
+                    <li><a class="nav-link highlight-link" href="driver-signup.html">Become Driver</a></li>
+                </ul>
+
+                <div class="nav-buttons">
+                    <a href="login.html" class="login-btn">
+                        Login
+                    </a>
+                    <a href="booking.html" class="book-btn">
+                        Book Ride
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Auth Layout Section -->
+    <main class="auth-section">
+        <div class="container">
+            <div class="auth-wrapper reveal">
+                <div class="auth-card" style="max-width: 480px;">
+                    <div class="auth-header">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" class="auth-logo" loading="lazy" decoding="async">
+                        <h2>Verify Your Email</h2>
+                        <p id="verification-subtitle">We've sent a 6-digit verification code to your email.</p>
+                        <div id="email-display-container" style="display: none; margin-top: 0.5rem; font-size: 0.9rem; color: var(--color-primary, #2563EB); font-weight: 500;">
+                            Code sent to: <span id="target-email"></span>
+                        </div>
+                    </div>
+
+                    <form id="verify-email-form" class="auth-form" novalidate autocomplete="off">
+                        <!-- OTP Input -->
+                        <div class="input-group">
+                            <label for="otp-input">Enter 6-Digit Verification Code</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon" aria-hidden="true">🔑</span>
+                                <input type="text" id="otp-input" name="otp" placeholder="e.g. 123456" required autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" maxlength="6" style="letter-spacing: 4px; font-size: 1.15rem; font-weight: 600; text-align: center;">
+                            </div>
+                            <small class="error-msg" id="otp-error" style="display: none;"></small>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" id="verify-submit-btn" class="primary-btn auth-submit-btn">
+                            Verify Email
+                        </button>
+                    </form>
+
+                    <!-- Resend Section -->
+                    <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem;">
+                        <p style="margin-bottom: 0.35rem; color: var(--color-text-secondary, #64748B);">Didn't receive the code?</p>
+                        <button type="button" id="resend-code-btn" style="background: none; border: none; padding: 0; color: var(--color-primary, #2563EB); font-weight: 600; font-family: inherit; font-size: 0.9rem; text-decoration: underline; cursor: pointer;">
+                            Resend Code
+                        </button>
+                        <span id="resend-timer" style="display: none; color: var(--color-text-secondary, #64748B); font-size: 0.85rem;"></span>
+                    </div>
+
+                    <div class="auth-footer" style="margin-top: 1.5rem;">
+                        <p>Already verified? <a href="login.html">Sign In here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Reusable Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a class="brand" href="index.html">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                        <span>Go Ride</span>
+                    </a>
+                    <p>Ride smarter, ride better with dependable travel for every journey.</p>
+                </div>
+                <div>
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="booking.html">Book Ride</a></li>
+                        <li><a href="terms.html">Terms &amp; Conditions</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="login.html">Login</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="booking.html">City Rides</a></li>
+                        <li><a href="driver-signup.html">Become a Driver</a></li>
+                        <li><a href="rides.html">Ride History</a></li>
+                        <li><a href="notifications.html">Notifications</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">© 2026 Go Ride Technologies. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="js/config.js" defer></script>
+    <script src="js/toast.js" defer></script>
+    <script src="js/helpers.js" defer></script>
+    <script src="js/main.js" defer></script>
+    <script src="js/animations.js" defer></script>
+    <script src="js/verify-email.js" defer></script>
+</body>
+</html>

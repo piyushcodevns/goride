@@ -16,7 +16,7 @@ const register = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "Account created successfully.",
+      message: result.message || "Account created. Please verify your email to continue.",
       data: result,
     });
   } catch (error) {
@@ -45,10 +45,15 @@ const login = async (req, res) => {
     const statusCode = error.statusCode || (error.name === "ZodError" ? 400 : 401);
     const message = (error.name === "ZodError" && (error.errors?.[0]?.message || error.issues?.[0]?.message)) || error.message || "Invalid email or password.";
 
-    return res.status(statusCode).json({
+    const responseBody = {
       success: false,
       message,
-    });
+    };
+    if (error.data) {
+      responseBody.data = error.data;
+    }
+
+    return res.status(statusCode).json(responseBody);
   }
 };
 
@@ -123,15 +128,27 @@ const changePasswordController = async (req, res) => {
 
 const sendVerificationEmailController = async (req, res) => {
   try {
-    const result = await sendVerificationEmail(req.user.id);
+    const target = req.user?.id
+      ? { userId: req.user.id }
+      : (req.body?.email ? { email: req.body.email } : null);
+
+    if (!target) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required to send verification code.",
+      });
+    }
+
+    const result = await sendVerificationEmail(target);
 
     return res.status(200).json({
       success: true,
-      message: "Verification email sent successfully.",
+      message: result.message || "Verification email sent successfully.",
       data: result,
     });
   } catch (error) {
-    return res.status(400).json({
+    const statusCode = error.statusCode || 400;
+    return res.status(statusCode).json({
       success: false,
       message: error.message,
     });
@@ -142,15 +159,24 @@ const sendVerificationEmailController = async (req, res) => {
 
 const verifyEmailController = async (req, res) => {
   try {
-    const result = await verifyEmail(req.body.otp);
+    const otp = req.body?.otp;
+    if (!otp) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP must be a 6-digit number",
+      });
+    }
+
+    const result = await verifyEmail(otp);
 
     return res.status(200).json({
       success: true,
-      message: "Email verified successfully.",
+      message: result.message || "Email verified successfully.",
       data: result,
     });
   } catch (error) {
-    return res.status(400).json({
+    const statusCode = error.statusCode || 400;
+    return res.status(statusCode).json({
       success: false,
       message: error.message,
     });
