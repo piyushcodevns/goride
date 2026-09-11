@@ -58,6 +58,13 @@
     let fareAbortController = null;
     let isSubmitting = false;
 
+    // Deduplication, in-flight tracking & fare preview caching (UI only; booking remains authoritative on backend)
+    const fareCache = new Map(); // key -> server fare response object
+    let inFlightFareKey = null;
+    let inFlightFarePromise = null;
+    let lastCalculatedRouteCoords = null;
+    let isFareRateLimited = false;
+
     // Mapping frontend vehicle types to backend VehicleType enum (BIKE, AUTO, CAR, SUV)
     const VEHICLE_MAP = {
         bike: "BIKE",
@@ -77,6 +84,20 @@
     function sanitizeInput(str) {
         if (!str) return '';
         return str.replace(/\s+/g, ' ').trim();
+    }
+
+    function getRouteKey() {
+        const plat = pickupInput?.dataset?.lat;
+        const plng = pickupInput?.dataset?.lng;
+        const dlat = dropoffInput?.dataset?.lat;
+        const dlng = dropoffInput?.dataset?.lng;
+        if (!plat || !plng || !dlat || !dlng) return null;
+        const pLatNum = parseFloat(plat);
+        const pLngNum = parseFloat(plng);
+        const dLatNum = parseFloat(dlat);
+        const dLngNum = parseFloat(dlng);
+        if (isNaN(pLatNum) || isNaN(pLngNum) || isNaN(dLatNum) || isNaN(dLngNum)) return null;
+        return `${pLatNum.toFixed(5)},${pLngNum.toFixed(5)}->${dLatNum.toFixed(5)},${dLngNum.toFixed(5)}`;
     }
 
     function initDateLimits() {
@@ -123,6 +144,7 @@
         }
 
         if (state === 'placeholder') {
+            isFareRateLimited = false;
             distanceVal.innerText = '—';
             etaVal.innerText = '—';
             baseFareVal.innerText = '—';
@@ -140,6 +162,7 @@
         }
 
         if (state === 'calculating') {
+            isFareRateLimited = false;
             if (fareStatusBadge) fareStatusBadge.innerText = '⏳ Calculating Server Fare...';
             totalFareVal.innerText = 'Calculating...';
             return;
@@ -157,6 +180,7 @@
         }
 
         if (state === 'ready' && currentServerFare) {
+            isFareRateLimited = false;
             distanceVal.innerText = `${currentDistance.toFixed(1)} KM`;
             etaVal.innerText = `${Math.ceil(currentDuration)} Mins`;
             baseFareVal.innerText = `₹${Number(currentServerFare.baseFare || 0).toFixed(2)}`;
@@ -197,7 +221,36 @@
             return;
         }
 
+        const routeKey = getRouteKey();
+        if (!routeKey) {
+            currentServerFare = null;
+            renderFareCard('placeholder');
+            performLiveValidation();
+            return;
+        }
+
         const backendVehicle = VEHICLE_MAP[selectedVehicleType] || "CAR";
+        const requestKey = `${routeKey}:${backendVehicle}`;
+
+        // Deduplication 1: Cache Hit Check (UI preview cache; 0 network calls)
+        if (fareCache.has(requestKey)) {
+            currentServerFare = fareCache.get(requestKey);
+            isFareRateLimited = false;
+            renderFareCard('ready');
+            updateVehicleListPrices();
+
+            if (appliedCouponCode) {
+                await revalidateAppliedCoupon();
+            }
+            performLiveValidation();
+            return;
+        }
+
+        // Deduplication 2: In-Flight Request Check (0 duplicate network calls)
+        if (inFlightFareKey === requestKey && inFlightFarePromise) {
+            return inFlightFarePromise;
+        }
+
         const thisRequestId = ++fareRequestId;
 
         if (fareAbortController) {
@@ -207,101 +260,92 @@
 
         renderFareCard('calculating');
 
-        try {
-            const api = (window.GoRide && window.GoRide.api);
-            const endpoint = "/api/fare/calculate";
-            const payload = {
-                city: (window.APP_CONFIG && window.APP_CONFIG.BACKEND_CITY) || "DEFAULT",
-                vehicleType: backendVehicle,
-                pickupLatitude: parseFloat(plat),
-                pickupLongitude: parseFloat(plng),
-                destinationLatitude: parseFloat(dlat),
-                destinationLongitude: parseFloat(dlng)
-            };
+        inFlightFareKey = requestKey;
+        inFlightFarePromise = (async () => {
+            try {
+                const api = (window.GoRide && window.GoRide.api);
+                const endpoint = "/api/fare/calculate";
+                const payload = {
+                    city: (window.APP_CONFIG && window.APP_CONFIG.BACKEND_CITY) || "DEFAULT",
+                    vehicleType: backendVehicle,
+                    pickupLatitude: parseFloat(plat),
+                    pickupLongitude: parseFloat(plng),
+                    destinationLatitude: parseFloat(dlat),
+                    destinationLongitude: parseFloat(dlng)
+                };
 
-            const response = await api.request(endpoint, {
-                method: "POST",
-                body: JSON.stringify(payload),
-                signal: fareAbortController.signal
-            });
+                const response = await api.request(endpoint, {
+                    method: "POST",
+                    body: JSON.stringify(payload),
+                    signal: fareAbortController.signal
+                });
 
-            // Prevent stale race conditions
-            if (thisRequestId !== fareRequestId) {
-                return;
-            }
-
-            if (response && response.success && response.data) {
-                currentServerFare = response.data;
-                renderFareCard('ready');
-
-                // If a coupon code is already entered, re-validate it against real server fare
-                if (appliedCouponCode) {
-                    await revalidateAppliedCoupon();
+                // Prevent stale race conditions
+                if (thisRequestId !== fareRequestId) {
+                    return;
                 }
 
-                // Update prices across all vehicle cards asynchronously
-                updateVehicleListPrices(plat, plng, dlat, dlng);
-            } else {
-                throw new Error((response && response.message) || "Fare calculation error");
+                if (response && response.success && response.data) {
+                    currentServerFare = response.data;
+                    fareCache.set(requestKey, response.data);
+                    isFareRateLimited = false;
+                    renderFareCard('ready');
+                    updateVehicleListPrices();
+
+                    // If a coupon code is already entered, re-validate it against real server fare
+                    if (appliedCouponCode) {
+                        await revalidateAppliedCoupon();
+                    }
+                } else {
+                    throw new Error((response && response.message) || "Fare calculation error");
+                }
+            } catch (err) {
+                if (err.name === 'AbortError') return;
+                if (thisRequestId !== fareRequestId) return;
+                console.error("Authoritative server fare calculation failed:", err);
+                currentServerFare = null;
+
+                const isRateLimit = err.status === 429 || (err.message && err.message.toLowerCase().includes('too many'));
+                isFareRateLimited = isRateLimit;
+
+                const userMessage = isRateLimit
+                    ? "Fare estimates are temporarily limited. Please wait a moment and try again."
+                    : (err.message || 'Fare calculation unavailable');
+
+                renderFareCard('error', userMessage);
+            } finally {
+                if (inFlightFareKey === requestKey) {
+                    inFlightFareKey = null;
+                    inFlightFarePromise = null;
+                }
+                performLiveValidation();
             }
-        } catch (err) {
-            if (err.name === 'AbortError') return;
-            if (thisRequestId !== fareRequestId) return;
-            console.error("Authoritative server fare calculation failed:", err);
-            currentServerFare = null;
-            renderFareCard('error', err.message || 'Fare calculation unavailable');
-        } finally {
-            performLiveValidation();
-        }
+        })();
+
+        return inFlightFarePromise;
     }
 
-    // Update estimated preview prices on other vehicle cards
-    async function updateVehicleListPrices(plat, plng, dlat, dlng) {
-        const api = (window.GoRide && window.GoRide.api);
-        if (!api) return;
+    // Update displayed prices on vehicle cards from cache or active fare (0 network requests)
+    function updateVehicleListPrices() {
+        const routeKey = getRouteKey();
+        if (!routeKey) return;
 
-        const uniqueBackendTypes = {
-            bike: "BIKE",
-            auto: "AUTO",
-            mini: "CAR",
-            sedan: "CAR",
-            suv: "SUV"
-        };
-
-        // Cache fares for this route
-        const fareCache = {};
-
-        for (const item of vehicleItems) {
+        vehicleItems.forEach(item => {
             const type = item.dataset.type;
-            const bType = uniqueBackendTypes[type];
-            if (!bType) continue;
-
-            try {
-                if (!fareCache[bType]) {
-                    const res = await api.request("/api/fare/calculate", {
-                        method: "POST",
-                        body: JSON.stringify({
-                            city: "DEFAULT",
-                            vehicleType: bType,
-                            pickupLatitude: parseFloat(plat),
-                            pickupLongitude: parseFloat(plng),
-                            destinationLatitude: parseFloat(dlat),
-                            destinationLongitude: parseFloat(dlng)
-                        })
-                    });
-                    if (res && res.data) {
-                        fareCache[bType] = res.data.finalFare;
-                    }
+            const bType = VEHICLE_MAP[type] || "CAR";
+            const itemKey = `${routeKey}:${bType}`;
+            const priceSpan = item.querySelector('.price');
+            if (priceSpan) {
+                if (fareCache.has(itemKey)) {
+                    const cachedFare = fareCache.get(itemKey);
+                    priceSpan.innerText = `₹${Math.round(cachedFare.finalFare || cachedFare.estimatedFare || 0)}`;
+                } else if (item.classList.contains('active') && currentServerFare) {
+                    priceSpan.innerText = `₹${Math.round(currentServerFare.finalFare || currentServerFare.estimatedFare || 0)}`;
+                } else {
+                    priceSpan.innerText = '₹ --';
                 }
-
-                const priceSpan = item.querySelector('.price');
-                if (priceSpan && fareCache[bType] !== undefined) {
-                    priceSpan.innerText = `₹${Math.round(fareCache[bType])}`;
-                }
-            } catch (e) {
-                // Ignore background preview errors
             }
-        }
+        });
     }
 
     // ----------------------------------------------------
@@ -515,6 +559,9 @@
         } else if (hasCouponError) {
             confirmBookingBtn.disabled = true;
             confirmBookingBtn.innerHTML = `Invalid Promo Code Entered`;
+        } else if (isFareRateLimited) {
+            confirmBookingBtn.disabled = true;
+            confirmBookingBtn.innerHTML = `Please Wait Before Retrying`;
         } else if (hasValidCoords && hasValidRoute && hasValidFare && result.valid) {
             confirmBookingBtn.disabled = false;
             confirmBookingBtn.innerHTML = `<span>✓</span> Confirm Booking`;
@@ -561,12 +608,24 @@
         const dlng = dropoffInput.dataset.lng;
 
         if (plat && plng && dlat && dlng) {
+            const coordKey = `${plat},${plng}->${dlat},${dlng}`;
+            // If already routed for these exact coordinates and we have a route, don't re-draw
+            if (lastCalculatedRouteCoords === coordKey && currentDistance && currentDistance > 0) {
+                if (currentServerFare || inFlightFareKey) {
+                    performLiveValidation();
+                    return;
+                }
+            }
+            lastCalculatedRouteCoords = coordKey;
+            fareCache.clear();
             const pickupCoords = { lat: parseFloat(plat), lng: parseFloat(plng) };
             const dropCoords = { lat: parseFloat(dlat), lng: parseFloat(dlng) };
             if (window.MapProvider && window.MapProvider.drawRoute) {
                 window.MapProvider.drawRoute(pickupCoords, dropCoords);
             }
         } else {
+            lastCalculatedRouteCoords = null;
+            fareCache.clear();
             currentDistance = null;
             currentDuration = null;
             currentServerFare = null;
@@ -587,6 +646,11 @@
         appliedDiscount = 0;
         appliedCouponCode = "";
         hasCouponError = false;
+        fareCache.clear();
+        inFlightFareKey = null;
+        inFlightFarePromise = null;
+        lastCalculatedRouteCoords = null;
+        isFareRateLimited = false;
         currentDistance = null;
         currentDuration = null;
         currentServerFare = null;
@@ -971,6 +1035,11 @@
         });
     });
 
+    // Debounced vehicle selection to prevent request storms on rapid clicks (250ms)
+    const debouncedCalculateServerFare = debounce(() => {
+        calculateServerFare();
+    }, 250);
+
     function selectVehicle(item) {
         vehicleItems.forEach(v => {
             v.classList.remove('active');
@@ -979,9 +1048,22 @@
         item.classList.add('active');
         item.setAttribute('aria-checked', 'true');
         selectedVehicleType = item.dataset.type;
-        
-        // Recalculate real server fare for this newly selected vehicle
-        calculateServerFare();
+
+        const routeKey = getRouteKey();
+        const backendVehicle = VEHICLE_MAP[selectedVehicleType] || "CAR";
+        const requestKey = routeKey ? `${routeKey}:${backendVehicle}` : null;
+
+        // If this vehicle fare is already cached, apply immediately with 0 delay (0 network calls)!
+        if (requestKey && fareCache.has(requestKey)) {
+            calculateServerFare();
+        } else if (routeKey && currentDistance && currentDistance > 0) {
+            // Show calculating state on card immediately and debounce the API call
+            renderFareCard('calculating');
+            debouncedCalculateServerFare();
+        } else {
+            renderFareCard('placeholder');
+            performLiveValidation();
+        }
     }
 
     // Payment Selection Highlights
