@@ -153,10 +153,33 @@ document.addEventListener('DOMContentLoaded', () => {
             passwordInput.value = '';
 
             if (msg.toLowerCase().includes("verify your email")) {
+                let noticeCard = document.getElementById('login-unverified-notice');
+                if (!noticeCard) {
+                    noticeCard = document.createElement('div');
+                    noticeCard.id = 'login-unverified-notice';
+                    noticeCard.className = 'unverified-notice-card';
+                    loginForm.parentNode.insertBefore(noticeCard, loginForm.nextSibling);
+                }
+                const encodedEmail = encodeURIComponent(emailVal);
+                noticeCard.innerHTML = `
+                    <div class="unverified-notice-header">
+                        <span>⚠️</span>
+                        <span>Email Verification Required</span>
+                    </div>
+                    <p class="unverified-notice-msg">
+                        Your account is not verified yet. Please enter the 6-digit verification code to activate your account.
+                    </p>
+                    <a href="verify-email.html?email=${encodedEmail}" class="unverified-notice-btn">
+                        Verify Email Now →
+                    </a>
+                `;
+
                 setTimeout(() => {
-                    window.location.href = `verify-email.html?email=${encodeURIComponent(emailVal)}`;
-                }, 1800);
+                    window.location.href = `verify-email.html?email=${encodedEmail}`;
+                }, 2500);
             } else {
+                const existingNotice = document.getElementById('login-unverified-notice');
+                if (existingNotice) existingNotice.remove();
                 passwordInput.focus();
             }
         }

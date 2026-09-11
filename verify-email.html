@@ -65,43 +65,67 @@
         <div class="container">
             <div class="auth-wrapper reveal">
                 <div class="auth-card" style="max-width: 480px;">
-                    <div class="auth-header">
-                        <img src="assets/svg/logo.svg" alt="Go Ride logo" class="auth-logo" loading="lazy" decoding="async">
-                        <h2>Verify Your Email</h2>
-                        <p id="verification-subtitle">We've sent a 6-digit verification code to your email.</p>
-                        <div id="email-display-container" style="display: none; margin-top: 0.5rem; font-size: 0.9rem; color: var(--color-primary, #2563EB); font-weight: 500;">
-                            Code sent to: <span id="target-email"></span>
-                        </div>
-                    </div>
-
-                    <form id="verify-email-form" class="auth-form" novalidate autocomplete="off">
-                        <!-- OTP Input -->
-                        <div class="input-group">
-                            <label for="otp-input">Enter 6-Digit Verification Code</label>
-                            <div class="input-wrapper">
-                                <span class="input-icon" aria-hidden="true">🔑</span>
-                                <input type="text" id="otp-input" name="otp" placeholder="e.g. 123456" required autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" maxlength="6" style="letter-spacing: 4px; font-size: 1.15rem; font-weight: 600; text-align: center;">
+                    <div id="verify-main-view">
+                        <div class="auth-header">
+                            <img src="assets/svg/logo.svg" alt="Go Ride logo" class="auth-logo" loading="lazy" decoding="async">
+                            <h2>Verify Your Email</h2>
+                            <p id="verification-subtitle">We've sent a 6-digit verification code to your email.</p>
+                            <div id="email-display-container" class="email-badge-container" style="display: none;">
+                                <span class="email-badge">✉️ <span id="target-email"></span></span>
+                                <a href="register.html" class="change-email-link" id="change-email-link">Wrong email? Change email</a>
                             </div>
-                            <small class="error-msg" id="otp-error" style="display: none;"></small>
                         </div>
 
-                        <!-- Submit Button -->
-                        <button type="submit" id="verify-submit-btn" class="primary-btn auth-submit-btn">
-                            Verify Email
-                        </button>
-                    </form>
+                        <form id="verify-email-form" class="auth-form" novalidate autocomplete="off">
+                            <!-- 6-Digit OTP Inputs Group -->
+                            <div class="input-group">
+                                <label style="text-align: center;">Enter 6-Digit Verification Code</label>
+                                <div class="otp-inputs-wrapper" role="group" aria-label="6-digit verification code">
+                                    <input type="text" class="otp-digit" id="otp-1" data-index="0" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" aria-label="Digit 1 of 6" required>
+                                    <input type="text" class="otp-digit" id="otp-2" data-index="1" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" aria-label="Digit 2 of 6" required>
+                                    <input type="text" class="otp-digit" id="otp-3" data-index="2" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" aria-label="Digit 3 of 6" required>
+                                    <input type="text" class="otp-digit" id="otp-4" data-index="3" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" aria-label="Digit 4 of 6" required>
+                                    <input type="text" class="otp-digit" id="otp-5" data-index="4" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" aria-label="Digit 5 of 6" required>
+                                    <input type="text" class="otp-digit" id="otp-6" data-index="5" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" aria-label="Digit 6 of 6" required>
+                                </div>
+                                <small class="error-msg" id="otp-error" role="alert" style="display: none; text-align: center;"></small>
+                            </div>
 
-                    <!-- Resend Section -->
-                    <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem;">
-                        <p style="margin-bottom: 0.35rem; color: var(--color-text-secondary, #64748B);">Didn't receive the code?</p>
-                        <button type="button" id="resend-code-btn" style="background: none; border: none; padding: 0; color: var(--color-primary, #2563EB); font-weight: 600; font-family: inherit; font-size: 0.9rem; text-decoration: underline; cursor: pointer;">
-                            Resend Code
-                        </button>
-                        <span id="resend-timer" style="display: none; color: var(--color-text-secondary, #64748B); font-size: 0.85rem;"></span>
+                            <!-- 15-Minute Expiration Countdown -->
+                            <div class="otp-timer-row">
+                                <div id="otp-expiration-timer" class="otp-timer" role="status" aria-live="polite">
+                                    <span>⏱️</span> Code expires in <strong id="expiration-timer-val">15:00</strong>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button (Disabled until 6 digits entered) -->
+                            <button type="submit" id="verify-submit-btn" class="primary-btn auth-submit-btn" disabled>
+                                Verify Email
+                            </button>
+                        </form>
+
+                        <!-- Resend Section with Cooldown -->
+                        <div class="otp-resend-wrapper">
+                            <p>Didn't receive the code?</p>
+                            <div class="resend-action-area">
+                                <button type="button" id="resend-code-btn" class="resend-btn">
+                                    Resend Code
+                                </button>
+                                <span id="resend-timer" class="resend-timer-badge" style="display: none;"></span>
+                            </div>
+                        </div>
+
+                        <div class="auth-footer">
+                            <p>Already verified? <a href="login.html">Sign In here</a></p>
+                        </div>
                     </div>
 
-                    <div class="auth-footer" style="margin-top: 1.5rem;">
-                        <p>Already verified? <a href="login.html">Sign In here</a></p>
+                    <!-- Tasteful Success View State -->
+                    <div id="verify-success-view" class="verify-success-card" style="display: none;" aria-live="assertive">
+                        <div class="verify-success-icon" aria-hidden="true">✓</div>
+                        <h3 class="verify-success-title">Email Verified!</h3>
+                        <p class="verify-success-desc">Your GoRide account is now active. Redirecting you to login...</p>
+                        <div class="verify-success-spinner" aria-hidden="true"></div>
                     </div>
                 </div>
             </div>
