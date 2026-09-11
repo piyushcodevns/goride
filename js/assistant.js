@@ -1,4 +1,4 @@
-﻿/**
+/**
  * GoRide AI Assistant (Frontend)
  * Self-contained floating widget for customer assistance.
  * Communicates with backend POST /api/ai/chat without exposing credentials.
@@ -122,25 +122,72 @@
 
         let isOpen = false;
         let isSending = false;
+        let openerElement = null;
 
         function setDrawerOpen(open) {
             isOpen = open;
             if (open) {
+                // Record the element that opened the drawer for focus restoration
+                openerElement =
+                    document.activeElement && typeof document.activeElement.focus === "function"
+                        ? document.activeElement
+                        : toggleBtn;
+
                 drawer.classList.add("is-active");
                 drawer.setAttribute("aria-hidden", "false");
                 toggleBtn.setAttribute("aria-expanded", "true");
                 toggleBtn.style.display = "none";
-                setTimeout(() => chatInput.focus(), 250);
+                setTimeout(() => {
+                    if (isOpen && chatInput && typeof chatInput.focus === "function") {
+                        chatInput.focus();
+                    }
+                }, 100);
             } else {
+                // Make the toggle button visible so it can receive restored focus
+                toggleBtn.style.display = "flex";
+                toggleBtn.setAttribute("aria-expanded", "false");
+
+                // CRITICAL: Move focus out of the drawer BEFORE setting aria-hidden="true"
+                // to prevent "Blocked aria-hidden on an element because its descendant retained focus"
+                const activeEl = document.activeElement;
+                if (activeEl && drawer.contains(activeEl)) {
+                    if (
+                        openerElement &&
+                        typeof openerElement.focus === "function" &&
+                        document.body.contains(openerElement) &&
+                        !drawer.contains(openerElement)
+                    ) {
+                        openerElement.focus();
+                    } else if (toggleBtn && typeof toggleBtn.focus === "function") {
+                        toggleBtn.focus();
+                    } else if (document.body && typeof document.body.focus === "function") {
+                        document.body.focus();
+                    } else if (typeof activeEl.blur === "function") {
+                        activeEl.blur();
+                    }
+                }
+
+                // If focus is somehow still inside the drawer, explicitly blur it
+                if (document.activeElement && drawer.contains(document.activeElement)) {
+                    if (typeof document.activeElement.blur === "function") {
+                        document.activeElement.blur();
+                    }
+                }
+
                 drawer.classList.remove("is-active");
                 drawer.setAttribute("aria-hidden", "true");
-                toggleBtn.setAttribute("aria-expanded", "false");
-                toggleBtn.style.display = "flex";
             }
         }
 
         toggleBtn.addEventListener("click", () => setDrawerOpen(true));
         closeBtn.addEventListener("click", () => setDrawerOpen(false));
+
+        // Close when pressing Escape key
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && isOpen) {
+                setDrawerOpen(false);
+            }
+        });
 
         // Close when clicking outside on desktop
         document.addEventListener("click", (e) => {
@@ -259,7 +306,9 @@
                 isSending = false;
                 chatInput.disabled = false;
                 sendBtn.disabled = false;
-                chatInput.focus();
+                if (isOpen && typeof chatInput.focus === "function") {
+                    chatInput.focus();
+                }
                 scrollToBottom();
             }
         }

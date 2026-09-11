@@ -378,4 +378,32 @@ describe("GoRide Gemini AI Assistant Integration Suite", () => {
     );
     assert.equal(callCount, 1);
   });
+
+  test("19. Frontend Assistant: Focus management safely moves focus out of drawer before setting aria-hidden='true'", () => {
+    // Verify frontend script contract
+    const fs = require("fs");
+    const assistantJs = fs.readFileSync("js/assistant.js", "utf-8");
+
+    // 1. Must check activeElement and shift focus before setting aria-hidden="true"
+    assert.ok(
+      assistantJs.includes("drawer.contains(activeEl)"),
+      "Must check if focused element is inside drawer before closing"
+    );
+    assert.ok(
+      assistantJs.indexOf("drawer.contains(activeEl)") < assistantJs.indexOf('drawer.setAttribute("aria-hidden", "true")'),
+      "Focus restoration must happen before drawer aria-hidden is set to true"
+    );
+
+    // 2. Must handle Escape key
+    assert.ok(
+      assistantJs.includes('e.key === "Escape"'),
+      "Must support Escape key to close drawer"
+    );
+
+    // 3. Must guard finally chatInput.focus with isOpen
+    assert.ok(
+      assistantJs.includes("if (isOpen && typeof chatInput.focus === \"function\")"),
+      "Must not force focus into chatInput if drawer is closed while message was sending"
+    );
+  });
 });
