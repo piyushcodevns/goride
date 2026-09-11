@@ -1,5 +1,6 @@
 const EmailProvider = require("./email.provider");
 const { EmailProviderError } = require("../../utils/AppError");
+const logger = require("../../utils/logger");
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 const REQUEST_TIMEOUT_MS = 10000;

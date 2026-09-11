@@ -49,13 +49,16 @@ const getRedisClient = () => {
  */
 const ensureConnected = async () => {
   const client = getRedisClient();
-  if (client.status === "ready" || client.status === "connecting") {
+  if (client.status === "ready" || client.status === "connecting" || client.status === "connect") {
     return client;
   }
   try {
     await client.connect();
     return client;
   } catch (err) {
+    if (err?.message && err.message.includes("already connecting")) {
+      return client;
+    }
     logger.error("Failed to connect to Redis for pending registration.", {
       error: err?.message,
     });

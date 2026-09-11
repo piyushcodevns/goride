@@ -29,12 +29,15 @@ const sendEmail = async ({ to, subject, html, text }) => {
     return info;
   } catch (error) {
     logger.error("Email sending failed.", {
-  to,
-  error: error.message,
-  stack: error.stack,
-});
+      to,
+      error: error.message,
+      stack: error.stack,
+    });
 
-    throw new EmailProviderError("Unable to send email notification.");
+    if (error instanceof EmailProviderError) {
+      throw error;
+    }
+    throw new EmailProviderError(error.message || "Unable to send email notification.");
   }
 };
 

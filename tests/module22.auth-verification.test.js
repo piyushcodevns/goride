@@ -15,6 +15,7 @@ const {
   UnauthorizedError,
   BadRequestError,
   EmailProviderError,
+  NotFoundError,
 } = require("../src/utils/AppError");
 
 describe("MODULE 22: Mandatory Email Verification & Redis Pending Registration", () => {
@@ -173,7 +174,7 @@ describe("MODULE 22: Mandatory Email Verification & Redis Pending Registration",
     );
   });
 
-  test("7. Resend verification generates new OTP, updates Redis, and resets 15m expiry", async () => {
+  test("7. Resend verification generates new OTP, updates Redis, invalidates old OTP, and resets 15m expiry", async () => {
     capturedEmails = [];
 
     // Re-register to re-establish pending registration
@@ -183,8 +184,13 @@ describe("MODULE 22: Mandatory Email Verification & Redis Pending Registration",
       phone: testPhone,
       password: testPassword,
     });
+    assert.equal(capturedEmails.length, 1);
+    const firstOtpMatch = capturedEmails[0].html.match(/<h1>(\d{6})<\/h1>/);
+    assert.ok(firstOtpMatch);
+    const oldOtp = firstOtpMatch[1];
     capturedEmails = [];
 
+    // Resend verification
     const resendResult = await authService.sendVerificationEmail({ email: testEmail });
     assert.equal(resendResult.message, "Verification code sent to your email.");
 
@@ -193,10 +199,36 @@ describe("MODULE 22: Mandatory Email Verification & Redis Pending Registration",
     assert.ok(newOtpMatch);
     sentOtp = newOtpMatch[1];
     assert.equal(sentOtp.length, 6);
+    assert.notEqual(sentOtp, oldOtp, "New OTP must be freshly generated and distinct from old OTP");
+
+    // Old OTP must now be invalid
+    await assert.rejects(
+      async () => {
+        await authService.verifyEmail(oldOtp, testEmail);
+      },
+      (err) => {
+        assert.ok(err instanceof BadRequestError);
+        assert.equal(err.message, "Invalid or expired verification token.");
+        return true;
+      }
+    );
 
     const pending = await pendingService.getPendingRegistrationByEmail(testEmail);
     assert.ok(pending);
     assert.ok(pending.expiresAt > Date.now());
+  });
+
+  test("7b. Resend verification for non-existent pending registration throws NotFoundError (404)", async () => {
+    await assert.rejects(
+      async () => {
+        await authService.sendVerificationEmail({ email: "nonexistent_pending_12345@goride.internal" });
+      },
+      (err) => {
+        assert.ok(err instanceof NotFoundError);
+        assert.equal(err.message, "No pending registration found for this email. Please register first.");
+        return true;
+      }
+    );
   });
 
   test("8. Valid OTP creates exactly one User in PostgreSQL with emailVerified=true and isVerified=true", async () => {

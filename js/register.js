@@ -234,11 +234,27 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = false;
             submitBtn.style.background = '';
             submitBtn.innerHTML = oldBtnText;
-            if (msg.toLowerCase().includes("email")) {
-                showError(emailInput, "This email already exists.");
+            const lowerMsg = msg.toLowerCase();
+            const isEmailConflict = lowerMsg.includes("email") && (
+                lowerMsg.includes("already") ||
+                lowerMsg.includes("exist") ||
+                lowerMsg.includes("registered") ||
+                lowerMsg.includes("taken") ||
+                err.status === 409
+            );
+            const isPhoneConflict = lowerMsg.includes("phone") && (
+                lowerMsg.includes("already") ||
+                lowerMsg.includes("exist") ||
+                lowerMsg.includes("registered") ||
+                lowerMsg.includes("taken") ||
+                err.status === 409
+            );
+
+            if (isEmailConflict) {
+                showError(emailInput, "This email is already registered.");
                 emailInput.focus();
-            } else if (msg.toLowerCase().includes("phone")) {
-                showError(phoneInput, "This phone number already exists.");
+            } else if (isPhoneConflict) {
+                showError(phoneInput, "This phone number is already registered.");
                 phoneInput.focus();
             }
         }

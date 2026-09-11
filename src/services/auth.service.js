@@ -73,7 +73,7 @@ const registerUser = async (userData) => {
   // Check existing VERIFIED/REAL User conflicts in PostgreSQL
   const existingEmailUser = await findUserByEmail(normalizedEmail);
   if (existingEmailUser) {
-    if (existingEmailUser.emailVerified) {
+    if (existingEmailUser.emailVerified || existingEmailUser.isVerified) {
       throw new ConflictError("Email already registered. This email already exists.");
     } else {
       // Clean up legacy unverified user row from PostgreSQL so they are not blocked
@@ -89,7 +89,7 @@ const registerUser = async (userData) => {
 
   const existingPhoneUser = await findUserByPhone(normalizedPhone);
   if (existingPhoneUser) {
-    if (existingPhoneUser.emailVerified) {
+    if (existingPhoneUser.emailVerified || existingPhoneUser.isVerified) {
       throw new ConflictError("Phone number already registered. This phone number already exists.");
     } else {
       try {
@@ -401,10 +401,8 @@ const sendVerificationEmail = async (identifier) => {
     };
   }
 
-  // Anti-enumeration: If neither found, return standard message
-  return {
-    message: "Verification code sent to your email.",
-  };
+  // If neither pending nor unverified user found, return 404
+  throw new NotFoundError("No pending registration found for this email. Please register first.");
 };
 
 // ================= VERIFY EMAIL =================
