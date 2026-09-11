@@ -237,21 +237,22 @@
                 if (emailEl) emailEl.textContent = `${currentUser.email || ""} • ${currentUser.phone || ""}`;
             }
 
-            // 2. Check if already registered as driver
-            try {
-                const existing = await api.get('/api/driver/profile');
-                if (existing && existing.data) {
-                    const drv = existing.data;
-                    if (statusCard) statusCard.style.display = 'block';
-                    if (statusMsg) {
-                        statusMsg.innerHTML = `You have an active driver partner registration.<br>Application Status: <strong>${drv.status || "ACTIVE"}</strong> | Experience: ${drv.experience || 0} years.`;
+            // 2. Check if already registered as driver (only for users with DRIVER role)
+            if (currentUser && currentUser.role === 'DRIVER') {
+                try {
+                    const existing = await api.get('/api/driver/profile');
+                    if (existing && existing.data) {
+                        const drv = existing.data;
+                        if (statusCard) statusCard.style.display = 'block';
+                        if (statusMsg) {
+                            statusMsg.innerHTML = `You have an active driver partner registration.<br>Application Status: <strong>${drv.status || "ACTIVE"}</strong> | Experience: ${drv.experience || 0} years.`;
+                        }
+                        return;
                     }
-                    return;
-                }
-            } catch (err) {
-                // 404 is expected for fresh applicants
-                if (err.status && err.status !== 404) {
-                    console.warn("Could not check driver status:", err.message);
+                } catch (err) {
+                    if (err.status && err.status !== 404) {
+                        console.warn("Could not check driver status:", err.message);
+                    }
                 }
             }
 
