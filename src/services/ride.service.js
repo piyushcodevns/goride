@@ -1,4 +1,6 @@
 const rideRepository = require("../repositories/ride.repository");
+const couponRepository = require("../repositories/coupon.repository");
+const couponService = require("./coupon.service");
 const prisma = require("../config/prisma");
 const logger = require("../utils/logger");
 const { createFareAudit } = require("../repositories/fareAudit.repository");
@@ -62,6 +64,7 @@ const createRide = async (rideData) => {
     destinationLongitude,
     vehicleType,
     city = "DEFAULT",
+    couponCode = null,
     isScheduled = false,
     scheduledFor = null,
   } = rideData;
@@ -154,6 +157,32 @@ const createRide = async (rideData) => {
   });
 
   /**
+   * Authoritative Server-Side Coupon Verification
+   * DO NOT TRUST ANY CLIENT-SUPPLIED discountAmount.
+   */
+  let verifiedDiscountAmount = 0;
+  let validatedCoupon = null;
+
+  if (couponCode && typeof couponCode === "string" && couponCode.trim().length > 0) {
+    const couponValidation = await couponService.validateCoupon({
+      code: couponCode.trim(),
+      userId,
+      rideFare: Number(fareDetails.finalFare || fareDetails.estimatedFare || 0),
+    });
+
+    if (couponValidation && couponValidation.valid) {
+      verifiedDiscountAmount = Number(couponValidation.discountAmount || 0);
+      validatedCoupon = couponValidation.coupon;
+    }
+  }
+
+  const baseCalculatedFare = Number(fareDetails.finalFare || fareDetails.estimatedFare || 0);
+  const serverFinalFare = Math.max(
+    0,
+    Number((baseCalculatedFare - verifiedDiscountAmount).toFixed(2))
+  );
+
+  /**
    * ETA
    */
   const rideStartTime = isScheduled ? new Date(scheduledFor) : new Date();
@@ -200,11 +229,16 @@ const createRide = async (rideData) => {
         surgeMultiplier: fareDetails.surgeMultiplier,
         surgeAmount: fareDetails.surgeAmount,
 
-        fareBreakdown: fareDetails.fareBreakdown,
+        fareBreakdown: {
+          ...fareDetails.fareBreakdown,
+          couponDiscount: verifiedDiscountAmount,
+        },
 
-        discountAmount: fareDetails.discountAmount,
+        couponId: validatedCoupon ? validatedCoupon.id : null,
 
-        finalFare: fareDetails.finalFare,
+        discountAmount: verifiedDiscountAmount,
+
+        finalFare: serverFinalFare,
 
         isScheduled,
         scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
@@ -213,6 +247,17 @@ const createRide = async (rideData) => {
       },
       tx,
     );
+
+    if (validatedCoupon && verifiedDiscountAmount > 0) {
+      await couponRepository.createCouponUsageTx(tx, {
+        couponId: validatedCoupon.id,
+        rideId: ride.id,
+        userId,
+        discountAmount: verifiedDiscountAmount,
+      });
+
+      await couponRepository.incrementCouponUsageTx(tx, validatedCoupon.id);
+    }
 
     await createFareAudit(
       {
@@ -224,13 +269,14 @@ const createRide = async (rideData) => {
         durationFare: fareDetails.durationFare,
 
         surgeAmount: fareDetails.surgeAmount,
-        discountAmount: fareDetails.discountAmount,
+        discountAmount: verifiedDiscountAmount,
         platformFee: fareDetails.platformFee,
 
-        finalFare: fareDetails.finalFare,
+        finalFare: serverFinalFare,
 
         breakdown: {
           ...fareDetails.fareBreakdown,
+          couponDiscount: verifiedDiscountAmount,
 
           pricingRules: fareDetails.pricingRules,
 

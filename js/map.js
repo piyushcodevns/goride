@@ -237,6 +237,12 @@
 
         registerRouteCleared: function(callback) {
             onRouteClearedCallback = callback;
+        },
+
+        invalidateSize: function() {
+            if (map) {
+                map.invalidateSize();
+            }
         }
     };
 

@@ -221,6 +221,11 @@
                                 </div>
                             </div>
 
+                            <!-- Find Available Rides Action -->
+                            <button type="button" id="find-rides-btn" class="secondary-btn find-rides-btn" aria-label="Find Available Rides for selected route">
+                                <span>🔍</span> Find Available Rides
+                            </button>
+
                             <!-- Available Ride Options -->
                             <div class="vehicle-selection-container">
                                 <div class="subsection-header">
@@ -357,9 +362,9 @@
 
                             <!-- Promo Code -->
                             <div class="coupon-container">
-                                <label for="coupon-input">Promo Code</label>
+                                <label for="coupon-input">Promo Code <span class="optional-tag">(Optional)</span></label>
                                 <div class="coupon-wrapper">
-                                    <input type="text" id="coupon-input" placeholder="Enter coupon (e.g. GORIDE20)" autocomplete="off">
+                                    <input type="text" id="coupon-input" placeholder="Enter promo code (e.g. GORIDE20)" autocomplete="off">
                                     <button type="button" id="apply-coupon-btn" class="secondary-btn apply-btn">Apply</button>
                                 </div>
                                 <small id="coupon-message" class="coupon-msg" aria-live="polite"></small>
@@ -367,7 +372,7 @@
 
                             <!-- Primary CTA Button -->
                             <button type="submit" id="confirm-booking-btn" class="primary-btn confirm-btn booking-cta-btn" disabled>
-                                <span>→</span> Find Rides
+                                <span>✓</span> Confirm Booking
                             </button>
                         </form>
                     </div>

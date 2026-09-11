@@ -101,6 +101,13 @@ const createRideSchema = z
     isScheduled: z.boolean().optional().default(false),
 
     scheduledFor: z.string().datetime().optional().nullable(),
+
+    couponCode: z
+      .string()
+      .trim()
+      .min(1)
+      .optional()
+      .nullable(),
   })
   .strict();
 

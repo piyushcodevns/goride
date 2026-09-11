@@ -99,52 +99,6 @@
    MEDIUM TABLET BREAKPOINT
    ========================================== */
 @media (max-width: 760px) {
-  .navbar {
-    flex-wrap: wrap;
-    border-radius: 1.2rem;
-  }
-
-  .menu-toggle {
-    display: inline-block;
-    margin-left: auto;
-  }
-
-  .nav-links {
-    order: 3;
-    width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-    padding-top: 0.5rem;
-    display: none;
-  }
-
-  .nav-links.active {
-    display: flex;
-  }
-
-  .nav-buttons {
-    display: none;
-    order: 4;
-    width: 100%;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding-top: 1rem;
-    margin-top: 0.5rem;
-    border-top: 1px solid var(--color-border);
-  }
-
-  .nav-buttons.active {
-    display: flex;
-  }
-
-  .nav-buttons .login-btn,
-  .nav-buttons .book-btn,
-  .nav-buttons .nav-btn {
-    width: 100%;
-    text-align: center;
-    justify-content: center;
-  }
-
   .hero {
     padding-top: 3rem;
   }
@@ -414,9 +368,21 @@
   .service-card,
   .testimonial-card,
   .about-stat-card,
-  .booking-card,
-  .booking-map-card {
+  .booking-card {
     padding: 1rem 0.75rem;
+  }
+
+  .booking-map-card {
+    padding: 0 !important;
+  }
+
+  .scroll-to-top {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 1.15rem;
+    z-index: 99;
   }
 
   .download-app-actions {

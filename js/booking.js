@@ -14,6 +14,7 @@
     const passengerInput = document.getElementById('passenger-count');
     const decPassengerBtn = document.getElementById('dec-passengers');
     const incPassengerBtn = document.getElementById('inc-passengers');
+    const findRidesBtn = document.getElementById('find-rides-btn');
     const confirmBookingBtn = document.getElementById('confirm-booking-btn');
     const currentLocationBtn = document.querySelector('.current-location-btn');
     const toggleButtons = document.querySelectorAll('.booking-toggle-row .toggle-btn');
@@ -50,6 +51,7 @@
     let currentServerFare = null; // object from backend /api/fare/calculate
     let appliedDiscount = 0; // in rupees
     let appliedCouponCode = "";
+    let hasCouponError = false;
     let selectedVehicleType = 'bike'; // 'bike', 'auto', 'mini', 'sedan', 'suv'
     let bookingMode = 'now'; // 'now' or 'schedule'
     let fareRequestId = 0;
@@ -303,29 +305,39 @@
     }
 
     // ----------------------------------------------------
-    // REAL COUPON VALIDATION WITH BACKEND
+    // REAL COUPON VALIDATION WITH BACKEND (AUTHORITATIVE SERVER-SIDE)
     // ----------------------------------------------------
     async function validateAndApplyCoupon() {
         const code = sanitizeInput(couponInput.value).toUpperCase();
         couponMessage.className = "coupon-msg";
 
+        // CASE E: Apply with empty field -> Do NOT call coupon API. Show no error. Coupon remains optional.
         if (!code) {
-            couponMessage.innerText = "Please enter a promo code.";
-            couponMessage.classList.add('error');
+            hasCouponError = false;
+            appliedDiscount = 0;
+            appliedCouponCode = "";
+            couponMessage.innerText = "";
+            couponMessage.className = "coupon-msg";
+            renderFareCard('ready');
+            performLiveValidation();
             return;
         }
 
         if (!currentServerFare) {
+            hasCouponError = true;
             couponMessage.innerText = "Please select a pickup and drop-off route first.";
             couponMessage.classList.add('error');
+            performLiveValidation();
             return;
         }
 
         const api = (window.GoRide && window.GoRide.api);
         if (!api || !api.isAuthenticated()) {
+            hasCouponError = true;
             couponMessage.innerText = "Please sign in to apply coupon discounts.";
             couponMessage.classList.add('error');
             window.GoRide.showToast("Please log in to apply promo codes.", "info");
+            performLiveValidation();
             return;
         }
 
@@ -341,6 +353,7 @@
             if (res && res.success && res.data) {
                 appliedDiscount = Math.round(res.data.discountAmount || 0);
                 appliedCouponCode = code;
+                hasCouponError = false;
                 couponMessage.innerText = `✓ Promo ${code} applied! Saved ₹${appliedDiscount}.`;
                 couponMessage.classList.add('success');
                 window.GoRide.showToast(`Coupon ${code} applied successfully!`, "success");
@@ -349,8 +362,10 @@
                 throw new Error((res && res.message) || "Invalid coupon code.");
             }
         } catch (err) {
+            // CASE C: Invalid coupon -> show error and block booking while invalid coupon remains active
             appliedDiscount = 0;
             appliedCouponCode = "";
+            hasCouponError = true;
             const msg = err.message || "Invalid promo code.";
             couponMessage.innerText = msg;
             couponMessage.classList.add('error');
@@ -359,6 +374,7 @@
         } finally {
             applyCouponBtn.disabled = false;
             applyCouponBtn.innerText = "Apply";
+            performLiveValidation();
         }
     }
 
@@ -368,6 +384,7 @@
         if (!api || !api.isAuthenticated()) {
             appliedDiscount = 0;
             appliedCouponCode = "";
+            hasCouponError = false;
             return;
         }
 
@@ -378,17 +395,22 @@
             });
             if (res && res.success && res.data) {
                 appliedDiscount = Math.round(res.data.discountAmount || 0);
+                hasCouponError = false;
             } else {
                 appliedDiscount = 0;
                 appliedCouponCode = "";
+                hasCouponError = true;
                 couponMessage.innerText = "Coupon no longer applies to this updated route.";
                 couponMessage.className = "coupon-msg error";
             }
         } catch (e) {
             appliedDiscount = 0;
             appliedCouponCode = "";
+            hasCouponError = true;
             couponMessage.innerText = e.message || "Coupon no longer valid.";
             couponMessage.className = "coupon-msg error";
+        } finally {
+            performLiveValidation();
         }
     }
 
@@ -399,12 +421,55 @@
     if (couponInput) {
         couponInput.addEventListener('input', () => {
             const currentVal = couponInput.value.trim().toUpperCase();
-            if (appliedCouponCode && currentVal !== appliedCouponCode) {
+            // CASE D: User clears or modifies the coupon -> immediately clear error and restore normal booking
+            if (!currentVal) {
+                hasCouponError = false;
                 appliedDiscount = 0;
                 appliedCouponCode = "";
                 couponMessage.innerText = "";
                 couponMessage.className = "coupon-msg";
                 renderFareCard('ready');
+                performLiveValidation();
+            } else if (appliedCouponCode && currentVal !== appliedCouponCode) {
+                appliedDiscount = 0;
+                appliedCouponCode = "";
+                hasCouponError = false;
+                couponMessage.innerText = "";
+                couponMessage.className = "coupon-msg";
+                renderFareCard('ready');
+                performLiveValidation();
+            } else if (hasCouponError) {
+                hasCouponError = false;
+                couponMessage.innerText = "";
+                couponMessage.className = "coupon-msg";
+                performLiveValidation();
+            }
+        });
+
+        // Allow pressing Enter in coupon input to trigger Apply
+        couponInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                validateAndApplyCoupon();
+            }
+        });
+    }
+
+    // Connect Find Available Rides button
+    if (findRidesBtn) {
+        findRidesBtn.addEventListener('click', () => {
+            const plat = pickupInput?.dataset?.lat;
+            const dlat = dropoffInput?.dataset?.lat;
+            if (!plat || !dlat) {
+                window.GoRide.showToast("Please select both pickup and drop-off locations.", "info");
+                if (!plat) pickupInput.focus();
+                else dropoffInput.focus();
+                return;
+            }
+            checkAndTriggerRoute();
+            const vehicleSec = document.querySelector('.vehicle-selection-container');
+            if (vehicleSec) {
+                vehicleSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         });
     }
@@ -442,12 +507,17 @@
 
         // Confirm booking requirements strictly enforced:
         // Authenticated + valid pickup & drop + valid coords + valid route + valid server fare + basic form valid
+        // NOTE: Coupon is 100% OPTIONAL. A user without coupon can book normally.
+        // Booking is only blocked if an INVALID coupon is actively entered.
         if (!isAuth) {
             confirmBookingBtn.disabled = true;
             confirmBookingBtn.innerHTML = `<span>🔒</span> Log In to Confirm Booking`;
+        } else if (hasCouponError) {
+            confirmBookingBtn.disabled = true;
+            confirmBookingBtn.innerHTML = `Invalid Promo Code Entered`;
         } else if (hasValidCoords && hasValidRoute && hasValidFare && result.valid) {
             confirmBookingBtn.disabled = false;
-            confirmBookingBtn.innerHTML = `<span>→</span> Find Rides`;
+            confirmBookingBtn.innerHTML = `<span>✓</span> Confirm Booking`;
         } else {
             confirmBookingBtn.disabled = true;
             if (!hasValidCoords || !hasValidRoute) {
@@ -455,7 +525,7 @@
             } else if (!hasValidFare) {
                 confirmBookingBtn.innerHTML = `Calculating Fare...`;
             } else {
-                confirmBookingBtn.innerHTML = `<span>→</span> Find Rides`;
+                confirmBookingBtn.innerHTML = `<span>✓</span> Confirm Booking`;
             }
         }
         updateStepper();
@@ -516,6 +586,7 @@
         couponMessage.className = "coupon-msg";
         appliedDiscount = 0;
         appliedCouponCode = "";
+        hasCouponError = false;
         currentDistance = null;
         currentDuration = null;
         currentServerFare = null;
@@ -600,6 +671,9 @@
         window.MapProvider.registerRouteCalculated((distance, duration) => {
             currentDistance = distance;
             currentDuration = duration;
+            if (window.MapProvider.invalidateSize) {
+                window.MapProvider.invalidateSize();
+            }
             calculateServerFare();
         });
 
@@ -610,6 +684,12 @@
             renderFareCard('placeholder');
             performLiveValidation();
         });
+
+        window.addEventListener('resize', debounce(() => {
+            if (window.MapProvider.invalidateSize) {
+                window.MapProvider.invalidateSize();
+            }
+        }, 200));
     }
 
     // Current Location Geolocation Handler
@@ -686,10 +766,10 @@
             li.className = 'suggestion-item';
 
             li.innerHTML = `
-                <span style="margin-right:10px; font-size:1rem;">📍</span>
-                <div style="text-align: left;">
-                    <strong style="font-size:0.88rem; color:var(--color-text-primary);">${item.name}</strong><br>
-                    <small style="color:var(--color-text-secondary); font-size:0.75rem;">${item.address}</small>
+                <span style="margin-right:8px; font-size:1rem; flex-shrink:0; line-height:1.2;">📍</span>
+                <div style="text-align: left; min-width:0; flex:1; overflow:hidden;">
+                    <strong style="font-size:0.88rem; color:var(--color-text-primary); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</strong>
+                    <small style="color:var(--color-text-secondary); font-size:0.75rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.35; margin-top:2px;">${item.address}</small>
                 </div>
             `;
 
@@ -989,7 +1069,7 @@
                 destinationLongitude: dropCoords.lng,
                 vehicleType: backendVehicle,
                 city: (window.APP_CONFIG && window.APP_CONFIG.BACKEND_CITY) || "DEFAULT",
-                discountAmount: appliedDiscount || 0,
+                couponCode: appliedCouponCode ? appliedCouponCode : null,
                 isScheduled: isSchedule,
                 scheduledFor: scheduledForIso
             };
