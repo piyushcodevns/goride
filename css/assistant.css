@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    GoRide AI Assistant Stylesheet
    Modern, responsive floating customer chat drawer matching GoRide brand
    ========================================================================== */
@@ -212,6 +212,12 @@
     background: #2563EB;
     color: #FFFFFF;
     border-top-right-radius: 4px;
+}
+
+.ai-message-user .ai-msg-bubble p,
+.ai-message-user .ai-msg-bubble strong,
+.ai-message-user .ai-msg-bubble span {
+    color: #FFFFFF;
 }
 
 /* Quick Suggestion Chips */

@@ -1943,20 +1943,39 @@ section {
 }
 
 .cta-section-premium p {
+  color: #F8FAFC;
   font-size: 1.15rem;
-  opacity: 0.9;
   max-width: 36rem;
   margin: 0 auto 2.2rem;
+  opacity: 1;
 }
 
 .cta-section-premium .primary-btn {
   background: #ffffff;
-  color: var(--color-primary);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  color: var(--color-primary, #2563EB);
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .cta-section-premium .primary-btn:hover {
   background: #f8fafc;
+  color: var(--color-primary-hover, #1D4ED8);
+  transform: translateY(-2px);
+}
+
+.cta-section-premium .secondary-btn {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.cta-section-premium .secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #ffffff;
+  color: #ffffff;
   transform: translateY(-2px);
 }
 
