@@ -18,12 +18,37 @@
                 event.preventDefault();
             }
             initAssistant();
+            // Forward to the real implementation if it has been replaced
             if (window.GoRide.openAiAssistant && window.GoRide.openAiAssistant !== earlyOpenStub) {
                 window.GoRide.openAiAssistant(event);
             }
+            return false; // Ensure default action is cancelled
         };
         window.GoRide.openAiAssistant = earlyOpenStub;
+        // Expose reference so the global guard can detect the stub and avoid recursion
+        window.GoRide._earlyOpenStub = earlyOpenStub;
     }
+
+    // Global click guard: intercepts ALL .ai-open-btn / [data-ai-open] clicks.
+    // Runs before any per-element listener so navigation is always cancelled.
+    // After initializing (idempotent), forward to the real openAiAssistant
+    // implementation so the drawer opens on the same click.
+    // We avoid calling this guard's logic when the current implementation IS still
+    // the earlyOpenStub (it handles forwarding itself), preventing infinite recursion.
+    document.addEventListener("click", (e) => {
+        const trigger = e.target && e.target.closest(".ai-open-btn, [data-ai-open]");
+        if (!trigger) return;
+        e.preventDefault();
+        // initAssistant is guarded by the widget-exists check — safe to call every time.
+        initAssistant();
+        // After initAssistant() the real openAssistant is now registered.
+        // Call it only when it is the real implementation, not the earlyOpenStub,
+        // to avoid recursion.
+        const impl = window.GoRide && window.GoRide.openAiAssistant;
+        if (typeof impl === "function" && impl !== window.GoRide._earlyOpenStub) {
+            impl(e);
+        }
+    });
 
     // Safe text formatting without raw HTML injection
     function createSafeMessageElement(text, role) {
