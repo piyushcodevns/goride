@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Track Your Ride | Go Ride</title>
+    <meta name="description" content="Live ride tracking and trip status for Go Ride.">
+    <meta name="theme-color" content="#2563EB">
+
+    <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/ride.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <!-- Reusable Navbar -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar" aria-label="Primary navigation">
+                <a class="brand" href="index.html">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo">
+                    <span>Go Ride</span>
+                </a>
+
+                <button class="menu-toggle" aria-label="Toggle navigation"><span aria-hidden="true">☰</span></button>
+
+                <ul class="nav-links">
+                    <li><a class="nav-link" href="index.html">Home</a></li>
+                    <li><a class="nav-link" href="booking.html">Book Ride</a></li>
+                    <li><a class="nav-link is-active" href="rides.html">My Rides</a></li>
+                    <li><a class="nav-link" href="services.html">Services</a></li>
+                    <li><a class="nav-link" href="contact.html">Contact</a></li>
+                </ul>
+
+                <div class="nav-buttons">
+                    <a href="login.html" class="login-btn">Login</a>
+                    <a href="booking.html" class="book-btn">Book Ride</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Header -->
+    <section class="ride-tracking-hero">
+        <div class="container">
+            <h1>Live Ride Tracking</h1>
+            <p id="ride-booking-id-header">Booking ID: Loading...</p>
+        </div>
+    </section>
+
+    <!-- Main Content Container -->
+    <main class="container">
+        <!-- Loading State -->
+        <div id="tracking-loading" class="empty-ride-state">
+            <div class="status-pulse" style="width: 24px; height: 24px; margin: 0 auto 1rem; background: var(--color-primary);"></div>
+            <h3>Loading Ride Details...</h3>
+            <p>Fetching real-time status from the server.</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="tracking-error" class="empty-ride-state" style="display: none;">
+            <div class="empty-ride-icon">⚠️</div>
+            <h3 id="error-title">Ride Not Found</h3>
+            <p id="error-message">We could not locate this ride or you may not be authorized to view it.</p>
+            <div style="margin-top: 1.5rem; display: flex; gap: 12px; justify-content: center;">
+                <a href="rides.html" class="primary-btn" style="text-decoration: none;">View All Rides</a>
+                <a href="booking.html" class="secondary-btn" style="text-decoration: none;">Book a Ride</a>
+            </div>
+        </div>
+
+        <!-- Active Tracking Grid -->
+        <div id="tracking-content" class="tracking-layout" style="display: none;">
+            <!-- Left Side: Status & Trip Info -->
+            <div class="tracking-sidebar">
+                <!-- Status Card -->
+                <div class="status-card">
+                    <div class="status-header">
+                        <span id="ride-status-badge" class="status-indicator badge-info">
+                            <span class="status-pulse"></span>
+                            <span id="ride-status-text">REQUESTED</span>
+                        </span>
+                        <span id="ride-vehicle-type" style="font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary);">CAR</span>
+                    </div>
+                    <h2 id="status-headline" class="status-headline">Looking for Drivers</h2>
+                    <p id="status-description" class="status-subtext">We are broadcasting your request to nearby drivers.</p>
+                </div>
+
+                <!-- Driver Card -->
+                <div id="driver-card" class="driver-card" style="display: none;">
+                    <div class="driver-profile">
+                        <div class="driver-avatar" id="driver-avatar">D</div>
+                        <div class="driver-info">
+                            <h3 id="driver-name">Driver Name</h3>
+                            <div class="driver-rating">
+                                <span>⭐</span>
+                                <span id="driver-rating-val">—</span>
+                                <span id="driver-rides-count" style="color: var(--color-text-secondary); font-weight: 400;"></span>
+                            </div>
+                            <span id="driver-vehicle-details" class="driver-vehicle-tag"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Route Timeline -->
+                <div class="timeline-card">
+                    <div class="route-timeline">
+                        <div class="timeline-point pickup">
+                            <div class="timeline-label">Pickup Location</div>
+                            <div id="pickup-address" class="timeline-address">Loading pickup...</div>
+                        </div>
+                        <div class="timeline-point dropoff">
+                            <div class="timeline-label">Destination</div>
+                            <div id="destination-address" class="timeline-address">Loading destination...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fare & Payment Summary -->
+                <div class="fare-payment-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h3 style="margin: 0; font-size: 1rem; color: var(--color-text-primary);">Fare Summary</h3>
+                        <span id="payment-badge" class="payment-status-badge badge-warning">Payment Pending</span>
+                    </div>
+                    <div class="fare-row">
+                        <span>Total Fare</span>
+                        <strong id="fare-amount" style="color: var(--color-text-primary);">₹0.00</strong>
+                    </div>
+                    <div id="discount-row" class="fare-row" style="display: none; color: #16A34A;">
+                        <span>Coupon Discount</span>
+                        <span id="discount-amount">-₹0.00</span>
+                    </div>
+                    <div class="fare-row total">
+                        <span>Payable Amount</span>
+                        <span id="final-fare-amount" style="color: var(--color-primary);">₹0.00</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="ride-actions">
+                    <button type="button" id="pay-now-btn" class="btn-pay" style="display: none;">
+                        💳 Pay Now
+                    </button>
+                    <button type="button" id="rate-ride-btn" class="btn-review" style="display: none;">
+                        ⭐ Rate &amp; Review Driver
+                    </button>
+                    <button type="button" id="cancel-ride-btn" class="btn-cancel" style="display: none;">
+                        Cancel Ride
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Side: Map -->
+            <div class="map-view-card">
+                <div id="ride-map"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="pay-modal-title">
+        <div class="modal-card">
+            <h2 id="pay-modal-title">Complete Ride Payment</h2>
+            <p>Select your preferred payment method to settle your fare of <strong id="modal-pay-amount">₹0.00</strong>.</p>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; margin: 1.5rem 0;">
+                <label style="display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer;">
+                    <input type="radio" name="modal-pay-method" value="UPI" checked>
+                    <span>📱 UPI (GPay / PhonePe / Paytm)</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer;">
+                    <input type="radio" name="modal-pay-method" value="CARD">
+                    <span>💳 Debit / Credit Card</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer;">
+                    <input type="radio" name="modal-pay-method" value="CASH">
+                    <span>💵 Cash to Driver</span>
+                </label>
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button type="button" id="confirm-pay-btn" class="primary-btn" style="flex: 1;">Complete Payment</button>
+                <button type="button" id="close-pay-btn" class="secondary-btn" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rating & Review Modal -->
+    <div id="review-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="review-modal-title">
+        <div class="modal-card">
+            <h2 id="review-modal-title">Rate Your Journey</h2>
+            <p>How was your ride with <span id="review-driver-name">your driver</span>?</p>
+
+            <div class="rating-stars" id="star-container">
+                <span class="rating-star selected" data-rating="1">★</span>
+                <span class="rating-star selected" data-rating="2">★</span>
+                <span class="rating-star selected" data-rating="3">★</span>
+                <span class="rating-star selected" data-rating="4">★</span>
+                <span class="rating-star selected" data-rating="5">★</span>
+            </div>
+
+            <textarea id="review-comment" placeholder="Leave an optional comment about the ride experience..." style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-family: inherit; margin-bottom: 1.25rem; box-sizing: border-box;"></textarea>
+
+            <div style="display: flex; gap: 12px;">
+                <button type="button" id="submit-review-btn" class="primary-btn" style="flex: 1;">Submit Review</button>
+                <button type="button" id="close-review-btn" class="secondary-btn" style="flex: 1;">Skip</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reusable Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a class="brand" href="index.html">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                        <span>Go Ride</span>
+                    </a>
+                    <p>Smart, safe, and dependable travel on your terms.</p>
+                </div>
+                <div>
+                    <h3>Navigation</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="booking.html">Book Ride</a></li>
+                        <li><a href="rides.html">My Rides</a></li>
+                        <li><a href="profile.html">Profile</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Contact</h3>
+                    <ul>
+                        <li>support@goride.com</li>
+                        <li>+91 (0542) 234-5678</li>
+                        <li>Varanasi, Uttar Pradesh</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">© 2026 Go Ride Technologies. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="js/config.js"></script>
+    <script src="js/helpers.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/ride.js"></script>
+</body>
+</html>

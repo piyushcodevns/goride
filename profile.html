@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>My Account | Go Ride</title>
+    <meta name="description" content="Manage your Go Ride profile, personal details, security settings, and notifications.">
+    <meta name="theme-color" content="#2563EB">
+
+    <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <!-- Header Navbar -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar" aria-label="Primary navigation">
+                <a class="brand" href="index.html">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo">
+                    <span>Go Ride</span>
+                </a>
+
+                <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
+
+                <ul class="nav-links">
+                    <li><a class="nav-link" href="index.html">Home</a></li>
+                    <li><a class="nav-link" href="booking.html">Book Ride</a></li>
+                    <li><a class="nav-link" href="rides.html">My Rides</a></li>
+                    <li><a class="nav-link is-active" href="profile.html">Profile</a></li>
+                    <li><a class="nav-link" href="contact.html">Contact</a></li>
+                </ul>
+
+                <div class="nav-buttons">
+                    <a href="login.html" class="login-btn">Login</a>
+                    <a href="booking.html" class="book-btn">Book Ride</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="profile-container">
+        <h1>My Account</h1>
+        <p class="subheading">Manage your profile, security credentials, and system notifications.</p>
+
+        <!-- Account Tab Navigation -->
+        <div class="account-tabs" role="tablist">
+            <button type="button" class="account-tab-btn active" data-tab="tab-profile">Personal Details</button>
+            <button type="button" class="account-tab-btn" data-tab="tab-security">Security &amp; Password</button>
+            <button type="button" class="account-tab-btn" data-tab="tab-notifications">
+                Notifications <span id="notification-badge-count" style="display: none; background: #DC2626; color: #fff; font-size: 0.75rem; padding: 1px 6px; border-radius: 10px; margin-left: 4px;">0</span>
+            </button>
+        </div>
+
+        <!-- Tab 1: Profile & Quick Rides -->
+        <div id="tab-profile" class="tab-content">
+            <div class="profile-grid">
+                <!-- Left Column: Personal Profile -->
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div id="user-avatar" class="profile-avatar">U</div>
+                        <div class="profile-info">
+                            <h2 id="display-name">Loading...</h2>
+                            <p id="display-role">Customer</p>
+                        </div>
+                    </div>
+
+                    <form id="profile-form">
+                        <div class="form-group">
+                            <label for="profile-name">Full Name</label>
+                            <input type="text" id="profile-name" required minlength="3">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profile-email">Email Address</label>
+                            <input type="email" id="profile-email" disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profile-phone">Phone Number</label>
+                            <input type="tel" id="profile-phone" disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profile-gender">Gender</label>
+                            <select id="profile-gender">
+                                <option value="">Not Specified</option>
+                                <option value="MALE">Male</option>
+                                <option value="FEMALE">Female</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-top: 24px; display: flex; gap: 12px;">
+                            <button type="submit" id="save-profile-btn" class="primary-btn" style="padding: 10px 20px; font-size: 0.95rem;">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right Column: Recent Rides Summary -->
+                <div class="profile-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h2 style="font-size: 1.15rem; margin: 0; color: var(--color-text-primary);">Recent Rides</h2>
+                        <a href="rides.html" style="color: var(--color-primary); font-size: 0.88rem; font-weight: 600; text-decoration: none;">View All →</a>
+                    </div>
+                    <div id="ride-history-container">
+                        <ul id="ride-history-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+                            <li style="text-align: center; padding: 20px; color: var(--color-text-secondary);">Loading your recent trips...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Security & Password -->
+        <div id="tab-security" class="tab-content" style="display: none;">
+            <div class="profile-card" style="max-width: 560px;">
+                <h2 style="font-size: 1.2rem; margin-top: 0; margin-bottom: 16px; color: var(--color-text-primary);">Change Password</h2>
+                <form id="change-password-form">
+                    <div class="form-group">
+                        <label for="current-password">Current Password</label>
+                        <input type="password" id="current-password" required placeholder="Enter current password">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-password">New Password</label>
+                        <input type="password" id="new-password" required minlength="8" placeholder="At least 8 characters">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-new-password">Confirm New Password</label>
+                        <input type="password" id="confirm-new-password" required minlength="8" placeholder="Confirm new password">
+                    </div>
+                    <button type="submit" id="change-password-btn" class="primary-btn" style="margin-top: 12px; padding: 10px 24px;">Update Password</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tab 3: Notifications -->
+        <div id="tab-notifications" class="tab-content" style="display: none;">
+            <div class="profile-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 style="font-size: 1.2rem; margin: 0; color: var(--color-text-primary);">System Notifications</h2>
+                    <button type="button" id="mark-all-read-btn" class="secondary-btn" style="padding: 6px 14px; font-size: 0.85rem;">Mark All as Read</button>
+                </div>
+                <ul id="notifications-list" class="notifications-list">
+                    <li style="text-align: center; padding: 24px; color: var(--color-text-secondary);">Loading notifications...</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer" style="margin-top: 60px;">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a class="brand" href="index.html">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                        <span>Go Ride</span>
+                    </a>
+                    <p>Ride smarter, ride better with dependable travel for every journey.</p>
+                </div>
+                <div>
+                    <h3>Navigation</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="booking.html">Book Ride</a></li>
+                        <li><a href="rides.html">My Rides</a></li>
+                        <li><a href="profile.html">Profile</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">© 2026 Go Ride Technologies. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/helpers.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/profile.js"></script>
+</body>
+</html>

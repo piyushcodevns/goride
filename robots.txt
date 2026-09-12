@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /config/
+Disallow: /database/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /logs/
+
+Sitemap: https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/sitemap.xml

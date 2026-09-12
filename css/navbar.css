@@ -1,0 +1,369 @@
+/* ==========================================================================
+   GO RIDE - MASTER NAVBAR DESIGN SYSTEM (V2.0)
+   ========================================================================== */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-index-sticky, 1100);
+  padding: 0.75rem 0;
+  /* Premium Frosted Glass: ~80% white + ~20% GoRide blue tint, blur(14px) */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(219, 234, 254, 0.72) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 4px 20px -2px rgba(37, 99, 235, 0.07);
+  transition: background var(--transition-fast, 0.2s ease),
+              border-color var(--transition-fast, 0.2s ease),
+              box-shadow var(--transition-fast, 0.2s ease);
+}
+
+.header.is-scrolled {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(219, 234, 254, 0.82) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(203, 213, 225, 0.8);
+  box-shadow: 0 8px 25px -4px rgba(15, 23, 42, 0.08);
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 0.5rem 0;
+  font-family: var(--font-family-body, system-ui, sans-serif);
+}
+
+/* ----------------------------------------------------
+ * Brand Logo & Title
+ * ---------------------------------------------------- */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary, #1F2937);
+  text-decoration: none;
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+  transition: opacity var(--transition-fast, 0.15s ease);
+}
+
+.brand:hover {
+  opacity: 0.9;
+}
+
+.brand img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.brand span {
+  font-family: var(--font-family-heading, var(--font-family-body, system-ui, sans-serif));
+  font-weight: 700;
+  color: var(--color-text-primary, #1F2937);
+}
+
+/* ----------------------------------------------------
+ * Navigation Links (Desktop)
+ * ---------------------------------------------------- */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem; /* increased spacing for visual polish */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links li {
+  list-style: none;
+}
+
+.nav-link {
+  display: inline-block;
+  color: var(--color-text-secondary, #4B5563);
+  font-weight: 500;
+  font-size: 0.92rem;
+  text-decoration: none;
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--radius-sm, 8px);
+  transition: color var(--transition-fast, 0.15s ease), background-color var(--transition-fast, 0.15s ease);
+}
+
+.nav-link:hover,
+.nav-link:focus-visible {
+  color: var(--color-primary, #2563EB);
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.nav-link.is-active,
+.nav-link[aria-current="page"] {
+  color: var(--color-primary, #2563EB);
+  font-weight: 600;
+}
+
+.nav-link.highlight-link {
+  color: var(--color-primary, #2563EB);
+  background: var(--color-primary-light, #EFF6FF);
+  border: 1.5px solid var(--color-primary, #2563EB);
+  padding: 0.35rem 0.95rem;
+  border-radius: var(--radius-full, 999px);
+  font-weight: 600;
+  font-size: 0.88rem;
+  transition: all var(--transition-fast, 0.15s ease);
+}
+
+.nav-link.highlight-link:hover {
+  background: var(--color-primary, #2563EB);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  transform: translateY(-1px);
+}
+
+/* ----------------------------------------------------
+ * Navigation Buttons (Login, Book Ride, Authenticated CTAs)
+ * ---------------------------------------------------- */
+.nav-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.nav-buttons a,
+.nav-buttons button {
+  text-decoration: none;
+}
+
+.login-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.15rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--radius-full, 999px);
+  color: var(--color-primary, #2563EB);
+  background: var(--color-primary-light, #EFF6FF);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  transition: all var(--transition-fast, 0.15s ease);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.login-btn:hover {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--color-primary-hover, #1D4ED8);
+  transform: translateY(-1px);
+}
+
+.book-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.52rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--radius-full, 999px);
+  color: #FFFFFF;
+  background: var(--color-primary, #2563EB);
+  border: 1px solid var(--color-primary, #2563EB);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+  transition: all var(--transition-fast, 0.15s ease);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.book-btn:hover {
+  background: var(--color-primary-hover, #1D4ED8);
+  border-color: var(--color-primary-hover, #1D4ED8);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.38);
+  transform: translateY(-1px);
+}
+
+/* Authenticated User Nav Controls */
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.48rem 0.95rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  border-radius: var(--radius-full, 999px);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
+  white-space: nowrap;
+}
+
+.nav-btn-outline {
+  border: 1px solid var(--color-border, #E5E7EB);
+  background: var(--color-surface, #F8FAFC);
+  color: var(--color-text-primary, #1F2937);
+}
+
+.nav-btn-outline:hover {
+  background: var(--color-gray-100, #F3F4F6);
+  border-color: var(--color-gray-300, #D1D5DB);
+}
+
+.nav-btn-profile {
+  background: var(--color-primary-light, #EFF6FF);
+  color: var(--color-primary, #2563EB);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  font-weight: 600;
+}
+
+.nav-btn-profile:hover {
+  background: var(--color-primary, #2563EB);
+  color: #FFFFFF;
+}
+
+.nav-btn-logout {
+  background: transparent;
+  border: 1px solid #FECACA;
+  color: #DC2626;
+  font-family: inherit;
+  font-weight: 500;
+}
+
+.nav-btn-logout:hover {
+  background: #DC2626;
+  color: #FFFFFF;
+  border-color: #DC2626;
+}
+
+.user-avatar-mini {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-primary, #2563EB);
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.nav-badge {
+  background: #DC2626;
+  color: #FFFFFF;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 5px;
+  min-width: 16px;
+  text-align: center;
+  line-height: 1.1;
+}
+
+/* ----------------------------------------------------
+ * Mobile Hamburger Toggle Button
+ * ---------------------------------------------------- */
+.menu-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--color-border, #E5E7EB);
+  border-radius: var(--radius-sm, 8px);
+  padding: 0.45rem 0.7rem;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--color-text-primary, #1F2937);
+  transition: background-color var(--transition-fast, 0.15s ease), border-color var(--transition-fast, 0.15s ease);
+}
+
+.menu-toggle:hover {
+  background: var(--color-gray-100, #F3F4F6);
+  border-color: var(--color-gray-300, #D1D5DB);
+}
+
+/* ----------------------------------------------------
+ * Responsive Mobile Navigation Drawer (<= 992px)
+ * ---------------------------------------------------- */
+@media (max-width: 992px) {
+  .navbar {
+    flex-wrap: wrap;
+    padding: 0.35rem 0;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+  }
+
+  .nav-links {
+    display: none;
+    order: 3;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+    padding: 1rem 0 0.5rem;
+    margin-top: 0.75rem;
+    border-top: 1px solid var(--color-border, #E5E7EB);
+  }
+
+  .nav-links.active {
+    display: flex;
+    animation: navDrawerSlide 0.2s ease forwards;
+  }
+
+  .nav-link {
+    display: block;
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.95rem;
+    border-radius: var(--radius-sm, 8px);
+  }
+
+  .nav-link.highlight-link {
+    text-align: center;
+    margin-top: 0.35rem;
+  }
+
+  .nav-buttons {
+    display: none;
+    order: 4;
+    width: 100%;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0.75rem 0 0.5rem;
+    margin-top: 0.35rem;
+    border-top: 1px dashed var(--color-border, #E5E7EB);
+  }
+
+  .nav-buttons.active {
+    display: flex;
+    animation: navDrawerSlide 0.2s ease forwards;
+  }
+
+  .nav-buttons .login-btn,
+  .nav-buttons .book-btn,
+  .nav-buttons .nav-btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    padding: 0.72rem 1rem;
+    font-size: 0.95rem;
+  }
+}
+
+@keyframes navDrawerSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

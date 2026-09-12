@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,20 +9,38 @@
     <meta name="description"
         content="Go Ride is a modern smart ride booking platform offering safe, fast and affordable rides.">
 
-    <meta name="keywords"
-        content="Go Ride, Ride Booking, Taxi, Cab, Bike Taxi, Smart Ride">
+    <meta name="keywords" content="Go Ride, Ride Booking, Taxi, Cab, Bike Taxi, Smart Ride">
 
     <meta name="author" content="Go Ride">
+    <meta name="theme-color" content="#2563EB">
+    <link rel="canonical" href="https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/index.html">
+
+    <!-- OpenGraph Tags -->
+    <meta property="og:title" content="Go Ride | Ride Smarter, Ride Better">
+    <meta property="og:description" content="Go Ride is a modern smart ride booking platform offering safe, fast and affordable rides.">
+    <meta property="og:image" content="https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/assets/svg/logo.svg">
+    <meta property="og:url" content="https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/index.html">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Go Ride | Ride Smarter, Ride Better">
+    <meta name="twitter:description" content="Go Ride is a modern smart ride booking platform offering safe, fast and affordable rides.">
+    <meta name="twitter:image" content="https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/assets/svg/logo.svg">
+
+    <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
 
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/assistant.css">
 
 </head>
 
@@ -37,17 +56,15 @@
                     <span>Go Ride</span>
                 </a>
 
-                <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
+                <button class="menu-toggle" aria-label="Toggle navigation"><span aria-hidden="true">☰</span></button>
 
                 <ul class="nav-links">
-                    <li><a class="nav-link is-active" href="#home">Home</a></li>
+                    <li><a class="nav-link is-active" href="index.html">Home</a></li>
                     <li><a class="nav-link" href="services.html">Services</a></li>
-                    <li><a class="nav-link" href="#why-choose">Why Choose</a></li>
-                    <li><a class="nav-link" href="#how-it-works">How It Works</a></li>
-                    <li><a class="nav-link" href="#safety">Safety</a></li>
-                    <li><a class="nav-link" href="#download-app">Download App</a></li>
-                    <li><a class="nav-link" href="#about">About</a></li>
-                    <li><a class="nav-link" href="#contact">Contact</a></li>
+                    <li><a class="nav-link" href="index.html#safety">Safety</a></li>
+                    <li><a class="nav-link" href="about.html">About</a></li>
+                    <li><a class="nav-link" href="contact.html">Contact</a></li>
+                    <li><a class="nav-link highlight-link" href="driver-signup.html">Become Driver</a></li>
                 </ul>
 
                 <div class="nav-buttons">
@@ -230,7 +247,8 @@
             <div class="section-header reveal">
                 <span class="section-tag">Why Choose Go Ride</span>
                 <h2 class="section-title" id="why-choose-heading">Why Choose Go Ride</h2>
-                <p class="section-copy">Experience smarter, safer, and more affordable rides designed around your daily travel needs.</p>
+                <p class="section-copy">Experience smarter, safer, and more affordable rides designed around your daily
+                    travel needs.</p>
             </div>
 
             <ul class="why-choose-grid">
@@ -238,9 +256,11 @@
                     <article>
                         <div class="why-choose-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                                <path d="M8 8l-3 4 3 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M16 8l3 4-3 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                <path d="M8 8l-3 4 3 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M16 8l3 4-3 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                    stroke-linejoin="round" />
                             </svg>
                         </div>
                         <h3>Fast Ride Matching</h3>
@@ -252,8 +272,10 @@
                     <article>
                         <div class="why-choose-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M12 4l7 4v8l-7 4-7-4V8l7-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                                <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 4l7 4v8l-7 4-7-4V8l7-4z" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linejoin="round" />
+                                <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                    stroke-linejoin="round" />
                             </svg>
                         </div>
                         <h3>Safe &amp; Secure</h3>
@@ -265,9 +287,10 @@
                     <article>
                         <div class="why-choose-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M4 7h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                                <path d="M7 7v10a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                                <path d="M10 11h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                <path d="M4 7h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                <path d="M7 7v10a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7" stroke="currentColor"
+                                    stroke-width="1.8" stroke-linecap="round" />
+                                <path d="M10 11h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
                             </svg>
                         </div>
                         <h3>Affordable Pricing</h3>
@@ -279,8 +302,10 @@
                     <article>
                         <div class="why-choose-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M12 5a7 7 0 0 1 7 7c0 4.5-4.2 8.6-4.9 9.4a.9.9 0 0 1-1.4 0C9.2 20.6 5 16.5 5 12a7 7 0 0 1 7-7Z" stroke="currentColor" stroke-width="1.8"/>
-                                <circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+                                <path
+                                    d="M12 5a7 7 0 0 1 7 7c0 4.5-4.2 8.6-4.9 9.4a.9.9 0 0 1-1.4 0C9.2 20.6 5 16.5 5 12a7 7 0 0 1 7-7Z"
+                                    stroke="currentColor" stroke-width="1.8" />
+                                <circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.8" />
                             </svg>
                         </div>
                         <h3>Live GPS Tracking</h3>
@@ -292,8 +317,10 @@
                     <article>
                         <div class="why-choose-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M12 4a4 4 0 0 1 4 4c0 2.2-1.8 4-4 4s-4-1.8-4-4a4 4 0 0 1 4-4Z" stroke="currentColor" stroke-width="1.8"/>
-                                <path d="M6 18a6 6 0 0 1 12 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                <path d="M12 4a4 4 0 0 1 4 4c0 2.2-1.8 4-4 4s-4-1.8-4-4a4 4 0 0 1 4-4Z"
+                                    stroke="currentColor" stroke-width="1.8" />
+                                <path d="M6 18a6 6 0 0 1 12 0" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" />
                             </svg>
                         </div>
                         <h3>Trusted Drivers</h3>
@@ -305,10 +332,12 @@
                     <article>
                         <div class="why-choose-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M5 7h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                                <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="1.8"/>
-                                <path d="M7 7h10l-1 10a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2L7 7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                                <path d="M9.5 11h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                <path d="M5 7h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor"
+                                    stroke-width="1.8" />
+                                <path d="M7 7h10l-1 10a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2L7 7Z" stroke="currentColor"
+                                    stroke-width="1.8" stroke-linejoin="round" />
+                                <path d="M9.5 11h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
                             </svg>
                         </div>
                         <h3>24/7 Support</h3>
@@ -328,7 +357,8 @@
             <div class="section-header reveal">
                 <span class="section-tag">How It Works</span>
                 <h2 class="section-title" id="how-it-works-heading">Book Your Ride in Just Four Simple Steps</h2>
-                <p class="section-copy">From choosing your pickup location to reaching your destination, Go Ride makes every journey simple, fast, and hassle-free.</p>
+                <p class="section-copy">From choosing your pickup location to reaching your destination, Go Ride makes
+                    every journey simple, fast, and hassle-free.</p>
             </div>
 
             <ol class="how-it-works-grid">
@@ -337,8 +367,9 @@
                         <span class="step-number">01</span>
                         <div class="step-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+                                <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor"
+                                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8" />
                             </svg>
                         </div>
                         <h3>Choose Pickup &amp; Destination</h3>
@@ -351,9 +382,10 @@
                         <span class="step-number">02</span>
                         <div class="step-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M5 15h14l-1-5a2 2 0 0 0-2-1H8a2 2 0 0 0-2 1l-1 5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                                <circle cx="8" cy="17" r="1.5" stroke="currentColor" stroke-width="1.8"/>
-                                <circle cx="16" cy="17" r="1.5" stroke="currentColor" stroke-width="1.8"/>
+                                <path d="M5 15h14l-1-5a2 2 0 0 0-2-1H8a2 2 0 0 0-2 1l-1 5Z" stroke="currentColor"
+                                    stroke-width="1.8" stroke-linejoin="round" />
+                                <circle cx="8" cy="17" r="1.5" stroke="currentColor" stroke-width="1.8" />
+                                <circle cx="16" cy="17" r="1.5" stroke="currentColor" stroke-width="1.8" />
                             </svg>
                         </div>
                         <h3>Select Your Ride</h3>
@@ -366,8 +398,9 @@
                         <span class="step-number">03</span>
                         <div class="step-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">
-                                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
-                                <path d="M8.5 12.5L11 15l4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
+                                <path d="M8.5 12.5L11 15l4.5-5" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </div>
                         <h3>Confirm Booking</h3>
@@ -380,9 +413,10 @@
                         <span class="step-number">04</span>
                         <div class="step-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M7 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" stroke-width="1.8"/>
-                                <path d="M17 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" stroke-width="1.8"/>
-                                <path d="M9 16c4-1 6-5 6-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3 3"/>
+                                <path d="M7 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" stroke-width="1.8" />
+                                <path d="M17 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" stroke-width="1.8" />
+                                <path d="M9 16c4-1 6-5 6-8" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-dasharray="3 3" />
                             </svg>
                         </div>
                         <h3>Enjoy Your Ride</h3>
@@ -410,7 +444,8 @@
             <div class="safety-content reveal">
                 <span class="section-tag">Safety First</span>
                 <h2 class="section-title" id="safety-heading">Your Safety is Our Highest Priority</h2>
-                <p class="section-copy">Every trip is protected with verified drivers, live GPS tracking, emergency support and secure payment systems so you can travel with confidence.</p>
+                <p class="section-copy">Every trip is protected with verified drivers, live GPS tracking, emergency
+                    support and secure payment systems so you can travel with confidence.</p>
 
                 <ul class="safety-list">
                     <li>Verified Drivers</li>
@@ -421,7 +456,7 @@
                     <li>24×7 Customer Support</li>
                 </ul>
 
-                <a href="#" class="primary-btn">Learn More</a>
+                <a href="about.html" class="primary-btn">Learn More</a>
             </div>
         </div>
     </section>
@@ -445,7 +480,8 @@
             <div class="testimonial-grid">
                 <article class="testimonial-card reveal">
                     <div class="stars">⭐⭐⭐⭐⭐</div>
-                    <p>Booking was incredibly fast and the driver arrived within minutes. One of the smoothest ride experiences I've ever had.</p>
+                    <p>Booking was incredibly fast and the driver arrived within minutes. One of the smoothest ride
+                        experiences I've ever had.</p>
                     <div class="user">
                         <div class="user-avatar" aria-hidden="true">RS</div>
                         <div>
@@ -457,7 +493,8 @@
 
                 <article class="testimonial-card reveal">
                     <div class="stars">⭐⭐⭐⭐⭐</div>
-                    <p>Affordable pricing, clean vehicles and professional drivers. Highly recommended for daily commuting.</p>
+                    <p>Affordable pricing, clean vehicles and professional drivers. Highly recommended for daily
+                        commuting.</p>
                     <div class="user">
                         <div class="user-avatar" aria-hidden="true">PV</div>
                         <div>
@@ -489,9 +526,10 @@
     <section class="download-app" id="download-app">
         <div class="container download-app-grid">
             <div class="download-app-content reveal">
-                <span class="section-tag">Download App</span>
-                <h2 class="section-title">Ride Anywhere, Anytime with Go Ride</h2>
-                <p class="section-copy">Book rides, track your driver in real time, make secure payments, and manage every trip directly from the Go Ride mobile app.</p>
+                <span class="section-tag">Web Experience</span>
+                <h2 class="section-title">Instant Booking — No App Download Required</h2>
+                <p class="section-copy">Book rides, track your driver in real time, calculate transparent fares, and manage
+                    every trip directly from your mobile or desktop web browser.</p>
 
                 <ul class="download-app-features">
                     <li>✔ Instant Ride Booking</li>
@@ -502,8 +540,8 @@
                 </ul>
 
                 <div class="download-app-actions">
-                    <a href="#" class="store-btn google-btn">Google Play</a>
-                    <a href="#" class="store-btn apple-btn">App Store</a>
+                    <a href="booking.html" class="primary-btn" title="Book a Ride Online">Book a Ride Online</a>
+                    <a href="driver-signup.html" class="btn-secondary" title="Become a Driver Partner">Become a Driver Partner</a>
                 </div>
             </div>
 
@@ -521,7 +559,7 @@
                         </div>
                         <div class="ride-card">
                             <p>Ride to Downtown</p>
-                            <strong>$14.80</strong>
+                            <strong>₹148.00</strong>
                         </div>
                     </div>
                 </div>
@@ -534,22 +572,26 @@
             <div class="section-header reveal">
                 <span class="section-tag">FAQ</span>
                 <h2 class="section-title" id="faq-heading">Frequently Asked Questions</h2>
-                <p class="section-copy">Find answers to the most common questions about booking rides, payments, cancellations, and safety.</p>
+                <p class="section-copy">Find answers to the most common questions about booking rides, payments,
+                    cancellations, and safety.</p>
             </div>
 
             <div class="faq-list">
                 <article class="faq-item reveal">
-                    <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-1" id="faq-button-1">
+                    <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-1"
+                        id="faq-button-1">
                         <span>How do I book a ride?</span>
                         <span class="faq-icon" aria-hidden="true">⌄</span>
                     </button>
                     <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-button-1">
-                        <p>Enter your pickup and destination, choose a ride type, and confirm your booking within seconds.</p>
+                        <p>Enter your pickup and destination, choose a ride type, and confirm your booking within
+                            seconds.</p>
                     </div>
                 </article>
 
                 <article class="faq-item reveal">
-                    <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-2" id="faq-button-2">
+                    <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-2"
+                        id="faq-button-2">
                         <span>Can I schedule a ride in advance?</span>
                         <span class="faq-icon" aria-hidden="true">⌄</span>
                     </button>
@@ -559,17 +601,20 @@
                 </article>
 
                 <article class="faq-item reveal">
-                    <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-3" id="faq-button-3">
+                    <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-3"
+                        id="faq-button-3">
                         <span>Are all drivers verified?</span>
                         <span class="faq-icon" aria-hidden="true">⌄</span>
                     </button>
                     <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-button-3">
-                        <p>Yes. Every Go Ride driver goes through identity verification and vehicle checks before joining the platform.</p>
+                        <p>Yes. Every Go Ride driver goes through identity verification and vehicle checks before
+                            joining the platform.</p>
                     </div>
                 </article>
 
                 <article class="faq-item reveal">
-                    <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-4" id="faq-button-4">
+                    <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-4"
+                        id="faq-button-4">
                         <span>Which payment methods are supported?</span>
                         <span class="faq-icon" aria-hidden="true">⌄</span>
                     </button>
@@ -579,34 +624,24 @@
                 </article>
 
                 <article class="faq-item reveal">
-                    <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-5" id="faq-button-5">
+                    <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-5"
+                        id="faq-button-5">
                         <span>Can I cancel my ride?</span>
                         <span class="faq-icon" aria-hidden="true">⌄</span>
                     </button>
                     <div class="faq-answer" id="faq-answer-5" role="region" aria-labelledby="faq-button-5">
-                        <p>Yes. You can cancel your ride according to the cancellation policy shown before confirming your booking.</p>
+                        <p>Yes. You can cancel your ride according to the cancellation policy shown before confirming
+                            your booking.</p>
                     </div>
                 </article>
             </div>
         </div>
     </section>
 
-    <section id="about" class="container about-grid reveal">
-        <div>
-            <h2 class="section-title">Built for Smarter Urban Mobility</h2>
-            <p class="section-copy">Whether you're heading to work, the airport, or a night out, Go Ride keeps every journey simple and reliable.</p>
-        </div>
-        <div class="cta-box">
-            <h3>Ready to ride?</h3>
-            <p>Start your first trip with a few taps and leave the rest to us.</p>
-            <a href="#" class="primary-btn">Get Started</a>
-        </div>
-    </section>
-
-    <footer id="contact" class="site-footer">
+    <footer class="site-footer">
         <div class="container">
             <div class="footer-grid">
-                <div>
+                <div class="footer-brand">
                     <a class="brand" href="index.html">
                         <img src="assets/svg/logo.svg" alt="Go Ride logo">
                         <span>Go Ride</span>
@@ -632,11 +667,12 @@
                     </ul>
                 </div>
                 <div>
-                    <h3>Follow Us</h3>
+                    <h3>Services</h3>
                     <ul>
-                        <li><a href="https://instagram.com/goride" aria-label="Follow Go Ride on Instagram">Instagram</a></li>
-                        <li><a href="https://x.com/goride" aria-label="Follow Go Ride on Twitter">Twitter</a></li>
-                        <li><a href="https://linkedin.com/company/goride" aria-label="Follow Go Ride on LinkedIn">LinkedIn</a></li>
+                        <li><a href="booking.html">City Rides</a></li>
+                        <li><a href="driver-signup.html">Become a Driver</a></li>
+                        <li><a href="rides.html">Ride History</a></li>
+                        <li><a href="notifications.html">Notifications</a></li>
                     </ul>
                 </div>
             </div>
@@ -650,9 +686,11 @@
     <!-- Toast container -->
     <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
+    <script src="js/config.js"></script>
+    <script src="js/helpers.js"></script>
     <script src="js/main.js"></script>
     <script src="js/animations.js"></script>
-
+    <script src="js/assistant.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,2634 @@
+const prisma = require("../../config/prisma");
+
+/**
+ * Get paginated drivers with search, status,
+ * availability filters and sorting.
+ */
+const findDrivers = async ({
+  page = 1,
+  limit = 20,
+  search,
+  status,
+  availability,
+  sortBy = "createdAt",
+  sortOrder = "desc",
+}) => {
+  const skip = (page - 1) * limit;
+
+  const where = {};
+
+  // Search by driver/user information
+  if (search) {
+    where.OR = [
+      {
+        licenseNumber: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+      {
+        user: {
+          fullName: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      },
+      {
+        user: {
+          email: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      },
+      {
+        user: {
+          phone: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      },
+    ];
+  }
+
+  // Driver status filter
+  if (status) {
+    where.status = status;
+  }
+
+  // Driver availability filter
+  if (availability) {
+    where.availability = availability;
+  }
+
+  const [drivers, total] = await prisma.$transaction([
+    prisma.driver.findMany({
+      where,
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        userId: true,
+        licenseNumber: true,
+        status: true,
+        availability: true,
+        experience: true,
+        averageRating: true,
+        totalRatings: true,
+        createdAt: true,
+        updatedAt: true,
+
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phone: true,
+            profileImage: true,
+            isVerified: true,
+            emailVerified: true,
+            isActive: true,
+          },
+        },
+
+        vehicle: {
+          select: {
+            id: true,
+            vehicleNumber: true,
+            vehicleType: true,
+            brand: true,
+            model: true,
+            color: true,
+            seats: true,
+          },
+        },
+      },
+
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+    }),
+
+    prisma.driver.count({
+      where,
+    }),
+  ]);
+
+  return {
+    drivers,
+    total,
+  };
+};
+
+/**
+ * Get all pending drivers.
+ */
+const findPendingDrivers = async ({ page = 1, limit = 20 }) => {
+  const skip = (page - 1) * limit;
+
+  const where = {
+    status: "PENDING",
+  };
+
+  const [drivers, total] = await prisma.$transaction([
+    prisma.driver.findMany({
+      where,
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        userId: true,
+        licenseNumber: true,
+        status: true,
+        availability: true,
+        experience: true,
+        averageRating: true,
+        totalRatings: true,
+        createdAt: true,
+        updatedAt: true,
+
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phone: true,
+            profileImage: true,
+            isVerified: true,
+            emailVerified: true,
+            isActive: true,
+          },
+        },
+
+        vehicle: {
+          select: {
+            id: true,
+            vehicleNumber: true,
+            vehicleType: true,
+            brand: true,
+            model: true,
+            color: true,
+            seats: true,
+          },
+        },
+      },
+
+      orderBy: {
+        createdAt: "asc",
+      },
+    }),
+
+    prisma.driver.count({
+      where,
+    }),
+  ]);
+
+  return {
+    drivers,
+    total,
+  };
+};
+
+/**
+ * Get complete driver details.
+ */
+const findDriverById = async (driverId) => {
+  return prisma.driver.findUnique({
+    where: {
+      id: driverId,
+    },
+
+    select: {
+      id: true,
+      userId: true,
+      licenseNumber: true,
+      status: true,
+      availability: true,
+      experience: true,
+      averageRating: true,
+      totalRatings: true,
+      createdAt: true,
+      updatedAt: true,
+
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          gender: true,
+          profileImage: true,
+          role: true,
+          isVerified: true,
+          emailVerified: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+
+      vehicle: {
+        select: {
+          id: true,
+          vehicleNumber: true,
+          vehicleType: true,
+          brand: true,
+          model: true,
+          color: true,
+          seats: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+    },
+  });
+};
+
+/**
+ * Get driver's vehicle.
+ */
+const findDriverVehicle = async (driverId) => {
+  return prisma.vehicle.findUnique({
+    where: {
+      driverId,
+    },
+
+    select: {
+      id: true,
+      driverId: true,
+      vehicleType: true,
+      vehicleNumber: true,
+      brand: true,
+      model: true,
+      color: true,
+      seats: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+};
+
+/**
+ * Get driver's trip history.
+ */
+const findDriverTrips = async ({ driverId, page = 1, limit = 20 }) => {
+  const skip = (page - 1) * limit;
+
+  const where = {
+    driverId,
+  };
+
+  const [rides, total] = await prisma.$transaction([
+    prisma.ride.findMany({
+      where,
+      skip,
+      take: limit,
+
+      select: {
+        id: true,
+        userId: true,
+        driverId: true,
+        pickup: true,
+        destination: true,
+        distance: true,
+        duration: true,
+        vehicleType: true,
+        status: true,
+        estimatedFare: true,
+        finalFare: true,
+        platformFee: true,
+        bookingFee: true,
+        surgeAmount: true,
+        airportCharge: true,
+        tollCharge: true,
+        waitingCharge: true,
+        gstAmount: true,
+        discountAmount: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+
+    prisma.ride.count({
+      where,
+    }),
+  ]);
+
+  return {
+    rides,
+    total,
+  };
+};
+
+/**
+ * Get driver's ratings and reviews.
+ */
+const findDriverRatings = async ({ driverId, page = 1, limit = 20 }) => {
+  const skip = (page - 1) * limit;
+
+  const where = {
+    driverId,
+  };
+
+  const [ratings, total] = await prisma.$transaction([
+    prisma.rideReview.findMany({
+      where,
+      skip,
+      take: limit,
+
+      select: {
+        id: true,
+        rideId: true,
+        userId: true,
+        driverId: true,
+        rating: true,
+        review: true,
+        createdAt: true,
+        updatedAt: true,
+
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            profileImage: true,
+          },
+        },
+      },
+
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+
+    prisma.rideReview.count({
+      where,
+    }),
+  ]);
+
+  return {
+    ratings,
+    total,
+  };
+};
+
+/**
+ * Get driver's earnings summary.
+ */
+const findDriverEarnings = async (driverId) => {
+  const where = {
+    driverId,
+    status: "COMPLETED",
+  };
+
+  const [summary, rides] = await prisma.$transaction([
+    prisma.ride.aggregate({
+      where,
+      _sum: {
+        finalFare: true,
+        platformFee: true,
+        bookingFee: true,
+        gstAmount: true,
+        waitingCharge: true,
+        surgeAmount: true,
+        discountAmount: true,
+      },
+      _count: {
+        id: true,
+      },
+    }),
+
+    prisma.ride.findMany({
+      where,
+      select: {
+        id: true,
+        finalFare: true,
+        platformFee: true,
+        bookingFee: true,
+        gstAmount: true,
+        waitingCharge: true,
+        surgeAmount: true,
+        discountAmount: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 20,
+    }),
+  ]);
+
+  const grossEarnings = Number(summary._sum.finalFare || 0);
+
+  const platformFee = Number(summary._sum.platformFee || 0);
+  const bookingFee = Number(summary._sum.bookingFee || 0);
+  const gstAmount = Number(summary._sum.gstAmount || 0);
+
+  const driverEarnings = grossEarnings - platformFee - bookingFee - gstAmount;
+
+  return {
+    totalCompletedRides: summary._count.id,
+    grossEarnings,
+    platformFee,
+    bookingFee,
+    gstAmount,
+    driverEarnings,
+    recentEarnings: rides,
+  };
+};
+
+/**
+ * Get driver's KYC information.
+ *
+ * IMPORTANT:
+ * Raw Aadhar number is never returned.
+ * Only masked identity information is exposed.
+ */
+const findDriverKyc = async (driverId) => {
+  const driver = await prisma.driver.findUnique({
+    where: {
+      id: driverId,
+    },
+
+    select: {
+      id: true,
+      licenseNumber: true,
+      aadharNumber: true,
+      status: true,
+    },
+  });
+
+  if (!driver) {
+    return null;
+  }
+
+  const maskedAadhar =
+    driver.aadharNumber && driver.aadharNumber.length === 12
+      ? `XXXXXXXX${driver.aadharNumber.slice(-4)}`
+      : null;
+
+  return {
+    driverId: driver.id,
+    licenseNumber: driver.licenseNumber,
+    maskedAadhar,
+    status: driver.status,
+  };
+};
+
+/**
+ * Update driver status with audit log atomically.
+ */
+const updateDriverStatusWithAudit = async ({
+  driverId,
+  status,
+  availability,
+  auditLog,
+}) => {
+  return prisma.$transaction(async (tx) => {
+    const updatedDriver = await tx.driver.update({
+      where: {
+        id: driverId,
+      },
+
+      data: {
+        status,
+
+        ...(availability
+          ? {
+              availability,
+            }
+          : {}),
+      },
+
+      select: {
+        id: true,
+        userId: true,
+        licenseNumber: true,
+        status: true,
+        availability: true,
+        experience: true,
+        averageRating: true,
+        totalRatings: true,
+        updatedAt: true,
+
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phone: true,
+            isActive: true,
+          },
+        },
+      },
+    });
+
+    await tx.auditLog.create({
+      data: auditLog,
+    });
+
+    return updatedDriver;
+  });
+};
+
+/**
+ * Get driver statistics.
+ */
+const findDriverStatistics = async (driverId) => {
+  const where = {
+    driverId,
+  };
+
+  const [rideStats, completedStats] = await prisma.$transaction([
+    prisma.ride.groupBy({
+      by: ["status"],
+      where,
+      _count: {
+        id: true,
+      },
+    }),
+
+    prisma.ride.aggregate({
+      where: {
+        driverId,
+        status: "COMPLETED",
+      },
+      _avg: {
+        finalFare: true,
+        distance: true,
+        duration: true,
+      },
+      _sum: {
+        finalFare: true,
+        distance: true,
+      },
+    }),
+  ]);
+
+  const stats = {
+    totalTrips: 0,
+    completedTrips: 0,
+    cancelledTrips: 0,
+    acceptedTrips: 0,
+    startedTrips: 0,
+    totalDistance: Number(completedStats._sum.distance || 0),
+    totalEarnings: Number(completedStats._sum.finalFare || 0),
+    averageFare: Number(completedStats._avg.finalFare || 0),
+    averageDistance: Number(completedStats._avg.distance || 0),
+    averageDuration: Number(completedStats._avg.duration || 0),
+  };
+
+  for (const item of rideStats) {
+    const count = item._count.id;
+
+    stats.totalTrips += count;
+
+    if (item.status === "COMPLETED") {
+      stats.completedTrips = count;
+    }
+
+    if (item.status === "CANCELLED") {
+      stats.cancelledTrips = count;
+    }
+
+    if (item.status === "ACCEPTED") {
+      stats.acceptedTrips = count;
+    }
+
+    if (item.status === "STARTED") {
+      stats.startedTrips = count;
+    }
+  }
+
+  return stats;
+};
+
+/**
+ * Get all documents for a driver.
+ */
+const findDriverDocuments = async (driverId) => {
+  return prisma.driverDocument.findMany({
+    where: {
+      driverId,
+    },
+
+    select: {
+      id: true,
+      driverId: true,
+      documentType: true,
+      documentNumber: true,
+      fileUrl: true,
+      filePublicId: true,
+      status: true,
+      rejectionReason: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
+};
+
+/**
+ * Get a single driver document.
+ */
+const findDriverDocumentById = async (documentId) => {
+  return prisma.driverDocument.findUnique({
+    where: {
+      id: documentId,
+    },
+
+    select: {
+      id: true,
+      driverId: true,
+      documentType: true,
+      documentNumber: true,
+      fileUrl: true,
+      filePublicId: true,
+      status: true,
+      rejectionReason: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+};
+
+/**
+ * Update driver document status with audit log.
+ */
+const updateDriverDocumentStatusWithAudit = async ({
+  documentId,
+  status,
+  rejectionReason,
+  auditLog,
+}) => {
+  return prisma.$transaction(async (tx) => {
+    const document = await tx.driverDocument.update({
+      where: {
+        id: documentId,
+      },
+
+      data: {
+        status,
+        rejectionReason: status === "REJECTED" ? rejectionReason : null,
+      },
+
+      select: {
+        id: true,
+        driverId: true,
+        documentType: true,
+        documentNumber: true,
+        fileUrl: true,
+        filePublicId: true,
+        status: true,
+        rejectionReason: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: auditLog,
+    });
+
+    return document;
+  });
+};
+
+/**
+ * Get driver wallet summary.
+ */
+const findDriverWallet = async (driverId) => {
+  return prisma.driverWallet.findUnique({
+    where: {
+      driverId,
+    },
+
+    select: {
+      id: true,
+      driverId: true,
+      balance: true,
+      totalEarnings: true,
+      totalWithdrawn: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+};
+
+/**
+ * Get driver wallet transactions.
+ */
+const findDriverWalletTransactions = async ({
+  driverId,
+  page = 1,
+  limit = 20,
+}) => {
+  const skip = (page - 1) * limit;
+
+  const wallet = await prisma.driverWallet.findUnique({
+    where: {
+      driverId,
+    },
+
+    select: {
+      id: true,
+    },
+  });
+
+  if (!wallet) {
+    return {
+      transactions: [],
+      total: 0,
+    };
+  }
+
+  const where = {
+    walletId: wallet.id,
+  };
+
+  const [transactions, total] = await prisma.$transaction([
+    prisma.driverWalletTransaction.findMany({
+      where,
+      skip,
+      take: limit,
+
+      select: {
+        id: true,
+        walletId: true,
+        type: true,
+        status: true,
+        amount: true,
+        referenceType: true,
+        referenceId: true,
+        description: true,
+        createdAt: true,
+      },
+
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+
+    prisma.driverWalletTransaction.count({
+      where,
+    }),
+  ]);
+
+  return {
+    transactions,
+    total,
+  };
+};
+
+module.exports = {
+  findDrivers,
+  findPendingDrivers,
+  findDriverById,
+  findDriverVehicle,
+  findDriverTrips,
+  findDriverRatings,
+  findDriverEarnings,
+  findDriverKyc,
+  updateDriverStatusWithAudit,
+  findDriverStatistics,
+
+  findDriverDocuments,
+  findDriverDocumentById,
+  updateDriverDocumentStatusWithAudit,
+  findDriverWallet,
+  findDriverWalletTransactions,
+};
+const {
+  getDrivers,
+  getPendingDrivers,
+  getDriverDetails,
+  getDriverVehicle,
+  getDriverTrips,
+  getDriverRatings,
+  getDriverKyc,
+  getDriverStatistics,
+  getDriverEarnings,
+  approveDriver,
+  rejectDriver,
+  suspendDriver,
+  activateDriver,
+
+  getDriverDocuments,
+  approveDriverDocument,
+  rejectDriverDocument,
+  getDriverWallet,
+  getDriverWalletTransactions,
+} = require("../../services/admin/adminDriver.service");
+
+const {
+  driverIdParamSchema,
+  paginationSchema,
+  getDriversQuerySchema,
+  reasonBodySchema,
+  documentIdParamSchema,
+  documentRejectBodySchema,
+} = require("../../validators/admin/adminDriver.validator");
+
+/**
+ * Get all drivers.
+ */
+const getAllDrivers = async (req, res, next) => {
+  try {
+    const query = getDriversQuerySchema.parse(req.query);
+
+    const result = await getDrivers(query);
+
+    return res.status(200).json({
+      success: true,
+      message: "Drivers fetched successfully.",
+      data: {
+        items: result.drivers,
+        pagination: {
+          page: query.page,
+          limit: query.limit,
+          total: result.total,
+          totalPages: Math.ceil(result.total / query.limit),
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get pending drivers.
+ */
+const getPending = async (req, res, next) => {
+  try {
+    const pagination = paginationSchema.parse(req.query);
+
+    const result = await getPendingDrivers(pagination);
+
+    return res.status(200).json({
+      success: true,
+      message: "Pending drivers fetched successfully.",
+      data: {
+        items: result.drivers,
+        pagination: {
+          page: pagination.page,
+          limit: pagination.limit,
+          total: result.total,
+          totalPages: Math.ceil(result.total / pagination.limit),
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get driver details.
+ */
+const getDriver = async (req, res, next) => {
+  try {
+    const { id } = driverIdParamSchema.parse(req.params);
+
+    const driver = await getDriverDetails(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver details fetched successfully.",
+      data: driver,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get driver's vehicle.
+ */
+const getVehicle = async (req, res, next) => {
+  try {
+    const { id } = driverIdParamSchema.parse(req.params);
+
+    const vehicle = await getDriverVehicle(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver vehicle fetched successfully.",
+      data: vehicle,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get driver's trip history.
+ */
+const getTrips = async (req, res, next) => {
+  try {
+    const { id } = driverIdParamSchema.parse(req.params);
+    const pagination = paginationSchema.parse(req.query);
+
+    const result = await getDriverTrips(id, pagination);
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver trip history fetched successfully.",
+      data: {
+        items: result.rides,
+        pagination: {
+          page: pagination.page,
+          limit: pagination.limit,
+          total: result.total,
+          totalPages: Math.ceil(result.total / pagination.limit),
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get driver's ratings and reviews.
+ */
+const getRatings = async (req, res, next) => {
+  try {
+    const { id } = driverIdParamSchema.parse(req.params);
+    const pagination = paginationSchema.parse(req.query);
+
+    const result = await getDriverRatings(id, pagination);
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver ratings fetched successfully.",
+      data: {
+        items: result.ratings,
+        pagination: {
+          page: pagination.page,
+          limit: pagination.limit,
+          total: result.total,
+          totalPages: Math.ceil(result.total / pagination.limit),
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get driver's KYC information.
+ */
+const getKyc = async (req, res, next) => {
+  try {
+    const { id } = driverIdParamSchema.parse(req.params);
+
+    const kyc = await getDriverKyc(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver KYC fetched successfully.",
+      data: kyc,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get driver statistics.
+ */
+const getStatistics = async (req, res, next) => {
+  try {
+    const { id } = driverIdParamSchema.parse(req.params);
+
+    const statistics = await getDriverStatistics(id);
+
+    return res.status(200).json({
+      success: true,
+      data: statistics,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get driver earnings.
+ */
+const getEarnings = async (req, res, next) => {
+  try {
+    const { id } = driverIdParamSchema.parse(req.params);
+
+    const earnings = await getDriverEarnings(id);
+
+    return res.status(200).json({
+      success: true,
+      data: earnings,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Approve driver.
+ */
+const approve = async (req, res, next) => {
+  try {
+    const { id } = driverIdParamSchema.parse(req.params);
+
+    const driver = await approveDriver({
+      driverId: id,
+      adminId: req.admin.id,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver approved successfully.",
+      data: driver,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Reject driver.
+ */
+const reject = async (req, res, next) => {
+  try {
+    const { id } = driverIdParamSchema.parse(req.params);
+    const { reason } = reasonBodySchema.parse(req.body);
+
+    const driver = await rejectDriver({
+      driverId: id,
+      adminId: req.admin.id,
+      reason,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver rejected successfully.",
+      data: driver,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Suspend driver.
+ */
+const suspend = async (req, res, next) => {
+  try {
+    const { id } = driverIdParamSchema.parse(req.params);
+    const { reason } = reasonBodySchema.parse(req.body);
+
+    const driver = await suspendDriver({
+      driverId: id,
+      adminId: req.admin.id,
+      reason,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver suspended successfully.",
+      data: driver,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Activate suspended driver.
+ */
+const activate = async (req, res, next) => {
+  try {
+    const { id } = driverIdParamSchema.parse(req.params);
+
+    const driver = await activateDriver({
+      driverId: id,
+      adminId: req.admin.id,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver activated successfully.",
+      data: driver,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get driver documents.
+ */
+const getDocuments = async (req, res, next) => {
+  try {
+    const { id } = driverIdParamSchema.parse(req.params);
+
+    const documents = await getDriverDocuments(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver documents fetched successfully.",
+      data: documents,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const approveDocument = async (req, res, next) => {
+  try {
+    const { id } = documentIdParamSchema.parse(req.params);
+
+    const document = await approveDriverDocument({
+      documentId: id,
+      adminId: req.admin.id,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver document approved successfully.",
+      data: document,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const rejectDocument = async (req, res, next) => {
+  try {
+    const { id } = documentIdParamSchema.parse(req.params);
+    const { reason } = documentRejectBodySchema.parse(req.body);
+
+    const document = await rejectDriverDocument({
+      documentId: id,
+      adminId: req.admin.id,
+      reason,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent"),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver document rejected successfully.",
+      data: document,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getWallet = async (req, res, next) => {
+  try {
+    const { id } = driverIdParamSchema.parse(req.params);
+
+    const wallet = await getDriverWallet(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver wallet fetched successfully.",
+      data: wallet,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getWalletTransactions = async (req, res, next) => {
+  try {
+    const { id } = driverIdParamSchema.parse(req.params);
+    const pagination = paginationSchema.parse(req.query);
+
+    const result = await getDriverWalletTransactions(id, pagination);
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver wallet transactions fetched successfully.",
+      data: {
+        items: result.transactions,
+        pagination: {
+          page: pagination.page,
+          limit: pagination.limit,
+          total: result.total,
+          totalPages: Math.ceil(result.total / pagination.limit),
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  getAllDrivers,
+  getPending,
+  getDriver,
+  getVehicle,
+  getTrips,
+  getRatings,
+  getKyc,
+  getStatistics,
+  getEarnings,
+  approve,
+  reject,
+  suspend,
+  activate,
+
+  getDocuments,
+  approveDocument,
+  rejectDocument,
+  getWallet,
+  getWalletTransactions,
+};
+const {
+  findDrivers,
+  findPendingDrivers,
+  findDriverById,
+  findDriverVehicle,
+  findDriverTrips,
+  findDriverRatings,
+  findDriverEarnings,
+  findDriverKyc,
+  findDriverStatistics,
+  updateDriverStatusWithAudit,
+
+  findDriverDocuments,
+  findDriverDocumentById,
+  updateDriverDocumentStatusWithAudit,
+  findDriverWallet,
+  findDriverWalletTransactions,
+} = require("../../repositories/admin/adminDriver.repository");
+
+const { NotFoundError, ConflictError } = require("../../utils/AppError");
+
+/**
+ * Get paginated drivers.
+ */
+const getDrivers = async (filters) => {
+  return findDrivers(filters);
+};
+
+/**
+ * Get pending drivers.
+ */
+const getPendingDrivers = async (pagination) => {
+  return findPendingDrivers(pagination);
+};
+
+/**
+ * Get complete driver details.
+ */
+const getDriverDetails = async (driverId) => {
+  const driver = await findDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  return driver;
+};
+
+/**
+ * Get driver's vehicle.
+ */
+const getDriverVehicle = async (driverId) => {
+  const driver = await findDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  const vehicle = await findDriverVehicle(driverId);
+
+  if (!vehicle) {
+    throw new NotFoundError("Vehicle not found for this driver.");
+  }
+
+  return vehicle;
+};
+
+/**
+ * Get driver's trip history.
+ */
+const getDriverTrips = async (driverId, pagination) => {
+  const driver = await findDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  return findDriverTrips({
+    driverId,
+    ...pagination,
+  });
+};
+
+/**
+ * Get driver's ratings and reviews.
+ */
+const getDriverRatings = async (driverId, pagination) => {
+  const driver = await findDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  return findDriverRatings({
+    driverId,
+    ...pagination,
+  });
+};
+
+/**
+ * Get driver's KYC information.
+ */
+const getDriverKyc = async (driverId) => {
+  const driver = await findDriverKyc(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  return driver;
+};
+
+/**
+ * Get driver statistics.
+ */
+const getDriverStatistics = async (driverId) => {
+  const driver = await findDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  return findDriverStatistics(driverId);
+};
+
+/**
+ * Get driver's earnings summary.
+ */
+const getDriverEarnings = async (driverId) => {
+  const driver = await findDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  return findDriverEarnings(driverId);
+};
+
+/**
+ * Approve driver.
+ */
+const approveDriver = async ({ driverId, adminId, ipAddress, userAgent }) => {
+  const driver = await findDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  if (driver.status === "APPROVED") {
+    throw new ConflictError("Driver is already approved.");
+  }
+
+  if (driver.status === "SUSPENDED") {
+    throw new ConflictError(
+      "Suspended driver cannot be approved. Activate the driver instead.",
+    );
+  }
+
+  if (driver.status === "REJECTED") {
+    throw new ConflictError("Rejected driver cannot be approved directly.");
+  }
+
+  const updatedDriver = await updateDriverStatusWithAudit({
+    driverId,
+    status: "APPROVED",
+    availability: "OFFLINE",
+
+    auditLog: {
+      adminId,
+      action: "APPROVE",
+      entity: "DRIVER",
+      entityId: driverId,
+      metadata: {
+        previousStatus: driver.status,
+        newStatus: "APPROVED",
+      },
+      ipAddress,
+      userAgent,
+    },
+  });
+
+  return updatedDriver;
+};
+
+/**
+ * Reject driver.
+ */
+const rejectDriver = async ({
+  driverId,
+  adminId,
+  reason,
+  ipAddress,
+  userAgent,
+}) => {
+  const driver = await findDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  if (driver.status === "REJECTED") {
+    throw new ConflictError("Driver is already rejected.");
+  }
+
+  if (driver.status === "APPROVED") {
+    throw new ConflictError(
+      "Approved driver cannot be rejected. Suspend the driver instead.",
+    );
+  }
+
+  if (driver.status === "SUSPENDED") {
+    throw new ConflictError("Suspended driver cannot be rejected.");
+  }
+
+  const updatedDriver = await updateDriverStatusWithAudit({
+    driverId,
+    status: "REJECTED",
+    availability: "OFFLINE",
+
+    auditLog: {
+      adminId,
+      action: "REJECT",
+      entity: "DRIVER",
+      entityId: driverId,
+      metadata: {
+        previousStatus: driver.status,
+        newStatus: "REJECTED",
+        reason,
+      },
+      ipAddress,
+      userAgent,
+    },
+  });
+
+  return updatedDriver;
+};
+
+/**
+ * Suspend driver.
+ */
+const suspendDriver = async ({
+  driverId,
+  adminId,
+  reason,
+  ipAddress,
+  userAgent,
+}) => {
+  const driver = await findDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  if (driver.status === "SUSPENDED") {
+    throw new ConflictError("Driver is already suspended.");
+  }
+
+  if (driver.status !== "APPROVED") {
+    throw new ConflictError("Only an approved driver can be suspended.");
+  }
+
+  const updatedDriver = await updateDriverStatusWithAudit({
+    driverId,
+    status: "SUSPENDED",
+    availability: "OFFLINE",
+
+    auditLog: {
+      adminId,
+      action: "SUSPEND",
+      entity: "DRIVER",
+      entityId: driverId,
+      metadata: {
+        previousStatus: driver.status,
+        newStatus: "SUSPENDED",
+        reason,
+      },
+      ipAddress,
+      userAgent,
+    },
+  });
+
+  return updatedDriver;
+};
+
+/**
+ * Activate suspended driver.
+ */
+const activateDriver = async ({ driverId, adminId, ipAddress, userAgent }) => {
+  const driver = await findDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  if (driver.status === "APPROVED") {
+    throw new ConflictError("Driver is already active.");
+  }
+
+  if (driver.status !== "SUSPENDED") {
+    throw new ConflictError("Only a suspended driver can be activated.");
+  }
+
+  const updatedDriver = await updateDriverStatusWithAudit({
+    driverId,
+    status: "APPROVED",
+    availability: "OFFLINE",
+
+    auditLog: {
+      adminId,
+      action: "ACTIVATE",
+      entity: "DRIVER",
+      entityId: driverId,
+      metadata: {
+        previousStatus: driver.status,
+        newStatus: "APPROVED",
+      },
+      ipAddress,
+      userAgent,
+    },
+  });
+
+  return updatedDriver;
+};
+
+/**
+ * Get driver documents.
+ */
+const getDriverDocuments = async (driverId) => {
+  const driver = await findDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  return findDriverDocuments(driverId);
+};
+
+const approveDriverDocument = async ({
+  documentId,
+  adminId,
+  ipAddress,
+  userAgent,
+}) => {
+  const document = await findDriverDocumentById(documentId);
+
+  if (!document) {
+    throw new NotFoundError("Driver document not found.");
+  }
+
+  if (document.status === "APPROVED") {
+    throw new ConflictError("Driver document is already approved.");
+  }
+
+  const updatedDocument = await updateDriverDocumentStatusWithAudit({
+    documentId,
+    status: "APPROVED",
+    rejectionReason: null,
+
+    auditLog: {
+      adminId,
+      action: "APPROVE",
+      entity: "DRIVER",
+      entityId: document.driverId,
+      metadata: {
+        documentId,
+        documentType: document.documentType,
+        previousStatus: document.status,
+        newStatus: "APPROVED",
+      },
+      ipAddress,
+      userAgent,
+    },
+  });
+
+  return updatedDocument;
+};
+
+const rejectDriverDocument = async ({
+  documentId,
+  adminId,
+  reason,
+  ipAddress,
+  userAgent,
+}) => {
+  const document = await findDriverDocumentById(documentId);
+
+  if (!document) {
+    throw new NotFoundError("Driver document not found.");
+  }
+
+  if (document.status === "REJECTED") {
+    throw new ConflictError("Driver document is already rejected.");
+  }
+
+  const updatedDocument = await updateDriverDocumentStatusWithAudit({
+    documentId,
+    status: "REJECTED",
+    rejectionReason: reason,
+
+    auditLog: {
+      adminId,
+      action: "REJECT",
+      entity: "DRIVER",
+      entityId: document.driverId,
+      metadata: {
+        documentId,
+        documentType: document.documentType,
+        previousStatus: document.status,
+        newStatus: "REJECTED",
+        reason,
+      },
+      ipAddress,
+      userAgent,
+    },
+  });
+
+  return updatedDocument;
+};
+
+const getDriverWallet = async (driverId) => {
+  const driver = await findDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  const wallet = await findDriverWallet(driverId);
+
+  if (!wallet) {
+    throw new NotFoundError("Driver wallet not found.");
+  }
+
+  return wallet;
+};
+
+const getDriverWalletTransactions = async (driverId, pagination) => {
+  const driver = await findDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  return findDriverWalletTransactions({
+    driverId,
+    ...pagination,
+  });
+};
+
+module.exports = {
+  getDrivers,
+  getPendingDrivers,
+  getDriverDetails,
+  getDriverVehicle,
+  getDriverTrips,
+  getDriverRatings,
+  getDriverKyc,
+  getDriverStatistics,
+  getDriverEarnings,
+  approveDriver,
+  rejectDriver,
+  suspendDriver,
+  activateDriver,
+
+  getDriverDocuments,
+  approveDriverDocument,
+  rejectDriverDocument,
+  getDriverWallet,
+  getDriverWalletTransactions,
+};
+const express = require("express");
+
+const router = express.Router();
+
+const adminAuthMiddleware = require("../../middleware/admin/adminAuth.middleware");
+const {
+  requirePermission,
+} = require("../../middleware/admin/adminRbac.middleware");
+const {
+  getAllDrivers,
+  getPending,
+  getDriver,
+  getVehicle,
+  getTrips,
+  getRatings,
+  getKyc,
+  getEarnings,
+  getStatistics,
+  approve,
+  reject,
+  suspend,
+  activate,
+
+  getDocuments,
+  approveDocument,
+  rejectDocument,
+  getWallet,
+  getWalletTransactions,
+} = require("../../controllers/admin/adminDriver.controller");
+
+// =====================================================
+// DRIVER LIST & DETAILS
+// =====================================================
+
+/**
+ * @swagger
+ * /api/admin/drivers:
+ *   get:
+ *     summary: Get all drivers
+ *     description: Get paginated drivers with search and filter support.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 10
+ *         description: Number of drivers per page.
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search drivers using supported driver fields.
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: Filter drivers by status.
+ *       - in: query
+ *         name: availability
+ *         schema:
+ *           type: string
+ *           enum: [OFFLINE, AVAILABLE, BUSY]
+ *         description: Filter drivers by availability.
+ *     responses:
+ *       200:
+ *         description: Drivers fetched successfully.
+ *       400:
+ *         description: Invalid query parameters.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver view permission required.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get(
+  "/",
+  adminAuthMiddleware,
+  requirePermission("driver:view"),
+  getAllDrivers,
+);
+
+/**
+ * @swagger
+ * /api/admin/drivers/pending:
+ *   get:
+ *     summary: Get pending drivers
+ *     description: Get paginated drivers waiting for approval.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Pending drivers fetched successfully.
+ *       400:
+ *         description: Invalid pagination parameters.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver view permission required.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get(
+  "/pending",
+  adminAuthMiddleware,
+  requirePermission("driver:view"),
+  getPending,
+);
+
+/**
+ * @swagger
+ * /api/admin/drivers/{id}:
+ *   get:
+ *     summary: Get driver details
+ *     description: Get detailed information about a specific driver.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID.
+ *     responses:
+ *       200:
+ *         description: Driver details fetched successfully.
+ *       400:
+ *         description: Invalid driver ID.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver view permission required.
+ *       404:
+ *         description: Driver not found.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get(
+  "/:id",
+  adminAuthMiddleware,
+  requirePermission("driver:view"),
+  getDriver,
+);
+
+// =====================================================
+// DRIVER INFORMATION
+// =====================================================
+
+/**
+ * @swagger
+ * /api/admin/drivers/{id}/vehicle:
+ *   get:
+ *     summary: Get driver vehicle
+ *     description: Get vehicle information associated with a driver.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID.
+ *     responses:
+ *       200:
+ *         description: Driver vehicle fetched successfully.
+ *       400:
+ *         description: Invalid driver ID.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver view permission required.
+ *       404:
+ *         description: Driver or vehicle not found.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get(
+  "/:id/vehicle",
+  adminAuthMiddleware,
+  requirePermission("driver:view"),
+  getVehicle,
+);
+
+/**
+ * @swagger
+ * /api/admin/drivers/{id}/trips:
+ *   get:
+ *     summary: Get driver trip history
+ *     description: Get paginated ride history for a specific driver.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Driver trip history fetched successfully.
+ *       400:
+ *         description: Invalid driver ID or pagination parameters.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver view permission required.
+ *       404:
+ *         description: Driver not found.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get(
+  "/:id/trips",
+  adminAuthMiddleware,
+  requirePermission("driver:view"),
+  getTrips,
+);
+
+/**
+ * @swagger
+ * /api/admin/drivers/{id}/ratings:
+ *   get:
+ *     summary: Get driver ratings
+ *     description: Get paginated ratings and reviews for a specific driver.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Driver ratings fetched successfully.
+ *       400:
+ *         description: Invalid driver ID or pagination parameters.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver view permission required.
+ *       404:
+ *         description: Driver not found.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get(
+  "/:id/ratings",
+  adminAuthMiddleware,
+  requirePermission("driver:view"),
+  getRatings,
+);
+
+/**
+ * @swagger
+ * /api/admin/drivers/{id}/kyc:
+ *   get:
+ *     summary: Get driver KYC information
+ *     description: Get KYC information for a specific driver.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID.
+ *     responses:
+ *       200:
+ *         description: Driver KYC fetched successfully.
+ *       400:
+ *         description: Invalid driver ID.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver view permission required.
+ *       404:
+ *         description: Driver or KYC information not found.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get(
+  "/:id/kyc",
+  adminAuthMiddleware,
+  requirePermission("driver:view"),
+  getKyc,
+);
+
+/**
+ * @swagger
+ * /api/admin/drivers/{id}/statistics:
+ *   get:
+ *     summary: Get driver statistics
+ *     description: Get aggregated statistics for a specific driver.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID.
+ *     responses:
+ *       200:
+ *         description: Driver statistics fetched successfully.
+ *       400:
+ *         description: Invalid driver ID.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver view permission required.
+ *       404:
+ *         description: Driver not found.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get(
+  "/:id/statistics",
+  adminAuthMiddleware,
+  requirePermission("driver:view"),
+  getStatistics,
+);
+
+/**
+ * @swagger
+ * /api/admin/drivers/{id}/earnings:
+ *   get:
+ *     summary: Get driver earnings
+ *     description: Get earnings information for a specific driver.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID.
+ *     responses:
+ *       200:
+ *         description: Driver earnings fetched successfully.
+ *       400:
+ *         description: Invalid driver ID.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver view permission required.
+ *       404:
+ *         description: Driver not found.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get(
+  "/:id/earnings",
+  adminAuthMiddleware,
+  requirePermission("driver:view"),
+  getEarnings,
+);
+
+// =====================================================
+// DRIVER DOCUMENTS
+// =====================================================
+
+/**
+ * @swagger
+ * /api/admin/drivers/{id}/documents:
+ *   get:
+ *     summary: Get driver documents
+ *     description: Get all uploaded documents for a specific driver.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID.
+ *     responses:
+ *       200:
+ *         description: Driver documents fetched successfully.
+ *       400:
+ *         description: Invalid driver ID.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver view permission required.
+ *       404:
+ *         description: Driver not found.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get(
+  "/:id/documents",
+  adminAuthMiddleware,
+  requirePermission("driver:view"),
+  getDocuments,
+);
+
+/**
+ * @swagger
+ * /api/admin/drivers/documents/{id}/approve:
+ *   patch:
+ *     summary: Approve driver document
+ *     description: Approve a pending driver document.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver document ID.
+ *     responses:
+ *       200:
+ *         description: Driver document approved successfully.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver management permission required.
+ *       404:
+ *         description: Driver document not found.
+ *       409:
+ *         description: Driver document is already approved.
+ *       500:
+ *         description: Internal server error.
+ */
+router.patch(
+  "/documents/:id/approve",
+  adminAuthMiddleware,
+  requirePermission("driver:manage"),
+  approveDocument,
+);
+
+/**
+ * @swagger
+ * /api/admin/drivers/documents/{id}/reject:
+ *   patch:
+ *     summary: Reject driver document
+ *     description: Reject a driver document with a rejection reason.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver document ID.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - reason
+ *             properties:
+ *               reason:
+ *                 type: string
+ *                 example: Document is invalid or expired.
+ *     responses:
+ *       200:
+ *         description: Driver document rejected successfully.
+ *       400:
+ *         description: Invalid rejection reason.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver management permission required.
+ *       404:
+ *         description: Driver document not found.
+ *       409:
+ *         description: Driver document is already rejected.
+ *       500:
+ *         description: Internal server error.
+ */
+router.patch(
+  "/documents/:id/reject",
+  adminAuthMiddleware,
+  requirePermission("driver:manage"),
+  rejectDocument,
+);
+
+// =====================================================
+// DRIVER WALLET
+// =====================================================
+
+/**
+ * @swagger
+ * /api/admin/drivers/{id}/wallet:
+ *   get:
+ *     summary: Get driver wallet
+ *     description: Get wallet balance and earnings summary for a specific driver.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID.
+ *     responses:
+ *       200:
+ *         description: Driver wallet fetched successfully.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver view permission required.
+ *       404:
+ *         description: Driver or wallet not found.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get(
+  "/:id/wallet",
+  adminAuthMiddleware,
+  requirePermission("driver:view"),
+  getWallet,
+);
+
+/**
+ * @swagger
+ * /api/admin/drivers/{id}/wallet/transactions:
+ *   get:
+ *     summary: Get driver wallet transactions
+ *     description: Get wallet transaction history for a specific driver.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 10
+ *         description: Number of transactions per page.
+ *     responses:
+ *       200:
+ *         description: Driver wallet transactions fetched successfully.
+ *       400:
+ *         description: Invalid driver ID or pagination parameters.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver view permission required.
+ *       404:
+ *         description: Driver or wallet not found.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get(
+  "/:id/wallet/transactions",
+  adminAuthMiddleware,
+  requirePermission("driver:view"),
+  getWalletTransactions,
+);
+
+// =====================================================
+// DRIVER STATUS MANAGEMENT
+// =====================================================
+
+/**
+ * @swagger
+ * /api/admin/drivers/{id}/approve:
+ *   patch:
+ *     summary: Approve driver
+ *     description: Approve a pending driver.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID.
+ *     responses:
+ *       200:
+ *         description: Driver approved successfully.
+ *       400:
+ *         description: Invalid driver ID.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver management permission required.
+ *       404:
+ *         description: Driver not found.
+ *       409:
+ *         description: Driver cannot be approved in the current state.
+ *       500:
+ *         description: Internal server error.
+ */
+router.patch(
+  "/:id/approve",
+  adminAuthMiddleware,
+  requirePermission("driver:manage"),
+  approve,
+);
+
+/**
+ * @swagger
+ * /api/admin/drivers/{id}/reject:
+ *   patch:
+ *     summary: Reject driver
+ *     description: Reject a driver application with a reason.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - reason
+ *             properties:
+ *               reason:
+ *                 type: string
+ *                 example: Required driver documents are invalid.
+ *     responses:
+ *       200:
+ *         description: Driver rejected successfully.
+ *       400:
+ *         description: Invalid driver ID or rejection reason.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver management permission required.
+ *       404:
+ *         description: Driver not found.
+ *       409:
+ *         description: Driver cannot be rejected in the current state.
+ *       500:
+ *         description: Internal server error.
+ */
+router.patch(
+  "/:id/reject",
+  adminAuthMiddleware,
+  requirePermission("driver:manage"),
+  reject,
+);
+
+/**
+ * @swagger
+ * /api/admin/drivers/{id}/suspend:
+ *   patch:
+ *     summary: Suspend driver
+ *     description: Suspend an approved driver with a reason.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - reason
+ *             properties:
+ *               reason:
+ *                 type: string
+ *                 example: Driver violated platform safety policy.
+ *     responses:
+ *       200:
+ *         description: Driver suspended successfully.
+ *       400:
+ *         description: Invalid driver ID or suspension reason.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver management permission required.
+ *       404:
+ *         description: Driver not found.
+ *       409:
+ *         description: Only an approved driver can be suspended.
+ *       500:
+ *         description: Internal server error.
+ */
+router.patch(
+  "/:id/suspend",
+  adminAuthMiddleware,
+  requirePermission("driver:manage"),
+  suspend,
+);
+
+/**
+ * @swagger
+ * /api/admin/drivers/{id}/activate:
+ *   patch:
+ *     summary: Activate driver
+ *     description: Activate a suspended driver.
+ *     tags:
+ *       - Admin Driver Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Driver ID.
+ *     responses:
+ *       200:
+ *         description: Driver activated successfully.
+ *       400:
+ *         description: Invalid driver ID.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden. Driver management permission required.
+ *       404:
+ *         description: Driver not found.
+ *       409:
+ *         description: Driver cannot be activated in the current state.
+ *       500:
+ *         description: Internal server error.
+ */
+router.patch(
+  "/:id/activate",
+  adminAuthMiddleware,
+  requirePermission("driver:manage"),
+  activate,
+);
+
+module.exports = router;
+const { z } = require("zod");
+
+const driverIdParamSchema = z.object({
+  id: z.string().min(1, "Driver ID is required."),
+});
+
+const paginationSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+const getDriversQuerySchema = paginationSchema.extend({
+  search: z.string().trim().optional(),
+
+  status: z
+    .enum(["PENDING", "APPROVED", "REJECTED", "SUSPENDED"])
+    .optional(),
+
+  availability: z
+    .enum(["OFFLINE", "AVAILABLE", "BUSY"])
+    .optional(),
+
+  sortBy: z
+    .enum([
+      "createdAt",
+      "updatedAt",
+      "experience",
+      "averageRating",
+      "totalRatings",
+    ])
+    .default("createdAt"),
+
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
+
+const reasonBodySchema = z.object({
+  reason: z.string().trim().min(3).max(500),
+});
+
+const documentIdParamSchema = z.object({
+  id: z.string().min(1, "Document ID is required."),
+});
+
+const documentRejectBodySchema = z.object({
+  reason: z.string().trim().min(3).max(500),
+});
+
+module.exports = {
+  driverIdParamSchema,
+  paginationSchema,
+  getDriversQuerySchema,
+  reasonBodySchema,
+  documentIdParamSchema,
+  documentRejectBodySchema,
+};

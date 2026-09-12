@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <title>Become a Driver Partner | Go Ride</title>
+    <meta name="description" content="Join Go Ride as a driver partner. Earn on your own terms, choose your hours, and make money in Varanasi.">
+    <meta name="keywords" content="Driver partner, Driver signup, Earn money Varanasi, Go Ride driver">
+    <meta name="author" content="Go Ride">
+    <meta name="theme-color" content="#2563EB">
+    <link rel="canonical" href="https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/driver-signup.html">
+
+    <!-- OpenGraph Tags -->
+    <meta property="og:title" content="Become a Driver Partner | Go Ride">
+    <meta property="og:description" content="Join Go Ride as a driver partner. Earn on your own terms, choose your hours, and make money in Varanasi.">
+    <meta property="og:image" content="https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/assets/svg/logo.svg">
+    <meta property="og:url" content="https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/driver-signup.html">
+    <meta property="og:type" content="website">
+
+    <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <!-- Page Loader -->
+    <div id="page-loader" aria-hidden="true"></div>
+
+    <!-- Reusable Navbar -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar" aria-label="Primary navigation">
+                <a class="brand" href="index.html">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                    <span>Go Ride</span>
+                </a>
+
+                <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
+
+                <ul class="nav-links">
+                    <li><a class="nav-link" href="index.html">Home</a></li>
+                    <li><a class="nav-link" href="services.html">Services</a></li>
+                    <li><a class="nav-link" href="index.html#safety">Safety</a></li>
+                    <li><a class="nav-link" href="about.html">About</a></li>
+                    <li><a class="nav-link" href="contact.html">Contact</a></li>
+                    <li><a class="nav-link highlight-link" href="driver-signup.html">Become Driver</a></li>
+                </ul>
+
+                <div class="nav-buttons">
+                    <a href="login.html" class="login-btn">
+                        Login
+                    </a>
+                    <a href="booking.html" class="book-btn">
+                        Book Ride
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Auth Layout Section -->
+    <main class="auth-section">
+        <div class="container">
+            <div class="auth-wrapper reveal">
+                <div class="auth-card" style="max-width: 600px;">
+                    <div class="auth-header">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" class="auth-logo" loading="lazy" decoding="async">
+                        <h2>Drive &amp; Earn with Go Ride</h2>
+                        <p>Partner with Go Ride in Varanasi. Choose your hours, earn with every trip, and enjoy dedicated fleet support.</p>
+                    </div>
+
+                    <!-- Driver Status Banner (if already registered) -->
+                    <div id="driver-status-card" style="display: none; padding: 1.5rem; border-radius: var(--radius-md); background: var(--color-primary-light); border: 1px solid rgba(37,99,235,0.2); margin-bottom: 1.5rem;">
+                        <h3 style="margin-top: 0; color: var(--color-primary); font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🚗</span> Driver Partner Account Active
+                        </h3>
+                        <p id="driver-status-msg" style="margin: 0.5rem 0 1rem; font-size: 0.92rem; color: var(--color-text-primary);"></p>
+                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                            <a href="profile.html" class="primary-btn" style="padding: 0.5rem 1.25rem; font-size: 0.88rem;">Go to Profile</a>
+                            <a href="booking.html" class="btn-secondary" style="padding: 0.5rem 1.25rem; font-size: 0.88rem;">Customer Portal</a>
+                        </div>
+                    </div>
+
+                    <!-- Onboarding Steps & Privacy Commitment (Visible to everyone) -->
+                    <div class="driver-onboarding-guide" style="margin-bottom: 1.75rem; padding: 1.25rem; background: var(--color-surface-muted, #F8FAFC); border: 1px solid var(--color-border, #E2E8F0); border-radius: var(--radius-md);">
+                        <h3 style="font-size: 1.05rem; margin-top: 0; margin-bottom: 0.75rem; color: var(--color-text-primary);">How Driver Onboarding Works</h3>
+                        <ol style="padding-left: 1.25rem; margin: 0 0 1rem; color: var(--color-text-secondary); font-size: 0.9rem; line-height: 1.6;">
+                            <li><strong>Create Your Account:</strong> Sign in with your registered Go Ride customer account.</li>
+                            <li><strong>Review Requirements:</strong> Hold an active commercial or private transport vehicle license.</li>
+                            <li><strong>In-Person Fleet Verification:</strong> Document verification (Driving License, Vehicle RC, and Identity) is completed in-person with Go Ride fleet officers to guarantee data safety and identity privacy.</li>
+                        </ol>
+
+                        <div style="display: flex; gap: 0.6rem; align-items: flex-start; padding: 0.75rem; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: var(--radius-sm); font-size: 0.82rem; color: #1E40AF; line-height: 1.5;">
+                            <span style="font-size: 1rem;">🛡️</span>
+                            <span><strong>Privacy Protection Notice:</strong> Go Ride never collects national identity numbers (such as Aadhaar or raw license numbers) on public web forms. Official KYC verification is conducted securely during direct onboarding.</span>
+                        </div>
+                    </div>
+
+                    <!-- Auth Required State -->
+                    <div id="driver-auth-gate" style="display: none; text-align: center; padding: 1rem 0 1.5rem;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔒</div>
+                        <h3 style="margin-bottom: 0.5rem;">Sign In to Register Interest</h3>
+                        <p style="color: var(--color-text-secondary); margin-bottom: 1.25rem; font-size: 0.92rem;">
+                            Please sign in to verify your contact information and submit your driver partner registration.
+                        </p>
+                        <a href="login.html?returnUrl=driver-signup.html" class="primary-btn" style="display: inline-block; padding: 0.75rem 2rem;">
+                            Sign In to Continue
+                        </a>
+                        <p style="margin-top: 1rem; font-size: 0.88rem; color: var(--color-text-secondary);">
+                            Don't have an account? <a href="register.html">Create one here</a>
+                        </p>
+                    </div>
+
+                    <!-- Driver Partner Interest / Readiness Form (Authenticated Users) -->
+                    <div id="driver-interest-container" style="display: none;">
+                        <!-- Current User Info Badge -->
+                        <div id="driver-applicant-info" style="padding: 0.75rem 1rem; background: var(--color-gray-100, #F3F4F6); border-radius: var(--radius-md); margin-bottom: 1.25rem; font-size: 0.88rem; color: var(--color-text-secondary);">
+                            Applicant Account: <strong id="applicant-name" style="color: var(--color-text-primary);"></strong>
+                            <span id="applicant-email" style="display: block; font-size: 0.82rem; margin-top: 0.2rem;"></span>
+                        </div>
+
+                        <div style="padding: 1.25rem; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+                            <h4 style="margin: 0 0 0.5rem; color: #166534; font-size: 0.98rem; display: flex; align-items: center; gap: 0.4rem;">
+                                <span>✅</span> Partner Verification Office
+                            </h4>
+                            <p style="margin: 0 0 0.75rem; font-size: 0.88rem; color: #15803D; line-height: 1.5;">
+                                Driver registration is processed at our Varanasi operations hub. To schedule your vehicle inspection and document onboarding:
+                            </p>
+                            <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.86rem; color: #166534; line-height: 1.6;">
+                                <li><strong>Location:</strong> Go Ride Partner Center, Cantt, Varanasi, UP 221002</li>
+                                <li><strong>Operating Hours:</strong> Monday – Saturday, 9:00 AM – 6:00 PM</li>
+                                <li><strong>Support Line:</strong> +91 542 222 0100</li>
+                            </ul>
+                        </div>
+
+                        <div style="text-align: center; margin-top: 1.25rem;">
+                            <a href="contact.html" class="primary-btn" style="display: inline-block; padding: 0.75rem 1.75rem; text-decoration: none;">
+                                Contact Partner Support
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="auth-footer" style="margin-top: 1.5rem;">
+                        <p>Questions about driving with Go Ride? <a href="contact.html">Contact Fleet Support</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Reusable Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a class="brand" href="index.html">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                        <span>Go Ride</span>
+                    </a>
+                    <p>Ride smarter, ride better with dependable travel for every journey.</p>
+                </div>
+                <div>
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="booking.html">Book Ride</a></li>
+                        <li><a href="terms.html">Terms &amp; Conditions</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="login.html">Login</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="booking.html">City Rides</a></li>
+                        <li><a href="driver-signup.html">Become a Driver</a></li>
+                        <li><a href="rides.html">Ride History</a></li>
+                        <li><a href="notifications.html">Notifications</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">© 2026 Go Ride Technologies. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/helpers.js"></script>
+    <script src="js/main.js" defer></script>
+    <script src="js/animations.js" defer></script>
+    <script src="js/toast.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const api = window.GoRide && window.GoRide.api;
+
+            const authGate = document.getElementById('driver-auth-gate');
+            const statusCard = document.getElementById('driver-status-card');
+            const statusMsg = document.getElementById('driver-status-msg');
+            const interestContainer = document.getElementById('driver-interest-container');
+
+            // 1. Verify Authentication
+            if (!api || !api.isAuthenticated()) {
+                if (authGate) authGate.style.display = 'block';
+                return;
+            }
+
+            // Populate current user info
+            const currentUser = api.getCurrentUser();
+            if (currentUser) {
+                const nameEl = document.getElementById('applicant-name');
+                const emailEl = document.getElementById('applicant-email');
+                if (nameEl) nameEl.textContent = currentUser.fullName || currentUser.name || "Valued Partner";
+                if (emailEl) emailEl.textContent = `${currentUser.email || ""} • ${currentUser.phone || ""}`;
+            }
+
+            // 2. Check if already registered as driver (only for users with DRIVER role)
+            if (currentUser && currentUser.role === 'DRIVER') {
+                try {
+                    const existing = await api.get('/api/driver/profile');
+                    if (existing && existing.data) {
+                        const drv = existing.data;
+                        if (statusCard) statusCard.style.display = 'block';
+                        if (statusMsg) {
+                            statusMsg.innerHTML = `You have an active driver partner registration.<br>Application Status: <strong>${drv.status || "ACTIVE"}</strong> | Experience: ${drv.experience || 0} years.`;
+                        }
+                        return;
+                    }
+                } catch (err) {
+                    if (err.status && err.status !== 404) {
+                        console.warn("Could not check driver status:", err.message);
+                    }
+                }
+            }
+
+            // Show Onboarding info for authenticated applicant
+            if (interestContainer) interestContainer.style.display = 'block';
+        });
+    </script>
+</body>
+</html>

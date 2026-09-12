@@ -1,14 +1,49 @@
 @media (max-width: 1024px) {
-  .why-choose-grid {
+  .why-choose-grid,
+  .how-it-works-grid,
+  .values-container {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Fix for inconsistent breadcrumb alignment on mobile/tablet */
+  .breadcrumb ol {
+    padding-left: 0;
+    list-style: none;
+    display: flex;
+    gap: 0.5rem;
+    margin: 0;
+  }
+
+  .breadcrumb li:not(:last-child)::after {
+    content: '/';
+    margin-left: 0.5rem;
+    color: var(--color-text-secondary);
   }
 }
 
-@media (max-width: 900px) {
+/* ==========================================
+   TABLET & LARGE MOBILE BREAKPOINTS
+   ========================================== */
+@media (max-width: 992px) {
   .hero-content,
+  .about-page-hero-grid,
   .about-grid,
-  .safety-grid {
+  .safety-grid,
+  .mission-vision-container,
+  .team-grid,
+  .booking-grid {
     grid-template-columns: 1fr;
+  }
+  .about-stats-grid {
+    /* 2 cards per row on tablet */
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .booking-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .booking-hero h1 {
+    font-size: 2.1rem;
   }
 
   .services-grid,
@@ -32,36 +67,38 @@
   .safety-list {
     grid-template-columns: 1fr;
   }
+
+  /* Services & Pricing Pages */
+  .services-page-grid,
+  .pricing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .categories-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .safety-grid-custom {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  /* Contact Page */
+  .contact-cards-grid,
+  .social-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .contact-section-grid,
+  .office-map-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
 }
 
+/* Medium Tablet Breakpoint */
+/* ==========================================
+   MEDIUM TABLET BREAKPOINT
+   ========================================== */
 @media (max-width: 760px) {
-  .navbar {
-    flex-wrap: wrap;
-    border-radius: 1.2rem;
-  }
-
-  .menu-toggle {
-    display: inline-block;
-    margin-left: auto;
-  }
-
-  .nav-links {
-    order: 3;
-    width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-    padding-top: 0.5rem;
-    display: none;
-  }
-
-  .nav-links.active {
-    display: flex;
-  }
-
-  .nav-buttons {
-    display: none;
-  }
-
   .hero {
     padding-top: 3rem;
   }
@@ -89,11 +126,17 @@
   .hero-buttons a {
     width: 100%;
   }
-
   .stats,
   .why-choose-grid,
-  .testimonial-grid {
+  .how-it-works-grid,
+  .testimonial-grid, .values-container,
+  .how-we-work-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Remove unnecessary top border from footer on mobile for a cleaner look */
+  .site-footer {
+    border-top: none;
   }
 
   .why-choose-card {
@@ -110,9 +153,76 @@
   }
 }
 
+/* Small Tablet & Large Phone Breakpoint */
+/* ==========================================
+   SMALL TABLET & LARGE PHONE BREAKPOINT
+   ========================================== */
+@media (max-width: 600px) {
+  .categories-grid,
+  .services-page-grid,
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+  .pricing-card.featured {
+    transform: none;
+  }
+  .pricing-card.featured:hover {
+    transform: translateY(-8px);
+  }
+
+  .safety-checklist-custom {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-cards-grid,
+  .social-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-card {
+    padding: 1.5rem;
+  }
+  .form-row {
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+}
+
+/* Small Phone Breakpoint */
+@media (max-width: 576px) {
+  .about-stats-grid {
+    /* 1 card per row on mobile for clean text */
+    grid-template-columns: 1fr;
+  }
+
+  .auth-card {
+    padding: 2.25rem 1.5rem;
+  }
+  .auth-header h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* ==========================================
+   MOBILE-SPECIFIC BREAKPOINTS
+   ========================================== */
 @media (max-width: 480px) {
+  :root {
+    --container-padding: 1rem;
+  }
+
   .container {
-    width: min(100% - 1.5rem, 1160px);
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Stack two-column layouts on 'About' page for small mobile */
+  .about-story-grid,
+  .mission-vision-container,
+  .values-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem; /* Consistent spacing for stacked items */
   }
 
   .hero h1 {
@@ -135,67 +245,169 @@
   }
 }
 
-@media (max-width: 900px) {
-  .services-page-grid,
-  .pricing-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+/* ==========================================
+   ULTRA-MOBILE RESPONSIVE FIXES (320px, 375px, 425px)
+   ========================================== */
+
+/* Breakpoint: 425px (Large Mobile) */
+@media (max-width: 425px) {
+  .hero h1 {
+    font-size: 2.1rem;
   }
-  .categories-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  
+  .section-title {
+    font-size: 1.8rem;
   }
-  .safety-grid-custom {
-    grid-template-columns: 1fr;
-    gap: 2rem;
+  
+  .navbar {
+    padding: 0.75rem 1rem;
+  }
+
+  .brand img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .brand span {
+    font-size: 1rem;
+  }
+
+  .booking-card {
+    padding: 1.25rem;
   }
 }
 
-@media (max-width: 600px) {
-  .services-page-grid,
-  .categories-grid,
-  .pricing-grid {
-    grid-template-columns: 1fr;
+/* Breakpoint: 375px (Medium Mobile) */
+@media (max-width: 375px) {
+  .hero h1 {
+    font-size: 1.95rem;
   }
-  .pricing-card.featured {
-    transform: none;
+
+  .section-title {
+    font-size: 1.65rem;
   }
-  .pricing-card.featured:hover {
-    transform: translateY(-8px);
+
+  .hero-buttons {
+    gap: 0.75rem;
   }
-  .safety-checklist-custom {
-    grid-template-columns: 1fr;
+
+  .hero-buttons a,
+  .primary-btn,
+  .secondary-btn {
+    padding: 0.75rem 1.1rem;
+    font-size: 0.9rem;
+  }
+
+  .stats {
+    gap: 1rem;
+  }
+
+  .stat {
+    padding: 0.75rem;
+  }
+
+  .stat-icon {
+    font-size: 1.25rem;
+  }
+
+  .footer-bottom {
+    font-size: 0.8rem;
+  }
+
+  .payment-options {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .payment-option .option-card {
+    flex-direction: row;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .vehicle-item {
+    padding: 0.8rem 1rem;
+  }
+
+  .booking-card,
+  .booking-map-card {
+    padding: 1.15rem 0.85rem;
   }
 }
 
-@media (max-width: 992px) {
-    .about-stats-grid {
-        /* Tablet par 2-2 cards ek line mein dikhenge */
-        grid-template-columns: repeat(2, 1fr); 
-    }
-}
-
-@media (max-width: 576px) {
-    .about-stats-grid {
-        /* Mobile par 1-1 card ek line mein dikhega taaki text clean rahe */
-        grid-template-columns: 1fr; 
-    }
-}
-
-@media (max-width: 900px) {
-  .contact-cards-grid,
-  .social-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
+/* Breakpoint: 320px (Small Mobile - e.g. iPhone SE) */
+@media (max-width: 320px) {
+  .hero h1 {
+    font-size: 1.75rem;
   }
-  .contact-section-grid,
-  .office-map-container {
-    grid-template-columns: 1fr;
-    gap: 2rem;
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .hero-badge {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .brand span {
+    font-size: 0.95rem;
+  }
+
+  :root {
+    --container-padding: 0.75rem;
+  }
+
+  .container {
+    width: 100%;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .why-choose-card,
+  .service-card,
+  .testimonial-card,
+  .about-stat-card,
+  .booking-card {
+    padding: 1rem 0.75rem;
+  }
+
+  .booking-map-card {
+    padding: 0 !important;
+  }
+
+  .scroll-to-top {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 1.15rem;
+    z-index: 99;
+  }
+
+  .download-app-actions {
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .download-app-actions .store-btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .vehicle-item {
+    padding: 0.65rem 0.8rem;
+  }
+  .vehicle-icon {
+    font-size: 1.3rem;
+  }
+  .vehicle-info h4 {
+    font-size: 0.85rem;
+  }
+  .vehicle-info .eta {
+    font-size: 0.75rem;
   }
 }
-
-@media (max-width: 600px) {
-  .contact-cards-grid,
-  .social-cards-grid {
-    grid-template-columns: 1fr;
-  }
-}
-

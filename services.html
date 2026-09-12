@@ -9,24 +9,26 @@
     <meta name="keywords" content="Go Ride services, ride booking, taxi, airport transfer, corporate travel, hourly rental, outstation, parcel delivery">
     <meta name="author" content="Go Ride">
     <meta name="theme-color" content="#2563EB">
-    <!-- <link rel="canonical" href="https://goride.com/services.html"> -->
+    <link rel="canonical" href="https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/services.html">
     <meta property="og:title" content="Services | Go Ride">
     <meta property="og:description" content="Discover Go Ride's premium transportation services, from city rides and airport transfers to hourly rentals and corporate travel.">
-    <!-- <meta property="og:image" content="https://goride.com/assets/images/og-cover.jpg"> -->
-    <!-- TODO: Replace with PNG/JPG cover image later (e.g. assets/images/og-cover.jpg or 1200x630 png) -->
-    <!-- <meta property="og:url" content="https://goride.com/services.html"> -->
+    <meta property="og:image" content="https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/assets/svg/logo.svg">
+    <meta property="og:url" content="https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/services.html">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Services | Go Ride">
     <meta name="twitter:description" content="Discover Go Ride's premium transportation services, from city rides and airport transfers to hourly rentals and corporate travel.">
-    <!-- <meta name="twitter:image" content="https://goride.com/assets/images/og-cover.jpg"> -->
+    <meta name="twitter:image" content="https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/assets/svg/logo.svg">
     <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/animations.css">
 
@@ -39,12 +41,12 @@
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://goride.com/index.html"
+        "item": "https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/index.html"
       }, {
         "@type": "ListItem",
         "position": 2,
         "name": "Services",
-        "item": "https://goride.com/services.html"
+        "item": "https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/services.html"
       }]
     }
     </script>
@@ -59,7 +61,7 @@
       "provider": {
         "@type": "Organization",
         "name": "Go Ride Technologies",
-        "logo": "https://goride.com/assets/svg/logo.svg"
+        "logo": "https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/assets/svg/logo.svg"
       },
       "areaServed": "India",
       "serviceType": "Ride Booking"
@@ -118,14 +120,12 @@
                 <button type="button" class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="primary-menu">☰</button>
 
                 <ul id="primary-menu" class="nav-links">
-                    <li><a class="nav-link" href="index.html#home">Home</a></li>
+                    <li><a class="nav-link" href="index.html">Home</a></li>
                     <li><a class="nav-link is-active" href="services.html" aria-current="page">Services</a></li>
-                    <li><a class="nav-link" href="index.html#why-choose">Why Choose</a></li>
-                    <li><a class="nav-link" href="index.html#how-it-works">How It Works</a></li>
                     <li><a class="nav-link" href="index.html#safety">Safety</a></li>
-                    <li><a class="nav-link" href="index.html#download-app">Download App</a></li>
                     <li><a class="nav-link" href="about.html">About</a></li>
                     <li><a class="nav-link" href="contact.html">Contact</a></li>
+                    <li><a class="nav-link highlight-link" href="driver-signup.html">Become Driver</a></li>
                 </ul>
 
                 <div class="nav-buttons">
@@ -626,7 +626,7 @@
     <footer class="site-footer">
         <div class="container">
             <div class="footer-grid">
-                <div>
+                <div class="footer-brand">
                     <a class="brand" href="index.html">
                         <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
                         <span>Go Ride</span>
@@ -652,11 +652,12 @@
                     </ul>
                 </div>
                 <div>
-                    <h3>Follow Us</h3>
+                    <h3>Services</h3>
                     <ul>
-                        <li><a href="https://instagram.com/goride" aria-label="Follow Go Ride on Instagram">Instagram</a></li>
-                        <li><a href="https://x.com/goride" aria-label="Follow Go Ride on Twitter">Twitter</a></li>
-                        <li><a href="https://linkedin.com/company/goride" aria-label="Follow Go Ride on LinkedIn">LinkedIn</a></li>
+                        <li><a href="booking.html">City Rides</a></li>
+                        <li><a href="driver-signup.html">Become a Driver</a></li>
+                        <li><a href="rides.html">Ride History</a></li>
+                        <li><a href="notifications.html">Notifications</a></li>
                     </ul>
                 </div>
             </div>
@@ -668,8 +669,8 @@
     <button id="backToTop" class="scroll-to-top" aria-label="Back to top">↑</button>
 
     <!-- Toast container -->
-    <div id="toast-container" class="toast-container" aria-live="polite"></div>
-
+    <script src="js/config.js"></script>
+    <script src="js/helpers.js"></script>
     <script src="js/main.js"></script>
     <script src="js/animations.js"></script>
 </body>

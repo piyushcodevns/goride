@@ -1,0 +1,1793 @@
+/* ==========================================================================
+   GO RIDE - PREMIUM BOOKING PORTAL STYLES (V2 PRODUCTION)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. HERO SECTION
+   -------------------------------------------------------------------------- */
+.booking-hero {
+  padding: 4rem 0 5.5rem 0;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse 65% 55% at 50% 0%, rgba(37, 99, 235, 0.08) 0%, transparent 70%), linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+}
+
+.booking-hero-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+.hero-text-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  z-index: 2;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1rem;
+  background: #EFF6FF;
+  color: #2563EB;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 1.2rem;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+.hero-headline {
+  font-size: clamp(1.65rem, 5vw, 3.25rem);
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+  margin-bottom: 1rem;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.hero-headline span {
+  color: #2563EB;
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+  color: #64748B;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  max-width: 520px;
+  margin-bottom: 0;
+}
+
+.hero-visual-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-cinematic-img {
+  width: 100%;
+  max-width: 460px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 30px rgba(37, 99, 235, 0.12));
+  animation: subtleFloat 6s ease-in-out infinite;
+}
+
+@keyframes subtleFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. FLOATING BOOKING WORKSPACE & CONTAINER
+   -------------------------------------------------------------------------- */
+.booking-section {
+  padding: 0 0 5rem 0;
+  position: relative;
+  z-index: 10;
+}
+
+.booking-workspace {
+  margin-top: -3.5rem;
+  background: #FFFFFF;
+  border-radius: 28px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.08), 0 0 1px 1px rgba(226, 232, 240, 0.5);
+  padding: clamp(1.75rem, 3.5vw, 2.75rem);
+  position: relative;
+  backdrop-filter: blur(8px);
+}
+
+/* --------------------------------------------------------------------------
+   3. PROGRESS STEPPER
+   -------------------------------------------------------------------------- */
+.booking-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-bottom: 2.75rem;
+  padding-bottom: 1.75rem;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: #94A3B8;
+  font-weight: 500;
+  font-size: 0.92rem;
+  transition: all 0.25s ease;
+}
+
+.step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F1F5F9;
+  color: #64748B;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1.5px solid transparent;
+  transition: all 0.25s ease;
+}
+
+.step-item.active {
+  color: #0F172A;
+  font-weight: 600;
+}
+
+.step-item.active .step-num {
+  background: #2563EB;
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.step-item.completed {
+  color: #16A34A;
+}
+
+.step-item.completed .step-num {
+  background: #16A34A;
+  color: #FFFFFF;
+}
+
+.step-connector {
+  flex: 0 1 60px;
+  height: 2px;
+  background: #E2E8F0;
+  border-radius: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   4. TWO-COLUMN WORKSPACE GRID
+   -------------------------------------------------------------------------- */
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 1.22fr 0.98fr;
+  gap: 2.75rem;
+  align-items: start;
+}
+
+.workspace-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.workspace-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  position: sticky;
+  top: 96px;
+}
+
+/* --------------------------------------------------------------------------
+   5. BOOKING FORM & CONTROLS (LEFT COLUMN)
+   -------------------------------------------------------------------------- */
+.booking-form-element {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Mode Toggle Buttons */
+.booking-toggle-row {
+  display: flex;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 0.3rem;
+  gap: 0.35rem;
+}
+
+.booking-toggle-row .toggle-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: #64748B;
+  border-radius: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.booking-toggle-row .toggle-btn:hover {
+  color: #0F172A;
+}
+
+.booking-toggle-row .toggle-btn.active {
+  background: #FFFFFF;
+  color: #2563EB;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.booking-toggle-row .toggle-btn:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 1px;
+}
+
+/* Connected Route Inputs (Pickup + Dropoff) */
+.location-picker-group {
+  display: flex;
+  gap: 1.25rem;
+  position: relative;
+  background: #FAFCFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 18px;
+  padding: 1.25rem 1.25rem 1.25rem 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.location-picker-group:focus-within {
+  border-color: #93C5FD;
+}
+
+.location-route-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 2rem;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.loc-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.dot-pickup {
+  background: #16A34A;
+  border: 3px solid #DCFCE7;
+  box-shadow: 0 0 0 1px #16A34A;
+}
+
+.dot-dropoff {
+  background: #EF4444;
+  border: 3px solid #FEE2E2;
+  box-shadow: 0 0 0 1px #EF4444;
+}
+
+.loc-line {
+  width: 2px;
+  flex: 1;
+  background: repeating-linear-gradient(to bottom, #CBD5E1 0px, #CBD5E1 4px, transparent 4px, transparent 8px);
+  min-height: 46px;
+  margin: 4px 0;
+}
+
+.location-inputs-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  position: relative;
+}
+
+.loc-label,
+.input-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  letter-spacing: 0.01em;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper input {
+  width: 100%;
+  height: 48px;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  min-width: 0;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: #0F172A;
+  background: #FFFFFF;
+  transition: all 0.2s ease;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.input-wrapper input::placeholder {
+  color: #94A3B8;
+  font-size: 0.92rem;
+}
+
+.input-wrapper input#pickup-input {
+  padding-right: 3rem;
+}
+
+.input-icon-badge {
+  position: absolute;
+  left: 0.9rem;
+  font-size: 1.05rem;
+  pointer-events: none;
+  z-index: 2;
+  line-height: 1;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.9rem;
+  font-size: 1.05rem;
+  color: #64748B;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.current-location-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: #EFF6FF;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  cursor: pointer;
+  font-size: 1rem;
+  color: #2563EB;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.current-location-btn:hover {
+  background: #DBEAFE;
+  transform: scale(1.05);
+}
+
+/* Autocomplete Suggestions Dropdown */
+.suggestions-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.15);
+  margin: 0;
+  padding: 0.4rem 0;
+  list-style: none;
+  z-index: 1000;
+  max-height: 250px;
+  overflow-y: auto;
+  display: none;
+}
+
+.suggestion-item {
+  padding: 0.8rem 1.15rem;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-bottom: 1px solid #F8FAFC;
+  transition: background 0.15s ease;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover,
+.suggestion-item.focused {
+  background: #F1F5F9;
+}
+
+.suggestion-icon {
+  color: #2563EB;
+  font-size: 1.05rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.suggestion-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.suggestion-name {
+  font-weight: 600;
+  color: #0F172A;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-sub {
+  color: #64748B;
+  font-size: 0.8rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Schedule Row */
+.form-row.schedule-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .input-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-row input[type="date"],
+.form-row input[type="time"] {
+  height: 48px;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  width: 100%;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: #0F172A;
+  background: #FFFFFF;
+  transition: border-color 0.2s ease;
+}
+
+.form-row input[type="date"]:focus,
+.form-row input[type="time"]:focus {
+  outline: none;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+/* Passenger Counter Pill */
+.passenger-counter-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 0.75rem 1.25rem;
+}
+
+.passenger-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+  margin: 0;
+}
+
+.passenger-counter-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 11px;
+  background: #FFFFFF;
+  padding: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.counter-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: none;
+  background: #F8FAFC;
+  color: #0F172A;
+  font-size: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: all 0.18s ease;
+}
+
+.counter-btn:hover {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.counter-btn:active {
+  transform: scale(0.92);
+}
+
+#passenger-count {
+  width: 42px;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: #0F172A;
+  padding: 0;
+  pointer-events: none;
+}
+
+/* Find Available Rides Button */
+.find-rides-btn {
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  background: #EFF6FF;
+  border: 1.5px solid rgba(37, 99, 235, 0.3);
+  color: #2563EB;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  margin-top: 0.25rem;
+}
+
+.find-rides-btn:hover {
+  background: #DBEAFE;
+  border-color: #2563EB;
+  color: #1D4ED8;
+  transform: translateY(-1px);
+}
+
+.find-rides-btn:active {
+  transform: translateY(0);
+}
+
+.find-rides-btn:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   6. VEHICLE SELECTION CARDS
+   -------------------------------------------------------------------------- */
+.vehicle-selection-container {
+  margin-top: 0.25rem;
+}
+
+.subsection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.85rem;
+}
+
+.subsection-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.live-fare-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid rgba(37, 99, 235, 0.15);
+}
+
+.vehicles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.vehicle-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.95rem 1.25rem;
+  border-radius: 16px;
+  border: 1.5px solid #E2E8F0;
+  background: #FFFFFF;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vehicle-item:hover {
+  border-color: #93C5FD;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -6px rgba(37, 99, 235, 0.12);
+}
+
+.vehicle-item.active {
+  border-color: #2563EB;
+  background: #F0F7FF;
+  box-shadow: 0 4px 16px -2px rgba(37, 99, 235, 0.15);
+}
+
+.vehicle-item:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+}
+
+.vehicle-visual {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #F8FAFC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid #F1F5F9;
+  transition: all 0.2s ease;
+}
+
+.vehicle-item.active .vehicle-visual {
+  background: #DBEAFE;
+  border-color: #BFDBFE;
+}
+
+.vehicle-svg-icon {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.fallback-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.vehicle-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.vehicle-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.vehicle-title-row h4 {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.capacity-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748B;
+  background: #F1F5F9;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.vehicle-desc {
+  font-size: 0.8rem;
+  color: #64748B;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vehicle-pricing {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.vehicle-pricing .price {
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.vehicle-item.active .vehicle-pricing .price {
+  color: #2563EB;
+}
+
+.vehicle-pricing .est-label {
+  font-size: 0.7rem;
+  color: #94A3B8;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.custom-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #CBD5E1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 3px;
+  transition: all 0.2s ease;
+}
+
+.vehicle-item.active .custom-radio {
+  border-color: #2563EB;
+  background: #2563EB;
+  box-shadow: inset 0 0 0 3px #FFFFFF;
+}
+
+/* --------------------------------------------------------------------------
+   7. PAYMENT & PROMO CODE
+   -------------------------------------------------------------------------- */
+.payment-method-container {
+  margin-top: 0.25rem;
+}
+
+.payment-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  margin-top: 0.6rem;
+}
+
+.payment-option {
+  cursor: pointer;
+}
+
+.payment-option .option-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.9rem 0.5rem;
+  border-radius: 12px;
+  border: 1.5px solid #E2E8F0;
+  background: #FFFFFF;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+.payment-option:hover .option-card {
+  border-color: #93C5FD;
+  transform: translateY(-1px);
+}
+
+.payment-option input:checked + .option-card {
+  background: #EFF6FF;
+  border-color: #2563EB;
+  color: #1D4ED8;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
+}
+
+.payment-option input:focus-visible + .option-card {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+}
+
+.payment-icon {
+  font-size: 1.15rem;
+}
+
+/* Coupon Container */
+.coupon-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.coupon-container label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.optional-tag {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #94A3B8;
+  margin-left: 0.35rem;
+}
+
+.coupon-wrapper {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.coupon-wrapper input {
+  flex: 1;
+  min-width: 0;
+  height: 46px;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: #0F172A;
+  background: #FFFFFF;
+  transition: border-color 0.2s ease;
+}
+
+.coupon-wrapper input:focus {
+  outline: none;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.coupon-wrapper .apply-btn {
+  padding: 0.75rem 1.4rem;
+  height: 46px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  border-radius: 12px;
+  background: #F1F5F9;
+  border: 1.5px solid #E2E8F0;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.coupon-wrapper .apply-btn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+.coupon-msg {
+  font-size: 0.8rem;
+  font-weight: 500;
+  min-height: 1.2rem;
+}
+
+.coupon-msg.success {
+  color: #16A34A;
+}
+
+.coupon-msg.error {
+  color: #EF4444;
+}
+
+/* --------------------------------------------------------------------------
+   8. CTA BUTTON
+   -------------------------------------------------------------------------- */
+.booking-cta-btn {
+  width: 100%;
+  height: 54px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  color: #FFFFFF;
+  font-size: 1.05rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.4);
+  transition: all 0.25s ease;
+  margin-top: 0.5rem;
+}
+
+.booking-cta-btn:hover:not(:disabled) {
+  box-shadow: 0 12px 24px -4px rgba(37, 99, 235, 0.5);
+  transform: translateY(-2px);
+}
+
+.booking-cta-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.booking-cta-btn:disabled {
+  background: #E2E8F0 !important;
+  color: #94A3B8 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  cursor: not-allowed !important;
+}
+
+/* --------------------------------------------------------------------------
+   9. RIGHT COLUMN (MAP, TRIP SUMMARY, FARE, TRUST STRIP)
+   -------------------------------------------------------------------------- */
+
+/* Map Card */
+.booking-map-card {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1.5px solid #E2E8F0;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06);
+  background: #F8FAFC;
+  position: relative;
+  height: 360px;
+}
+
+.map-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Map Overlays */
+.map-overlay-wrapper {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+}
+
+.map-overlay-wrapper.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.map-overlay-wrapper span,
+.map-overlay-wrapper p {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #334155;
+  margin: 0;
+}
+
+.map-spinner {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 3.5px solid #E2E8F0;
+  border-top-color: #2563EB;
+  border-radius: 50%;
+  animation: spinLoader 0.8s linear infinite;
+}
+
+@keyframes spinLoader {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.apply-btn--small {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  height: auto;
+}
+
+/* Trip Summary Card */
+.trip-summary-card {
+  background: #FFFFFF;
+  border-radius: 18px;
+  border: 1.5px solid #E2E8F0;
+  padding: 1.35rem 1.4rem;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+}
+
+.summary-header {
+  margin-bottom: 1rem;
+}
+
+.summary-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.summary-route {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.summary-stop {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.summary-pin {
+  font-size: 1.05rem;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+.summary-stop-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.summary-stop-info small {
+  font-size: 0.72rem;
+  color: #94A3B8;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.summary-stop-info p {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1E293B;
+  margin: 2px 0 0;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.summary-metrics {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding-top: 1rem;
+}
+
+.metric-item {
+  text-align: center;
+}
+
+.metric-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748B;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.metric-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.metric-divider {
+  width: 1px;
+  height: 32px;
+  background: #E2E8F0;
+}
+
+/* Fare Breakdown Card */
+.fare-summary-container {
+  margin-top: 0;
+}
+
+.fare-card {
+  background: #F8FAFC;
+  border-radius: 16px;
+  border: 1.5px solid #E2E8F0;
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.fare-row-detail {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.fare-row-detail.total {
+  border-top: 1px dashed #CBD5E1;
+  padding-top: 0.75rem;
+  margin-top: 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.fare-row-detail.total span:last-child {
+  color: #2563EB;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+/* Trust Strip */
+.trust-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.trust-icon {
+  color: #2563EB;
+  font-size: 0.95rem;
+}
+
+/* --------------------------------------------------------------------------
+   10. MODALS & OVERLAYS
+   -------------------------------------------------------------------------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+  padding: 1rem;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 24px;
+  padding: 2.5rem;
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.25);
+  transform: translateY(24px) scale(0.98);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-overlay.active .modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.modal-icon {
+  font-size: 3.2rem;
+  margin-bottom: 1.25rem;
+  animation: floaty 4s ease-in-out infinite;
+}
+
+@keyframes floaty {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.modal-card h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 0.5rem;
+}
+
+.modal-card p {
+  color: #64748B;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.driver-match-details {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 1.15rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 0.92rem;
+  color: #475569;
+}
+
+.receipt-row--bordered {
+  border-bottom: 1px solid #E2E8F0;
+  padding-bottom: 0.75rem;
+}
+
+#booking-id-val {
+  font-family: monospace;
+  color: #2563EB;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.receipt-row .accent-text {
+  color: #16A34A;
+  font-weight: 700;
+}
+
+.modal-btn {
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Loader Card Overlay */
+.loader-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 24px;
+  padding: 2.5rem;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loader-spinner {
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 4px solid #F1F5F9;
+  border-top-color: #2563EB;
+  border-radius: 50%;
+  animation: spinLoader 0.8s linear infinite;
+}
+
+.loader-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.loader-card p {
+  color: #64748B;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.loader-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #F1F5F9;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.loader-progress-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(135deg, #2563EB, #06B6D4);
+  border-radius: 999px;
+  transition: width 0.1s linear;
+}
+
+/* Visually Hidden Utility */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --------------------------------------------------------------------------
+   11. RESPONSIVE BREAKPOINTS
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .booking-hero-grid {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 2rem;
+  }
+
+  .hero-text-content {
+    align-items: center;
+  }
+
+  .hero-subtitle {
+    max-width: 600px;
+  }
+
+  .hero-visual-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+    width: 100%;
+  }
+
+  .hero-cinematic-img {
+    max-width: 300px;
+    height: auto;
+  }
+
+  .workspace-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .workspace-right {
+    position: static;
+  }
+
+  .booking-workspace {
+    margin-top: -2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .booking-hero {
+    padding: 3rem 0 4rem 0;
+  }
+
+  .hero-cinematic-img {
+    max-width: 260px;
+  }
+
+  .booking-workspace {
+    margin-top: -2rem;
+    padding: 1.5rem 1.15rem;
+    border-radius: 20px;
+  }
+
+  .booking-stepper {
+    gap: 0.65rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .step-connector {
+    flex: 0 1 35px;
+  }
+
+  .step-item {
+    font-size: 0.84rem;
+    gap: 0.4rem;
+  }
+
+  .booking-map-card {
+    height: 320px;
+  }
+}
+
+@media (max-width: 640px) {
+  .booking-hero {
+    padding: 2.5rem 0 3.5rem 0;
+  }
+
+  .hero-cinematic-img {
+    max-width: 220px;
+  }
+
+  .booking-workspace {
+    margin-top: -1.75rem;
+    padding: 1.25rem 1rem;
+    border-radius: 18px;
+  }
+
+  .booking-stepper {
+    gap: 0.35rem;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .step-label {
+    display: none; /* Icon/number only on small screens */
+  }
+
+  .step-connector {
+    flex: 1 1 auto;
+    max-width: 45px;
+  }
+
+  .step-num {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8rem;
+  }
+
+  /* Segmented control: no clipping or wrapping */
+  .booking-toggle-row {
+    padding: 0.25rem;
+    gap: 0.25rem;
+    flex-wrap: nowrap;
+  }
+
+  .booking-toggle-row .toggle-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.65rem 0.4rem;
+    font-size: 0.82rem;
+    gap: 0.35rem;
+    white-space: nowrap;
+  }
+
+  /* Route picker */
+  .location-picker-group {
+    padding: 1rem 0.75rem;
+    gap: 0.75rem;
+    border-radius: 16px;
+  }
+
+  .location-inputs-col {
+    min-width: 0;
+  }
+
+  .input-wrapper input {
+    height: 44px;
+    font-size: 0.9rem;
+    padding: 0.65rem 0.85rem 0.65rem 2.4rem;
+  }
+
+  .input-wrapper input#pickup-input {
+    padding-right: 2.6rem;
+  }
+
+  .current-location-btn {
+    width: 32px;
+    height: 32px;
+    right: 0.5rem;
+    font-size: 0.95rem;
+  }
+
+  .input-icon-badge,
+  .input-icon {
+    left: 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .suggestions-list {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Schedule Row */
+  .form-row.schedule-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* Passenger counter */
+  .passenger-counter-group {
+    padding: 0.65rem 0.85rem;
+  }
+
+  /* Vehicle Selection Cards */
+  .vehicle-item {
+    padding: 0.8rem 0.85rem;
+    gap: 0.75rem;
+    border-radius: 14px;
+  }
+
+  .vehicle-visual {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  .vehicle-svg-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .vehicle-title-row h4 {
+    font-size: 0.92rem;
+  }
+
+  .vehicle-pricing .price {
+    font-size: 1rem;
+  }
+
+  .vehicle-desc {
+    font-size: 0.75rem;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Map Container */
+  .booking-map-card {
+    height: 280px;
+    border-radius: 16px;
+    padding: 0 !important;
+  }
+
+  /* Right column cards */
+  .trip-summary-card {
+    padding: 1.15rem 1rem;
+    border-radius: 16px;
+  }
+
+  .fare-card {
+    padding: 1.15rem 1rem;
+    border-radius: 14px;
+  }
+
+  .trust-strip {
+    flex-direction: column;
+    gap: 0.65rem;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 540px) {
+  /* Payment Cards: single column stack */
+  .payment-options {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .payment-option .option-card {
+    padding: 0.75rem 1rem;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+  }
+
+  /* Promo / Coupon: vertical stack on narrow viewports */
+  .coupon-wrapper {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .coupon-wrapper input {
+    width: 100%;
+    height: 44px;
+  }
+
+  .coupon-wrapper .apply-btn {
+    width: 100%;
+    height: 44px;
+    font-size: 0.9rem;
+    justify-content: center;
+  }
+
+  /* Action Buttons */
+  .booking-cta-btn {
+    height: 50px;
+    font-size: 1rem;
+  }
+
+  .find-rides-btn {
+    height: 46px;
+    font-size: 0.92rem;
+  }
+}
+
+@media (max-width: 430px) {
+  .booking-hero {
+    padding: 2rem 0 3rem 0;
+  }
+
+  .hero-cinematic-img {
+    max-width: 180px;
+  }
+
+  .booking-workspace {
+    margin-top: -1.25rem;
+    padding: 1rem 0.75rem;
+    border-radius: 16px;
+  }
+
+  .booking-toggle-row .toggle-btn {
+    font-size: 0.78rem;
+    padding: 0.6rem 0.25rem;
+    gap: 0.25rem;
+  }
+
+  .location-picker-group {
+    padding: 0.85rem 0.6rem;
+    gap: 0.55rem;
+    border-radius: 14px;
+  }
+
+  .input-wrapper input {
+    height: 42px;
+    font-size: 0.88rem;
+    padding: 0.55rem 0.65rem 0.55rem 2.2rem;
+  }
+
+  .input-wrapper input#pickup-input {
+    padding-right: 2.4rem;
+  }
+
+  .current-location-btn {
+    width: 28px;
+    height: 28px;
+    right: 0.4rem;
+    font-size: 0.85rem;
+  }
+
+  .input-icon-badge,
+  .input-icon {
+    left: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .vehicle-item {
+    padding: 0.7rem 0.65rem;
+    gap: 0.6rem;
+    border-radius: 12px;
+  }
+
+  .vehicle-visual {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .vehicle-svg-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .vehicle-title-row h4 {
+    font-size: 0.88rem;
+  }
+
+  .vehicle-pricing .price {
+    font-size: 0.92rem;
+  }
+
+  .booking-map-card {
+    height: 260px;
+  }
+
+  .summary-metrics {
+    gap: 0.5rem;
+  }
+
+  .metric-value {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .booking-workspace {
+    padding: 0.85rem 0.55rem;
+    border-radius: 14px;
+  }
+
+  .booking-toggle-row .toggle-btn {
+    font-size: 0.74rem;
+    padding: 0.55rem 0.15rem;
+    gap: 0.2rem;
+  }
+
+  .step-num {
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+  }
+
+  .counter-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 1.1rem;
+  }
+
+  #passenger-count {
+    width: 32px;
+    font-size: 0.92rem;
+  }
+
+  .hero-cinematic-img {
+    max-width: 150px;
+  }
+
+  .modal-card {
+    padding: 1.5rem 1rem;
+  }
+}

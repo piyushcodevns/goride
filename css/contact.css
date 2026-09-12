@@ -1,0 +1,18 @@
+/* ==========================================================================
+   GO RIDE - CONTACT PAGE STYLES (V1.0)
+   ========================================================================== */
+
+.contact-hero {
+  background: linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%);
+  color: #ffffff;
+  padding: 3.5rem 0;
+  text-align: center;
+}
+
+.contact-form-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+}
