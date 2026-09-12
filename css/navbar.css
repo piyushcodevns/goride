@@ -74,7 +74,7 @@
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1.5rem; /* increased spacing for visual polish */
   list-style: none;
   margin: 0;
   padding: 0;
@@ -90,7 +90,7 @@
   font-weight: 500;
   font-size: 0.92rem;
   text-decoration: none;
-  padding: 0.4rem 0.65rem;
+  padding: 0.45rem 0.8rem;
   border-radius: var(--radius-sm, 8px);
   transition: color var(--transition-fast, 0.15s ease), background-color var(--transition-fast, 0.15s ease);
 }
