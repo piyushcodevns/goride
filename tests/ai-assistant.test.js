@@ -406,4 +406,43 @@ describe("GoRide Gemini AI Assistant Integration Suite", () => {
       "Must not force focus into chatInput if drawer is closed while message was sending"
     );
   });
+
+  test("20. Frontend Assistant: openAssistant exposes window.GoRide.openAiAssistant, prevents default, and binds .ai-open-btn / [data-ai-open] triggers", () => {
+    const fs = require("fs");
+    const assistantJs = fs.readFileSync("js/assistant.js", "utf-8");
+
+    // 1. Must define openAssistant function
+    assert.ok(
+      assistantJs.includes("function openAssistant(event)"),
+      "Must define openAssistant(event) function"
+    );
+
+    // 2. Must call preventDefault if event is passed
+    assert.ok(
+      assistantJs.includes("event.preventDefault()"),
+      "Must call event.preventDefault() to prevent anchor navigation"
+    );
+
+    // 3. Must expose openAiAssistant on window.GoRide
+    assert.ok(
+      assistantJs.includes("window.GoRide.openAiAssistant = openAssistant"),
+      "Must safely expose window.GoRide.openAiAssistant"
+    );
+
+    // 4. Must bind .ai-open-btn and [data-ai-open]
+    assert.ok(
+      assistantJs.includes(".ai-open-btn, [data-ai-open]"),
+      "Must bind .ai-open-btn and [data-ai-open] triggers"
+    );
+
+    // 5. Floating toggle button must include ai-open-btn and data-ai-open
+    assert.ok(
+      assistantJs.includes('class="ai-assistant-toggle-btn ai-open-btn"'),
+      "Floating button must include ai-open-btn class"
+    );
+    assert.ok(
+      assistantJs.includes('data-ai-open="true"'),
+      "Floating button must include data-ai-open attribute"
+    );
+  });
 });

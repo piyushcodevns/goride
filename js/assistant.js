@@ -10,6 +10,21 @@
     const MAX_STORED_HISTORY = 8;
     const history = [];
 
+    // Early safe stub for global GoRide namespace
+    window.GoRide = window.GoRide || {};
+    if (!window.GoRide.openAiAssistant) {
+        const earlyOpenStub = function (event) {
+            if (event && typeof event.preventDefault === "function") {
+                event.preventDefault();
+            }
+            initAssistant();
+            if (window.GoRide.openAiAssistant && window.GoRide.openAiAssistant !== earlyOpenStub) {
+                window.GoRide.openAiAssistant(event);
+            }
+        };
+        window.GoRide.openAiAssistant = earlyOpenStub;
+    }
+
     // Safe text formatting without raw HTML injection
     function createSafeMessageElement(text, role) {
         const msgDiv = document.createElement("div");
@@ -58,7 +73,7 @@
         // Build HTML template
         widgetWrapper.innerHTML = `
             <!-- Floating Toggle Button -->
-            <button id="ai-assistant-toggle" class="ai-assistant-toggle-btn" aria-label="Open GoRide AI Assistant" aria-expanded="false">
+            <button id="ai-assistant-toggle" class="ai-assistant-toggle-btn ai-open-btn" data-ai-open="true" aria-label="Open GoRide AI Assistant" aria-expanded="false">
                 <span class="ai-toggle-icon" aria-hidden="true">✨</span>
                 <span>Ask GoRide AI</span>
             </button>
@@ -179,8 +194,34 @@
             }
         }
 
-        toggleBtn.addEventListener("click", () => setDrawerOpen(true));
+        function openAssistant(event) {
+            if (event && typeof event.preventDefault === "function") {
+                event.preventDefault();
+            }
+            setDrawerOpen(true);
+        }
+
+        // Expose openAssistant on the global GoRide namespace
+        window.GoRide = window.GoRide || {};
+        window.GoRide.openAiAssistant = openAssistant;
+
+        toggleBtn.addEventListener("click", openAssistant);
         closeBtn.addEventListener("click", () => setDrawerOpen(false));
+
+        // Bind .ai-open-btn and [data-ai-open] triggers present in the document
+        document.querySelectorAll(".ai-open-btn, [data-ai-open]").forEach((trigger) => {
+            if (trigger !== toggleBtn) {
+                trigger.addEventListener("click", openAssistant);
+            }
+        });
+
+        // Delegated click handler to intercept any dynamic or present .ai-open-btn / [data-ai-open] triggers
+        document.addEventListener("click", (e) => {
+            const trigger = e.target && e.target.closest && e.target.closest(".ai-open-btn, [data-ai-open]");
+            if (trigger && trigger !== toggleBtn) {
+                openAssistant(e);
+            }
+        });
 
         // Close when pressing Escape key
         document.addEventListener("keydown", (e) => {
@@ -191,7 +232,12 @@
 
         // Close when clicking outside on desktop
         document.addEventListener("click", (e) => {
-            if (isOpen && !drawer.contains(e.target) && !toggleBtn.contains(e.target)) {
+            if (
+                isOpen &&
+                !drawer.contains(e.target) &&
+                !toggleBtn.contains(e.target) &&
+                (!e.target.closest || !e.target.closest(".ai-open-btn, [data-ai-open]"))
+            ) {
                 setDrawerOpen(false);
             }
         });
