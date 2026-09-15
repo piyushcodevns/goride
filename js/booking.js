@@ -147,39 +147,6 @@
     };
 
     // ----------------------------------------------------
-    // VEHICLE-AWARE DURATION CALCULATION (PHYSICALLY GROUNDED)
-    // ----------------------------------------------------
-    function getEstimatedDurationForVehicle(vehicleType, baseDurationMinutes, distanceKm) {
-        const normType = String(vehicleType || 'bike').toLowerCase();
-        const base = Math.max(0.5, Number(baseDurationMinutes) || 1);
-        let multiplier = 1.0;
-        let maxSpeed = 45;
-
-        if (normType.includes('bike')) {
-            multiplier = 0.65;
-            maxSpeed = 45;
-        } else if (normType.includes('auto')) {
-            multiplier = 0.80;
-            maxSpeed = 35;
-        } else if (normType.includes('suv')) {
-            multiplier = 1.05;
-            maxSpeed = 45;
-        } else {
-            multiplier = 1.0;
-            maxSpeed = 45;
-        }
-
-        let dur = base * multiplier;
-        if (distanceKm && distanceKm > 0) {
-            const minMins = (distanceKm / maxSpeed) * 60;
-            if (dur < minMins) dur = minMins;
-            const maxMins = (distanceKm / 4) * 60;
-            if (dur > maxMins) dur = maxMins;
-        }
-        return Math.max(1, Math.round(dur));
-    }
-
-    // ----------------------------------------------------
     // FARE CARD RENDERING (NO FAKE / DEFAULT VALUES)
     // ----------------------------------------------------
     function renderFareCard(state, message) {
@@ -214,8 +181,7 @@
 
         if (state === 'error') {
             distanceVal.innerText = currentDistance ? `${currentDistance.toFixed(1)} KM` : '—';
-            const vehicleEta = getEstimatedDurationForVehicle(selectedVehicleType, currentDuration, currentDistance);
-            etaVal.innerText = currentDuration ? `${vehicleEta} Mins` : '—';
+            etaVal.innerText = currentDuration ? `${Math.ceil(currentDuration)} Mins` : '—';
             baseFareVal.innerText = '—';
             distanceFareVal.innerText = '—';
             taxesVal.innerText = '—';
@@ -227,10 +193,10 @@
         if (state === 'ready' && currentServerFare) {
             isFareRateLimited = false;
             distanceVal.innerText = `${currentDistance.toFixed(1)} KM`;
-            const vehicleEta = getEstimatedDurationForVehicle(selectedVehicleType, currentDuration, currentDistance);
-            etaVal.innerText = `${vehicleEta} Mins`;
+            etaVal.innerText = currentDuration ? `${Math.ceil(currentDuration)} Mins` : '—';
             baseFareVal.innerText = `₹${Number(currentServerFare.baseFare || 0).toFixed(2)}`;
             distanceFareVal.innerText = `₹${Number(currentServerFare.distanceFare || 0).toFixed(2)}`;
+
 
 
             // Taxes & fees include GST + platform fee + booking fee
@@ -1226,11 +1192,11 @@
         selectedVehicleType = item.dataset.type;
 
         if (currentDuration && etaVal) {
-            const vehicleEta = getEstimatedDurationForVehicle(selectedVehicleType, currentDuration, currentDistance);
-            etaVal.innerText = `${vehicleEta} Mins`;
+            etaVal.innerText = `${Math.ceil(currentDuration)} Mins`;
         }
 
         const routeKey = getRouteKey();
+
 
         const backendVehicle = VEHICLE_MAP[selectedVehicleType] || "CAR";
         const requestKey = routeKey ? `${routeKey}:${backendVehicle}` : null;
@@ -1541,14 +1507,35 @@
             viewActiveRideBtn.href = rideId ? `ride.html?id=${encodeURIComponent(rideId)}` : `rides.html`;
         }
 
+        const modalTitle = document.getElementById('active-ride-modal-title');
+        const modalDesc = document.getElementById('active-ride-modal-desc');
+
+        // STRICT POLICY: Only PAYMENT_PENDING and REQUESTED can be cancelled and rebooked here.
+        // ACCEPTED, ARRIVED, STARTED rides MUST NEVER be casually cancelled from the booking form.
+        const canCancel = Boolean(rideId && (status === "PAYMENT_PENDING" || status === "REQUESTED"));
+
         if (cancelActiveRideBtn) {
-            const canCancel = !status || ["PAYMENT_PENDING", "REQUESTED", "ACCEPTED"].includes(status);
-            cancelActiveRideBtn.style.display = canCancel && rideId ? "inline-block" : "none";
+            cancelActiveRideBtn.style.display = canCancel ? "inline-block" : "none";
+            if (status === "PAYMENT_PENDING") {
+                cancelActiveRideBtn.innerText = "Cancel Pending Booking & Start New";
+                if (modalTitle) modalTitle.innerText = "Unconfirmed Booking Pending Payment";
+                if (modalDesc) modalDesc.innerText = "You have an unconfirmed booking that was not paid. You can cancel it to start a new booking or view it to complete checkout.";
+            } else if (status === "REQUESTED") {
+                cancelActiveRideBtn.innerText = "Cancel Ride Request & Start New";
+                if (modalTitle) modalTitle.innerText = "Ride Request in Progress";
+                if (modalDesc) modalDesc.innerText = "Your ride request is looking for drivers. You can cancel it to modify your trip or track it.";
+            }
+        }
+
+        if (!canCancel && modalTitle && modalDesc) {
+            modalTitle.innerText = "Active Ride in Progress";
+            modalDesc.innerText = "Your driver has already accepted or the ride has started. Please manage and track your trip from the active ride screen.";
         }
 
         activeRideModal.classList.add('active');
         activeRideModal.setAttribute('aria-hidden', 'false');
     }
+
 
     function closeActiveRideModal() {
         if (activeRideModal) {

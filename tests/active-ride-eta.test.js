@@ -6,13 +6,14 @@ const { test, describe, before, after } = require("node:test");
 const assert = require("node:assert/strict");
 const prisma = require("../src/config/prisma");
 const rideService = require("../src/services/ride.service");
-const { calculateVehicleDuration, getRouteDetails } = require("../src/services/openRoute.service");
+const { getRouteDetails } = require("../src/services/openRoute.service");
 const MapsCacheService = require("../src/services/maps-cache.service");
-
 const razorpayGateway = require("../src/gateways/razorpay.gateway");
+const { ConflictError, UnauthorizedError } = require("../src/utils/AppError");
 
-describe("Active Ride Resolution & Traffic-Aware ETA Logic", () => {
+describe("Active Ride Resolution & Transparent Route ETA", () => {
   let riderUser;
+  let otherUser;
 
   before(async () => {
     razorpayGateway.setRazorpayClient({
@@ -38,6 +39,18 @@ describe("Active Ride Resolution & Traffic-Aware ETA Logic", () => {
         isActive: true,
       },
     });
+
+    otherUser = await prisma.user.create({
+      data: {
+        email: `other_rider_${timestamp}@example.com`,
+        phone: `+9197${String(timestamp).slice(-8)}`,
+        password: "Password123!",
+        fullName: "Other Test Rider",
+        role: "USER",
+        emailVerified: true,
+        isActive: true,
+      },
+    });
   });
 
   after(async () => {
@@ -47,44 +60,16 @@ describe("Active Ride Resolution & Traffic-Aware ETA Logic", () => {
         await prisma.ride.deleteMany({ where: { userId: riderUser.id } });
         await prisma.user.delete({ where: { id: riderUser.id } });
       }
+      if (otherUser) {
+        await prisma.ride.deleteMany({ where: { userId: otherUser.id } });
+        await prisma.user.delete({ where: { id: otherUser.id } });
+      }
       await prisma.$disconnect();
     } catch (_) {}
   });
 
-  describe("Vehicle Duration & Static Route Estimate Audit", () => {
-    test("Vehicle Duration: Bike is ~35% faster in dense urban streets than car", () => {
-      // 1.1 km taking 11 mins by car:
-      const carDuration = 11.0;
-      const distance = 1.1;
-
-      const bikeDur = calculateVehicleDuration(carDuration, "BIKE", distance);
-      const autoDur = calculateVehicleDuration(carDuration, "AUTO", distance);
-      const sedanDur = calculateVehicleDuration(carDuration, "SEDAN", distance);
-      const suvDur = calculateVehicleDuration(carDuration, "SUV", distance);
-
-      assert.equal(bikeDur, 7.15, "Bike should be 0.65x of car time");
-      assert.equal(autoDur, 8.8, "Auto should be 0.80x of car time");
-      assert.equal(sedanDur, 11.0, "Sedan/Car should match baseline car time");
-      assert.equal(suvDur, 11.55, "SUV should be 1.05x of car time");
-
-      // Verify strict monotonicity
-      assert.ok(bikeDur < autoDur, "Bike must be faster than auto");
-      assert.ok(autoDur < sedanDur, "Auto must be faster than car");
-      assert.ok(sedanDur <= suvDur, "Car must be faster than or equal to SUV");
-    });
-
-    test("Vehicle Duration: Enforces realistic speed bounds (min 4 km/h crawl, max 45 km/h cap)", () => {
-      // Extremely high theoretical speed: 10 km in 1 minute -> capped at 45 km/h (13.33 mins)
-      const cappedFast = calculateVehicleDuration(1, "BIKE", 10);
-      assert.ok(cappedFast >= 13.3, "Cannot travel faster than 45 km/h speed cap");
-
-      // Minimum duration floor is always at least 1 minute
-      const shortTrip = calculateVehicleDuration(0.1, "BIKE", 0.05);
-      assert.ok(shortTrip >= 1.0, "Minimum duration must be >= 1 min");
-    });
-
-    test("Route Details: Explicitly labels route as static estimate without live traffic", async () => {
-      // Seed route in cache
+  describe("Transparent Route ETA (No Fake Multipliers)", () => {
+    test("Route Details: Returns authoritative static route duration without fake multipliers", async () => {
       const start = { latitude: 25.3176, longitude: 82.9739 };
       const end = { latitude: 25.3276, longitude: 82.9839 };
 
@@ -94,33 +79,30 @@ describe("Active Ride Resolution & Traffic-Aware ETA Logic", () => {
         Number(end.latitude).toFixed(6),
         Number(end.longitude).toFixed(6),
         {
-          distance: 1.5,
-          duration: 12.0,
-          baseDuration: 12.0,
-          eta: "12 minutes",
+          distance: 1.1,
+          duration: 11.0,
+          eta: "11 minutes",
+          trafficModel: "STATIC_ROUTE_ESTIMATE",
+          isTrafficAware: false,
+          isVehicleSpecific: false,
           geometry: "mock_polyline",
         },
       );
 
-      const routeBike = await getRouteDetails(start, end, "BIKE");
-      assert.equal(routeBike.trafficModel, "STATIC_ROUTE_ESTIMATE");
-      assert.equal(routeBike.isTrafficAware, false);
-      assert.equal(routeBike.duration, 7.8);
-      assert.equal(routeBike.eta, "8 minutes");
-
-      const routeCar = await getRouteDetails(start, end, "CAR");
-      assert.equal(routeCar.trafficModel, "STATIC_ROUTE_ESTIMATE");
-      assert.equal(routeCar.isTrafficAware, false);
-      assert.equal(routeCar.duration, 12.0);
-      assert.equal(routeCar.eta, "12 minutes");
+      const route = await getRouteDetails(start, end);
+      assert.equal(route.distance, 1.1);
+      assert.equal(route.duration, 11.0, "Must return authentic route duration without arbitrary multipliers");
+      assert.equal(route.eta, "11 minutes");
+      assert.equal(route.trafficModel, "STATIC_ROUTE_ESTIMATE");
+      assert.equal(route.isTrafficAware, false);
+      assert.equal(route.isVehicleSpecific, false);
     });
   });
 
-  describe("Active Ride State Machine & Resolution", () => {
+  describe("Active Ride State Machine, Cancellation Safety & Authorization", () => {
     let createdRide;
 
     test("Active ride detection: Returns PAYMENT_PENDING ride and blocks duplicate booking", async () => {
-      // Create ride with online payment (UPI) -> enters PAYMENT_PENDING
       createdRide = await rideService.createRide({
         userId: riderUser.id,
         pickup: "Varanasi Cantt Station",
@@ -136,7 +118,7 @@ describe("Active Ride Resolution & Traffic-Aware ETA Logic", () => {
       assert.ok(createdRide.id);
       assert.equal(createdRide.status, "PAYMENT_PENDING");
 
-      // Verify getActiveRideForUser finds it
+      // Active ride lookup finds it
       const activeRide = await rideService.getActiveRideForUser(riderUser.id);
       assert.ok(activeRide);
       assert.equal(activeRide.id, createdRide.id);
@@ -160,8 +142,7 @@ describe("Active Ride Resolution & Traffic-Aware ETA Logic", () => {
         (err) => {
           assert.equal(err.statusCode, 409);
           assert.match(err.message, /You already have an active ride/);
-          assert.ok(err.data);
-          assert.ok(err.data.activeRide);
+          assert.ok(err.data?.activeRide);
           assert.equal(err.data.activeRide.id, createdRide.id);
           assert.equal(err.data.activeRide.status, "PAYMENT_PENDING");
           return true;
@@ -169,8 +150,21 @@ describe("Active Ride Resolution & Traffic-Aware ETA Logic", () => {
       );
     });
 
-    test("Active ride cancellation: Cancelling PAYMENT_PENDING ride unblocks booking", async () => {
-      // Cancel the pending ride
+    test("Cancellation authorization: Non-owner cannot cancel the ride", async () => {
+      await assert.rejects(
+        async () => {
+          await rideService.cancelRide(createdRide.id, otherUser.id);
+        },
+        (err) => {
+          assert.ok(err instanceof UnauthorizedError);
+          assert.equal(err.statusCode, 401);
+          return true;
+        },
+      );
+    });
+
+    test("Safe & Idempotent PAYMENT_PENDING cancellation: unblocks booking and rejects double cancel", async () => {
+      // First cancellation: succeeds
       const cancelResult = await rideService.cancelRide(createdRide.id, riderUser.id);
       assert.equal(cancelResult.status, "CANCELLED");
 
@@ -178,7 +172,19 @@ describe("Active Ride Resolution & Traffic-Aware ETA Logic", () => {
       const activeRide = await rideService.getActiveRideForUser(riderUser.id);
       assert.equal(activeRide, null);
 
-      // Rider can now create a new ride without 409 conflict
+      // Second cancellation: rejected with ConflictError (idempotent / cannot cancel already cancelled ride)
+      await assert.rejects(
+        async () => {
+          await rideService.cancelRide(createdRide.id, riderUser.id);
+        },
+        (err) => {
+          assert.ok(err instanceof ConflictError);
+          assert.equal(err.statusCode, 409);
+          return true;
+        },
+      );
+
+      // Rider can now create a new ride without conflict
       const newRide = await rideService.createRide({
         userId: riderUser.id,
         pickup: "Assi Ghat",
@@ -196,6 +202,40 @@ describe("Active Ride Resolution & Traffic-Aware ETA Logic", () => {
 
       // Cleanup
       await rideService.cancelRide(newRide.id, riderUser.id);
+    });
+
+    test("Status Policy Guard: Disallows cancelling non-cancellable ride states (e.g. COMPLETED)", async () => {
+      // Create and directly transition a ride to COMPLETED in database
+      const completedRide = await prisma.ride.create({
+        data: {
+          userId: riderUser.id,
+          pickup: "Point A",
+          destination: "Point B",
+          pickupLatitude: 25.30,
+          pickupLongitude: 82.97,
+          destinationLatitude: 25.32,
+          destinationLongitude: 82.99,
+          distance: 5.0,
+          vehicleType: "CAR",
+          status: "COMPLETED",
+          finalFare: 150.0,
+        },
+      });
+
+      // Cancellation must be rejected by backend status guard
+      await assert.rejects(
+        async () => {
+          await rideService.cancelRide(completedRide.id, riderUser.id);
+        },
+        (err) => {
+          assert.ok(err instanceof ConflictError);
+          assert.equal(err.statusCode, 409);
+          assert.match(err.message, /Ride cannot be cancelled/);
+          return true;
+        },
+      );
+
+      await prisma.ride.delete({ where: { id: completedRide.id } });
     });
   });
 });

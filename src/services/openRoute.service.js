@@ -51,61 +51,13 @@ const validateCoordinates = (point, name) => {
 };
 
 /**
- * Calculate realistic, bounded vehicle duration based on physical vehicle dynamics
- * in urban environments without fabricating artificial congestion.
- *
- * Grounding:
- * - BIKE: maneuvers through city bottlenecks and narrow lanes (~35% faster in dense urban streets).
- * - AUTO: agile 3-wheeler profile in tight street turns (~20% faster than cars).
- * - CAR / SEDAN / MINI: baseline car duration from road network graph.
- * - SUV: wider turning radius in narrow streets (~5% slower).
- *
- * Bounds:
- * - Deterministic, bounded between minimum crawl (4 km/h) and urban vehicle speed caps (45 km/h for bike/car, 35 km/h for auto).
- * - Minimum duration: 1 minute.
- */
-const calculateVehicleDuration = (baseDurationMinutes, vehicleType = "CAR", distanceKm = 0) => {
-  const normType = String(vehicleType || "CAR").toUpperCase();
-  const baseMinutes = Math.max(0.5, Number(baseDurationMinutes) || 1);
-
-  let multiplier = 1.0;
-  let maxSpeedKmh = 45;
-
-  if (normType.includes("BIKE") || normType.includes("MOTO")) {
-    multiplier = 0.65;
-    maxSpeedKmh = 45;
-  } else if (normType.includes("AUTO")) {
-    multiplier = 0.80;
-    maxSpeedKmh = 35;
-  } else if (normType.includes("SUV")) {
-    multiplier = 1.05;
-    maxSpeedKmh = 45;
-  } else {
-    multiplier = 1.0;
-    maxSpeedKmh = 45;
-  }
-
-  let duration = baseMinutes * multiplier;
-
-  if (distanceKm && distanceKm > 0) {
-    const minPossibleMinutes = (distanceKm / maxSpeedKmh) * 60;
-    if (duration < minPossibleMinutes) {
-      duration = minPossibleMinutes;
-    }
-
-    const maxPossibleMinutes = (distanceKm / 4) * 60;
-    if (duration > maxPossibleMinutes) {
-      duration = maxPossibleMinutes;
-    }
-  }
-
-  return Number(Math.max(1, duration).toFixed(2));
-};
-
-/**
  * Get Route Details
+ * Authoritative static route calculation from OpenStreetMap road network via OpenRouteService.
+ * NOTE: OpenRouteService standard directions does NOT provide live real-time traffic delay telemetry,
+ * nor vehicle-specific profiles for auto-rickshaws or commercial motorbikes.
+ * Estimated duration is a static driving route baseline.
  */
-const getRouteDetails = async (start, end, vehicleType = "CAR") => {
+const getRouteDetails = async (start, end) => {
   validateCoordinates(start, "Pickup");
   validateCoordinates(end, "Destination");
 
@@ -118,16 +70,7 @@ const getRouteDetails = async (start, end, vehicleType = "CAR") => {
 
   if (cachedRoute) {
     logger.info("Route Cache HIT");
-    const rawDuration = cachedRoute.baseDuration || cachedRoute.duration;
-    const adjustedDuration = calculateVehicleDuration(rawDuration, vehicleType, cachedRoute.distance);
-    return {
-      ...cachedRoute,
-      duration: adjustedDuration,
-      eta: `${Math.ceil(adjustedDuration)} minutes`,
-      vehicleType,
-      trafficModel: "STATIC_ROUTE_ESTIMATE",
-      isTrafficAware: false,
-    };
+    return cachedRoute;
   }
 
   logger.info("Route Cache MISS");
@@ -164,17 +107,15 @@ const getRouteDetails = async (start, end, vehicleType = "CAR") => {
     }
 
     const distance = Number((route.summary.distance / 1000).toFixed(2));
-    const baseDuration = Number((route.summary.duration / 60).toFixed(2));
-    const duration = calculateVehicleDuration(baseDuration, vehicleType, distance);
+    const duration = Number((route.summary.duration / 60).toFixed(2));
 
     const result = {
       distance,
       duration,
-      baseDuration,
       eta: `${Math.ceil(duration)} minutes`,
-      vehicleType,
       trafficModel: "STATIC_ROUTE_ESTIMATE",
       isTrafficAware: false,
+      isVehicleSpecific: false,
       geometry: route.geometry ?? null,
     };
 
@@ -187,6 +128,7 @@ const getRouteDetails = async (start, end, vehicleType = "CAR") => {
     );
 
     return result;
+
 
   } catch (error) {
     logger.error(
@@ -363,8 +305,8 @@ const reverseGeocode = async (latitude, longitude) => {
 
 module.exports = {
   getRouteDetails,
-  calculateVehicleDuration,
   geocodeAddress,
   reverseGeocode,
 };
+
 

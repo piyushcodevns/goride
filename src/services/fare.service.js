@@ -70,8 +70,8 @@ const resolveRouteInputs = async ({
     const routeDetails = await getRouteDetails(
       { latitude: Number(pickupLatitude), longitude: Number(pickupLongitude) },
       { latitude: Number(destinationLatitude), longitude: Number(destinationLongitude) },
-      vehicleType,
     );
+
 
     return {
       distanceKm: routeDetails.distance,
@@ -178,7 +178,9 @@ const calculateFare = async ({
     durationMinutes: normalizedDurationMinutes,
     trafficModel: "STATIC_ROUTE_ESTIMATE",
     isTrafficAware: false,
+    isVehicleSpecific: false,
     ...fare,
+
   };
 };
 

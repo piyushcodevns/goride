@@ -37,11 +37,15 @@ const isAllowedOrigin = (origin) => {
     return true;
   }
 
-  // Check wildcard patterns in CORS_ALLOWED_ORIGINS (e.g. https://*.vercel.app)
+  // Check wildcard patterns in CORS_ALLOWED_ORIGINS (strictly rejecting overly broad wildcards like * or *.vercel.app)
   for (const pattern of envOrigins) {
     if (pattern.includes("*")) {
+      const trimmed = pattern.trim();
+      if (trimmed === "*" || /^https?:\/\/\*\.[a-z.]+$/i.test(trimmed)) {
+        continue;
+      }
       const regex = new RegExp(
-        "^" + pattern.replace(/\./g, "\\.").replace(/\*/g, ".*") + "$",
+        "^" + trimmed.replace(/\./g, "\\.").replace(/\*/g, ".*") + "$",
         "i",
       );
       if (regex.test(origin)) {
@@ -49,6 +53,7 @@ const isAllowedOrigin = (origin) => {
       }
     }
   }
+
 
   // 2. Default stable production & local development origins
   if (DEFAULT_ALLOWED_ORIGINS.includes(origin)) {

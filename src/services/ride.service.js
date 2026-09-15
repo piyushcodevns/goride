@@ -169,8 +169,8 @@ const createRide = async (rideData) => {
       latitude: destinationLatitude,
       longitude: destinationLongitude,
     },
-    vehicleType,
   );
+
 
 
   /**
