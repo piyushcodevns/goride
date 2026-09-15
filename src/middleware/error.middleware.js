@@ -3,11 +3,20 @@ const multer = require("multer");
 const logger = require("../utils/logger");
 const metrics = require("../utils/metrics");
 const { redactSensitiveData } = require("../utils/redact");
+const { isAllowedOrigin } = require("../config/cors.config");
 
 const errorMiddleware = (err, req, res, next) => {
   const requestId = req?.id || req?.headers?.["x-request-id"] || null;
   const method = req?.method;
   const path = req?.originalUrl || req?.url;
+
+  // Guarantee CORS headers on all error responses for allowed origins
+  const origin = req?.headers?.origin;
+  if (origin && isAllowedOrigin(origin) && !res.getHeader("Access-Control-Allow-Origin")) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Vary", "Origin");
+  }
 
   // Record error metric
   metrics.recordError(err?.name || "UnhandledError");

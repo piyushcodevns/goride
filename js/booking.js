@@ -43,6 +43,15 @@
     const bookingIdVal = document.getElementById('booking-id-val');
     const trackRideBtn = document.getElementById('track-ride-btn');
 
+    // Active Ride Dialog elements
+    const activeRideModal = document.getElementById('active-ride-modal');
+    const activeRideStatusVal = document.getElementById('active-ride-status-val');
+    const activeRideIdVal = document.getElementById('active-ride-id-val');
+    const viewActiveRideBtn = document.getElementById('view-active-ride-btn');
+    const cancelActiveRideBtn = document.getElementById('cancel-active-ride-btn');
+    const dismissActiveRideBtn = document.getElementById('dismiss-active-ride-btn');
+
+
     // ----------------------------------------------------
     // STATE VARIABLES
     // ----------------------------------------------------
@@ -138,6 +147,39 @@
     };
 
     // ----------------------------------------------------
+    // VEHICLE-AWARE DURATION CALCULATION (PHYSICALLY GROUNDED)
+    // ----------------------------------------------------
+    function getEstimatedDurationForVehicle(vehicleType, baseDurationMinutes, distanceKm) {
+        const normType = String(vehicleType || 'bike').toLowerCase();
+        const base = Math.max(0.5, Number(baseDurationMinutes) || 1);
+        let multiplier = 1.0;
+        let maxSpeed = 45;
+
+        if (normType.includes('bike')) {
+            multiplier = 0.65;
+            maxSpeed = 45;
+        } else if (normType.includes('auto')) {
+            multiplier = 0.80;
+            maxSpeed = 35;
+        } else if (normType.includes('suv')) {
+            multiplier = 1.05;
+            maxSpeed = 45;
+        } else {
+            multiplier = 1.0;
+            maxSpeed = 45;
+        }
+
+        let dur = base * multiplier;
+        if (distanceKm && distanceKm > 0) {
+            const minMins = (distanceKm / maxSpeed) * 60;
+            if (dur < minMins) dur = minMins;
+            const maxMins = (distanceKm / 4) * 60;
+            if (dur > maxMins) dur = maxMins;
+        }
+        return Math.max(1, Math.round(dur));
+    }
+
+    // ----------------------------------------------------
     // FARE CARD RENDERING (NO FAKE / DEFAULT VALUES)
     // ----------------------------------------------------
     function renderFareCard(state, message) {
@@ -172,7 +214,8 @@
 
         if (state === 'error') {
             distanceVal.innerText = currentDistance ? `${currentDistance.toFixed(1)} KM` : '—';
-            etaVal.innerText = currentDuration ? `${Math.ceil(currentDuration)} Mins` : '—';
+            const vehicleEta = getEstimatedDurationForVehicle(selectedVehicleType, currentDuration, currentDistance);
+            etaVal.innerText = currentDuration ? `${vehicleEta} Mins` : '—';
             baseFareVal.innerText = '—';
             distanceFareVal.innerText = '—';
             taxesVal.innerText = '—';
@@ -184,9 +227,11 @@
         if (state === 'ready' && currentServerFare) {
             isFareRateLimited = false;
             distanceVal.innerText = `${currentDistance.toFixed(1)} KM`;
-            etaVal.innerText = `${Math.ceil(currentDuration)} Mins`;
+            const vehicleEta = getEstimatedDurationForVehicle(selectedVehicleType, currentDuration, currentDistance);
+            etaVal.innerText = `${vehicleEta} Mins`;
             baseFareVal.innerText = `₹${Number(currentServerFare.baseFare || 0).toFixed(2)}`;
             distanceFareVal.innerText = `₹${Number(currentServerFare.distanceFare || 0).toFixed(2)}`;
+
 
             // Taxes & fees include GST + platform fee + booking fee
             const feesAndTaxes = Number(currentServerFare.gstAmount || 0) +
@@ -1180,7 +1225,13 @@
         item.setAttribute('aria-checked', 'true');
         selectedVehicleType = item.dataset.type;
 
+        if (currentDuration && etaVal) {
+            const vehicleEta = getEstimatedDurationForVehicle(selectedVehicleType, currentDuration, currentDistance);
+            etaVal.innerText = `${vehicleEta} Mins`;
+        }
+
         const routeKey = getRouteKey();
+
         const backendVehicle = VEHICLE_MAP[selectedVehicleType] || "CAR";
         const requestKey = routeKey ? `${routeKey}:${backendVehicle}` : null;
 
@@ -1456,9 +1507,92 @@
             window.GoRide.utils.toggleLoading(false);
             console.error("Booking error:", err);
             const msg = err.message || "Failed to create ride. Please check your details and try again.";
-            window.GoRide.showToast(msg, "error");
+
+            const activeRide = (err.data && err.data.activeRide) ||
+                               (err.data && err.data.data && err.data.data.activeRide);
+            if (activeRide || msg.toLowerCase().includes("active ride")) {
+                showActiveRideModal(activeRide);
+                window.GoRide.showToast("You already have an active ride.", "warning");
+            } else {
+                window.GoRide.showToast(msg, "error");
+            }
         } finally {
             isSubmitting = false;
+        }
+    });
+
+    // ----------------------------------------------------
+    // ACTIVE RIDE MODAL LOGIC & RECOVERY
+    // ----------------------------------------------------
+    let currentActiveRideObj = null;
+
+    function showActiveRideModal(activeRide) {
+        currentActiveRideObj = activeRide || currentActiveRideObj || null;
+        if (!activeRideModal) return;
+
+        const rideId = currentActiveRideObj ? currentActiveRideObj.id : null;
+        const status = currentActiveRideObj ? currentActiveRideObj.status : "ACTIVE";
+
+        if (activeRideStatusVal) activeRideStatusVal.innerText = status;
+        if (activeRideIdVal) {
+            activeRideIdVal.innerText = rideId ? `GR-${String(rideId).slice(-8).toUpperCase()}` : "Active Booking";
+        }
+        if (viewActiveRideBtn) {
+            viewActiveRideBtn.href = rideId ? `ride.html?id=${encodeURIComponent(rideId)}` : `rides.html`;
+        }
+
+        if (cancelActiveRideBtn) {
+            const canCancel = !status || ["PAYMENT_PENDING", "REQUESTED", "ACCEPTED"].includes(status);
+            cancelActiveRideBtn.style.display = canCancel && rideId ? "inline-block" : "none";
+        }
+
+        activeRideModal.classList.add('active');
+        activeRideModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeActiveRideModal() {
+        if (activeRideModal) {
+            activeRideModal.classList.remove('active');
+            activeRideModal.setAttribute('aria-hidden', 'true');
+        }
+    }
+
+    if (dismissActiveRideBtn) {
+        dismissActiveRideBtn.addEventListener('click', closeActiveRideModal);
+    }
+
+    if (cancelActiveRideBtn) {
+        cancelActiveRideBtn.addEventListener('click', async () => {
+            if (!currentActiveRideObj || !currentActiveRideObj.id) return;
+            const rideId = currentActiveRideObj.id;
+            try {
+                window.GoRide.utils.toggleLoading(true);
+                const api = window.GoRide && window.GoRide.api;
+                if (!api) throw new Error("API helper unavailable.");
+
+                await api.patch(`/api/rides/${encodeURIComponent(rideId)}/cancel`);
+                window.GoRide.utils.toggleLoading(false);
+                closeActiveRideModal();
+                window.GoRide.showToast("Previous ride cancelled. You can now confirm your new booking.", "success");
+                currentActiveRideObj = null;
+                performLiveValidation();
+            } catch (err) {
+                window.GoRide.utils.toggleLoading(false);
+                console.error("Failed to cancel active ride:", err);
+                window.GoRide.showToast(err.message || "Failed to cancel active ride.", "error");
+            }
+        });
+    }
+
+    // Check for active ride on page load if user is logged in
+    document.addEventListener('DOMContentLoaded', () => {
+        const api = window.GoRide && window.GoRide.api;
+        if (api && api.isAuthenticated && api.isAuthenticated()) {
+            api.get("/api/rides/active").then(res => {
+                if (res && res.success && res.data) {
+                    currentActiveRideObj = res.data;
+                }
+            }).catch(() => {});
         }
     });
 
@@ -1471,3 +1605,4 @@
         });
     }
 })();
+

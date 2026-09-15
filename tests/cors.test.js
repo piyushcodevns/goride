@@ -134,4 +134,37 @@ describe("GoRide CORS Configuration & Preflight Handling", () => {
     assert.equal(res.headers.get("access-control-allow-origin"), previewOrigin);
     assert.equal(res.headers.get("access-control-allow-credentials"), "true");
   });
+
+  test("7. Target Vercel preview deployment (nrg7hcl4i) preflight and error response retain CORS headers", async () => {
+    const previewOrigin = "https://goride-frontend-nrg7hcl4i-piyushcodevns-projects.vercel.app";
+
+    // Preflight
+    const optRes = await fetch(`${baseUrl}/api/rides`, {
+      method: "OPTIONS",
+      headers: {
+        Origin: previewOrigin,
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "Content-Type, Authorization",
+      },
+    });
+    assert.equal(optRes.status, 204);
+    assert.equal(optRes.headers.get("access-control-allow-origin"), previewOrigin);
+    assert.equal(optRes.headers.get("access-control-allow-credentials"), "true");
+
+    // 401 Unauthorized Error response without token
+    const postRes = await fetch(`${baseUrl}/api/rides`, {
+      method: "POST",
+      headers: {
+        Origin: previewOrigin,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+    assert.equal(postRes.status, 401);
+    assert.equal(postRes.headers.get("access-control-allow-origin"), previewOrigin);
+    assert.equal(postRes.headers.get("access-control-allow-credentials"), "true");
+    const json = await postRes.json();
+    assert.equal(json.success, false);
+  });
 });
+

@@ -59,6 +59,7 @@ const resolveRouteInputs = async ({
   destinationLongitude,
   distanceKm,
   durationMinutes,
+  vehicleType,
 }) => {
   if (
     pickupLatitude !== undefined &&
@@ -69,6 +70,7 @@ const resolveRouteInputs = async ({
     const routeDetails = await getRouteDetails(
       { latitude: Number(pickupLatitude), longitude: Number(pickupLongitude) },
       { latitude: Number(destinationLatitude), longitude: Number(destinationLongitude) },
+      vehicleType,
     );
 
     return {
@@ -113,10 +115,12 @@ const calculateFare = async ({
     destinationLongitude,
     distanceKm,
     durationMinutes,
+    vehicleType,
   });
 
   const resolvedDistanceKm = routeInputs.distanceKm;
   const resolvedDurationMinutes = routeInputs.durationMinutes;
+
 
   validateFareRequest({
     vehicleType,
@@ -169,12 +173,15 @@ const calculateFare = async ({
     city,
     vehicleType,
     pricingConfigId: pricingConfig.id,
-
     pricingRules,
-
+    distanceKm: normalizedDistanceKm,
+    durationMinutes: normalizedDurationMinutes,
+    trafficModel: "STATIC_ROUTE_ESTIMATE",
+    isTrafficAware: false,
     ...fare,
   };
 };
+
 
 module.exports = {
   calculateFare,

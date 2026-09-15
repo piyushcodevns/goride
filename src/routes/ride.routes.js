@@ -54,6 +54,7 @@ const router = express.Router();
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post("/", authenticate, rideController.createRide);
+router.get("/active", authenticate, rideController.getActiveRide);
 
 /**
  * @swagger

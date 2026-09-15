@@ -97,7 +97,20 @@ const createRide = async (rideData) => {
   const activeRide = await rideRepository.getActiveRideByUserId(userId);
 
   if (activeRide) {
-    throw new ConflictError("You already have an active ride.");
+    const err = new ConflictError("You already have an active ride.");
+    err.data = {
+      activeRide: {
+        id: activeRide.id,
+        status: activeRide.status,
+        pickup: activeRide.pickup,
+        destination: activeRide.destination,
+        vehicleType: activeRide.vehicleType,
+        paymentMethod: activeRide.paymentMethod,
+        finalFare: activeRide.finalFare,
+        createdAt: activeRide.createdAt,
+      },
+    };
+    throw err;
   }
 
   if (
@@ -156,7 +169,9 @@ const createRide = async (rideData) => {
       latitude: destinationLatitude,
       longitude: destinationLongitude,
     },
+    vehicleType,
   );
+
 
   /**
    * Calculate Enterprise Fare
@@ -818,8 +833,16 @@ const processDueScheduledRides = async (leadTimeMinutes = 15) => {
   };
 };
 
+/**
+ * Get Active Ride For User
+ */
+const getActiveRideForUser = async (userId) => {
+  return rideRepository.getActiveRideByUserId(userId);
+};
+
 module.exports = {
   createRide,
+  getActiveRideForUser,
   getRideById,
   getRideByIdForUser,
   getUserRides,
@@ -832,3 +855,4 @@ module.exports = {
   activateScheduledRide,
   processDueScheduledRides,
 };
+

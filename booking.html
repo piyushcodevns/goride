@@ -432,9 +432,11 @@
                                 <div class="metric-item">
                                     <span class="metric-label">Estimated Time</span>
                                     <strong class="metric-value" id="eta-val">—</strong>
+                                    <small class="metric-sublabel" id="eta-subtext" style="display:block; font-size: 0.72rem; color: #6B7280; margin-top: 2px;">Route estimate (traffic unavailable)</small>
                                 </div>
                             </div>
                         </div>
+
 
                         <!-- Fare Breakdown Detail Card -->
                         <div class="fare-summary-container">
@@ -556,7 +558,32 @@
         </div>
     </div>
 
+    <!-- Active Ride Dialog / Resolution Modal -->
+    <div id="active-ride-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="active-ride-modal-title">
+        <div class="modal-card">
+            <div class="modal-icon" aria-hidden="true">🚗</div>
+            <h2 id="active-ride-modal-title">Active Ride in Progress</h2>
+            <p id="active-ride-modal-desc">You already have an active ride request on your account.</p>
+            <div class="driver-match-details" style="margin: 16px 0;">
+                <div class="receipt-row receipt-row--bordered">
+                    <span>Ride Status:</span>
+                    <strong id="active-ride-status-val" style="color: #059669;">REQUESTED</strong>
+                </div>
+                <div class="receipt-row">
+                    <span>Booking ID:</span>
+                    <strong id="active-ride-id-val">—</strong>
+                </div>
+            </div>
+            <div class="modal-actions" style="display: flex; flex-direction: column; gap: 10px; margin-top: 18px;">
+                <a href="ride.html" id="view-active-ride-btn" class="primary-btn modal-btn" style="text-align: center; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Track / View Ride</a>
+                <button type="button" id="cancel-active-ride-btn" class="secondary-btn modal-btn" style="color: #DC2626; border-color: #FCA5A5;">Cancel Active Ride &amp; Book New</button>
+                <button type="button" id="dismiss-active-ride-btn" class="secondary-btn modal-btn">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading Overlay -->
+
     <div id="loading-overlay" class="modal-overlay" aria-hidden="true" role="alertdialog" aria-modal="true" aria-labelledby="loader-title">
         <div class="loader-card">
             <div class="loader-spinner" aria-hidden="true"></div>

@@ -67,85 +67,10 @@ app.use(
   }),
 );
 
-/**
- * Safe origin validator for CORS.
- * Preserves configured origins, supports local dev, and dynamically allows
- * Vercel preview & production deployments of the GoRide frontend.
- */
-const isAllowedOrigin = (origin) => {
-  if (!origin) return true;
+const { corsOptions } = require("./config/cors.config");
 
-  // 1. Explicitly configured origins via environment variable
-  const envOrigins = (process.env.CORS_ALLOWED_ORIGINS || "")
-    .split(",")
-    .map((val) => val.trim())
-    .filter(Boolean);
+app.use(cors(corsOptions));
 
-  if (envOrigins.includes(origin)) {
-    return true;
-  }
-
-  // Check wildcard patterns in CORS_ALLOWED_ORIGINS (e.g. https://*.vercel.app)
-  for (const pattern of envOrigins) {
-    if (pattern.includes("*")) {
-      const regex = new RegExp(
-        "^" + pattern.replace(/\./g, "\\.").replace(/\*/g, ".*") + "$",
-        "i",
-      );
-      if (regex.test(origin)) {
-        return true;
-      }
-    }
-  }
-
-  // 2. Default stable production & local development origins
-  const defaultOrigins = [
-    "https://goride-frontend.vercel.app",
-    "https://goride-frontend-piyushcodevns-projects.vercel.app",
-    "https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app",
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://localhost:5000",
-    "http://127.0.0.1:5500",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
-  ];
-
-  if (defaultOrigins.includes(origin)) {
-    return true;
-  }
-
-  // 3. Safe dynamic pattern matching for Vercel preview & branch deployments of this project:
-  // e.g. https://goride-frontend-8vm8gowne-piyushcodevns-projects.vercel.app
-  // e.g. https://goride-frontend-git-main-piyushcodevns-projects.vercel.app
-  // e.g. https://goride-frontend-8vm8gowne.vercel.app
-  const vercelProjectRegex =
-    /^https:\/\/goride-frontend(-[a-z0-9-]+)?(-piyushcodevns-projects)?\.vercel\.app$/i;
-
-  return vercelProjectRegex.test(origin);
-};
-
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (isAllowedOrigin(origin)) {
-        return callback(null, true);
-      }
-      return callback(null, false);
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "X-Requested-With",
-      "Accept",
-      "Origin",
-    ],
-    maxAge: 86400,
-    optionsSuccessStatus: 204,
-  }),
-);
 
 app.use(compression());
 

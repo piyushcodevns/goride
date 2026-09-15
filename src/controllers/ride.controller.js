@@ -28,12 +28,45 @@ const createRide = async (req, res) => {
       });
     }
 
-    return res.status(400).json({
+    const statusCode = error.statusCode || 400;
+    return res.status(statusCode).json({
       success: false,
       message: error.message,
+      ...(error.data ? { data: error.data } : {}),
     });
   }
 };
+
+/**
+ * Get Active Ride for Current User
+ */
+const getActiveRide = async (req, res, next) => {
+  try {
+    const activeRide = await rideService.getActiveRideForUser(req.user.id);
+
+    return res.status(200).json({
+      success: true,
+      message: activeRide
+        ? "Active ride fetched successfully."
+        : "No active ride found.",
+      data: activeRide
+        ? {
+            id: activeRide.id,
+            status: activeRide.status,
+            pickup: activeRide.pickup,
+            destination: activeRide.destination,
+            vehicleType: activeRide.vehicleType,
+            paymentMethod: activeRide.paymentMethod,
+            finalFare: activeRide.finalFare,
+            createdAt: activeRide.createdAt,
+          }
+        : null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 /**
  * Get Ride By ID
@@ -246,6 +279,7 @@ const getDriverCurrentRide = async (req, res) => {
 
 module.exports = {
   createRide,
+  getActiveRide,
   getRideById,
   getMyRides,
   getAvailableRides,
@@ -255,3 +289,4 @@ module.exports = {
   rejectRide,
   getDriverCurrentRide,
 };
+
