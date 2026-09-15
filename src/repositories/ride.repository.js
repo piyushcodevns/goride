@@ -42,6 +42,7 @@ const getRideById = async (rideId, db = prisma) => {
           },
         },
       },
+      payment: true,
     },
   });
 };
@@ -82,6 +83,7 @@ const getRideByIdForUser = async (rideId, userId) => {
           },
         },
       },
+      payment: true,
     },
   });
 };
@@ -205,7 +207,7 @@ const getActiveRideByUserId = async (userId, db = prisma) => {
       userId,
       isScheduled: false,
       status: {
-        in: ["REQUESTED", "ACCEPTED", "ARRIVED", "STARTED"],
+        in: ["PAYMENT_PENDING", "REQUESTED", "ACCEPTED", "ARRIVED", "STARTED"],
       },
     },
     orderBy: {

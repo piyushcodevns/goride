@@ -98,7 +98,12 @@ app.use((req, res, next) => {
     return next();
   }
 
-  express.json({ limit: "1mb" })(req, res, (err) => {
+  express.json({
+    limit: "1mb",
+    verify: (req, _res, buf) => {
+      req.rawBody = buf;
+    },
+  })(req, res, (err) => {
     if (err && err.type === "entity.parse.failed") {
       return res.status(400).json({
         success: false,

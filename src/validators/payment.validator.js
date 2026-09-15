@@ -38,7 +38,24 @@ const updatePaymentStatusSchema = z.object({
     }),
 });
 
+const verifyPaymentSchema = z.object({
+  body: z.object({
+    rideId: z.string().min(1, "Ride ID is required."),
+    razorpayOrderId: z.string().trim().min(1, "Razorpay order ID is required."),
+    razorpayPaymentId: z.string().trim().min(1, "Razorpay payment ID is required."),
+    razorpaySignature: z.string().trim().min(1, "Razorpay signature is required."),
+  }),
+});
+
+const initiatePaymentSchema = z.object({
+  body: z.object({
+    rideId: z.string().min(1, "Ride ID is required."),
+  }),
+});
+
 module.exports = {
   createPaymentSchema,
   updatePaymentStatusSchema,
+  verifyPaymentSchema,
+  initiatePaymentSchema,
 };

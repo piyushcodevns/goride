@@ -108,6 +108,13 @@ const createRideSchema = z
       .min(1)
       .optional()
       .nullable(),
+
+    paymentMethod: z
+      .enum(["CASH", "UPI", "CARD"], {
+        invalid_type_error: "Invalid payment method.",
+      })
+      .optional()
+      .default("CASH"),
   })
   .strict();
 

@@ -192,22 +192,25 @@ model RideReview {
 }
 
 model Payment {
-  id            String        @id @default(cuid())
-  rideId        String        @unique
-  userId        String
-  amount        Decimal       @db.Decimal(10, 2)
-  paymentMethod PaymentMethod
-  status        PaymentStatus @default(PENDING)
-  gateway       String?
-  transactionId String?       @unique
-  paidAt        DateTime?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  ride          Ride          @relation(fields: [rideId], references: [id], onDelete: Cascade)
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String        @id @default(cuid())
+  rideId            String        @unique
+  userId            String
+  amount            Decimal       @db.Decimal(10, 2)
+  paymentMethod     PaymentMethod
+  status            PaymentStatus @default(PENDING)
+  gateway           String?
+  transactionId     String?       @unique
+  orderId           String?       @unique
+  razorpaySignature String?
+  paidAt            DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  ride              Ride          @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
+  @@index([orderId])
 }
 
 model Coupon {
@@ -583,6 +586,7 @@ enum DriverAvailability {
 }
 
 enum RideStatus {
+  PAYMENT_PENDING
   REQUESTED
   ACCEPTED
   ARRIVED

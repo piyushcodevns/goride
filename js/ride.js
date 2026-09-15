@@ -235,8 +235,13 @@
         }
         finalFareAmountElem.textContent = ui.formatCurrency(finalFare);
 
-        // Payment status
-        if (ride.paymentStatus === "COMPLETED" || ride.paymentStatus === "SUCCESS" || ride.paymentStatus === "PAID") {
+        // Authoritative payment status from server
+        const isPaid = (ride.payment && ride.payment.status === "SUCCESS") ||
+                       ride.paymentStatus === "COMPLETED" ||
+                       ride.paymentStatus === "SUCCESS" ||
+                       ride.paymentStatus === "PAID";
+
+        if (isPaid) {
             paymentBadge.className = "payment-status-badge badge-success";
             paymentBadge.textContent = "✓ Paid";
             payNowBtn.style.display = "none";
@@ -368,21 +373,88 @@
     if (confirmPayBtn) {
         confirmPayBtn.addEventListener("click", async () => {
             const methodInput = document.querySelector('input[name="modal-pay-method"]:checked');
-            const paymentMethod = methodInput ? methodInput.value : "UPI";
+            const paymentMethod = methodInput ? methodInput.value.toUpperCase() : "UPI";
             const api = window.GoRide.api;
 
             confirmPayBtn.disabled = true;
             confirmPayBtn.textContent = "Processing...";
 
             try {
-                await api.post("/api/payments/create", {
-                    rideId: rideId,
-                    paymentMethod: paymentMethod
+                if (paymentMethod === "CASH") {
+                    await api.post("/api/payments/create", {
+                        rideId: rideId,
+                        paymentMethod: "CASH"
+                    });
+
+                    window.GoRide.showToast("Cash payment recorded successfully!", "success");
+                    closeModal(paymentModal, payNowBtn);
+                    fetchRide();
+                    return;
+                }
+
+                // Online payment via Razorpay
+                if (typeof window.Razorpay !== "function") {
+                    throw new Error("Razorpay Checkout SDK failed to load. Please refresh the page.");
+                }
+
+                const initRes = await api.post("/api/payments/initiate", {
+                    rideId: rideId
                 });
 
-                window.GoRide.showToast("Payment processed successfully!", "success");
-                closeModal(paymentModal, payNowBtn);
-                fetchRide();
+                if (!initRes || !initRes.success || !initRes.data) {
+                    throw new Error((initRes && initRes.message) || "Unable to initiate payment with gateway.");
+                }
+
+                const orderData = initRes.data;
+                const currentUser = (api.getUser && api.getUser()) || {};
+
+                const rzp = new window.Razorpay({
+                    key: orderData.keyId,
+                    amount: Math.round(Number(orderData.amount) * 100),
+                    currency: orderData.currency || "INR",
+                    name: "GoRide",
+                    description: `Ride Payment #${String(rideId).slice(-8).toUpperCase()}`,
+                    order_id: orderData.orderId,
+                    prefill: {
+                        name: currentUser.fullName || "",
+                        email: currentUser.email || "",
+                        contact: currentUser.phone || "",
+                    },
+                    theme: {
+                        color: "#059669",
+                    },
+                    handler: async function (response) {
+                        try {
+                            const verifyRes = await api.post("/api/payments/verify", {
+                                rideId: rideId,
+                                razorpayOrderId: response.razorpay_order_id,
+                                razorpayPaymentId: response.razorpay_payment_id,
+                                razorpaySignature: response.razorpay_signature,
+                            });
+
+                            if (verifyRes && verifyRes.success) {
+                                window.GoRide.showToast("Payment verified successfully!", "success");
+                                closeModal(paymentModal, payNowBtn);
+                                fetchRide();
+                            } else {
+                                window.GoRide.showToast((verifyRes && verifyRes.message) || "Payment verification failed.", "error");
+                            }
+                        } catch (vErr) {
+                            window.GoRide.showToast(vErr.message || "Payment verification failed.", "error");
+                        }
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            window.GoRide.showToast("Payment cancelled.", "warning");
+                        }
+                    }
+                });
+
+                rzp.on("payment.failed", function (resp) {
+                    window.GoRide.showToast(`Payment failed: ${resp.error?.description || "Transaction failed."}`, "error");
+                });
+
+                rzp.open();
             } catch (err) {
                 window.GoRide.showToast(err.message || "Payment failed.", "error");
             } finally {

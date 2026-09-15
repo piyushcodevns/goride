@@ -240,6 +240,17 @@ const createEnvSchema = (isProd) =>
 
     // AI / ML
     GORIDE_ML_ARTIFACT_DIR: z.string().default(path.join("ml", "artifacts")),
+
+    // Razorpay Payment Gateway
+    RAZORPAY_KEY_ID: isProd
+      ? z.string({ message: "RAZORPAY_KEY_ID must be a non-empty string in production if provided." }).min(1).optional()
+      : z.string().optional().default("rzp_test_placeholder_key_id"),
+    RAZORPAY_KEY_SECRET: isProd
+      ? z.string({ message: "RAZORPAY_KEY_SECRET must be a non-empty string in production if provided." }).min(1).optional()
+      : z.string().optional().default("rzp_test_placeholder_key_secret"),
+    RAZORPAY_WEBHOOK_SECRET: isProd
+      ? z.string({ message: "RAZORPAY_WEBHOOK_SECRET must be a non-empty string in production if provided." }).min(1).optional()
+      : z.string().optional().default("rzp_test_placeholder_webhook_secret"),
   });
 
 // ============================================================================
@@ -378,6 +389,12 @@ const validateConfig = (rawEnv = process.env) => {
     ai: {
       artifactDir: path.resolve(data.GORIDE_ML_ARTIFACT_DIR),
     },
+    razorpay: {
+      keyId: data.RAZORPAY_KEY_ID || null,
+      keySecret: data.RAZORPAY_KEY_SECRET || null,
+      webhookSecret: data.RAZORPAY_WEBHOOK_SECRET || null,
+      isConfigured: Boolean(data.RAZORPAY_KEY_ID && data.RAZORPAY_KEY_SECRET),
+    },
   };
 
   return deepFreeze(config);
@@ -414,6 +431,11 @@ const getPublicConfigSummary = (config) => ({
   },
   mail: {
     configured: config.mail.isConfigured,
+  },
+  razorpay: {
+    configured: config.razorpay?.isConfigured || false,
+    keyIdConfigured: Boolean(config.razorpay?.keyId),
+    webhookConfigured: Boolean(config.razorpay?.webhookSecret),
   },
   logging: {
     level: config.logging.level,

@@ -1278,6 +1278,10 @@
 
         const backendVehicle = VEHICLE_MAP[selectedVehicleType] || "CAR";
 
+        const selectedPaymentRadio = document.querySelector('input[name="payment"]:checked');
+        const paymentMethodRaw = selectedPaymentRadio ? selectedPaymentRadio.value.toUpperCase() : "UPI";
+        const paymentMethod = (paymentMethodRaw === "CARD" || paymentMethodRaw === "CASH") ? paymentMethodRaw : "UPI";
+
         isSubmitting = true;
         window.GoRide.utils.toggleLoading(true);
         if (progressFill) progressFill.style.width = '30%';
@@ -1294,50 +1298,157 @@
                 city: (window.APP_CONFIG && window.APP_CONFIG.BACKEND_CITY) || "DEFAULT",
                 couponCode: appliedCouponCode ? appliedCouponCode : null,
                 isScheduled: isSchedule,
-                scheduledFor: scheduledForIso
+                scheduledFor: scheduledForIso,
+                paymentMethod: paymentMethod
             };
 
-            if (progressFill) progressFill.style.width = '70%';
+            if (progressFill) progressFill.style.width = '60%';
 
             const res = await api.post("/api/rides", ridePayload);
 
             if (res && res.success && res.data) {
-                if (progressFill) progressFill.style.width = '100%';
                 const createdRide = res.data;
 
-                // Stop loader
+                // ==========================================
+                // CASH PAYMENT FLOW: Existing Immediate Success
+                // ==========================================
+                if (paymentMethod === "CASH") {
+                    if (progressFill) progressFill.style.width = '100%';
+                    window.GoRide.utils.toggleLoading(false);
+
+                    const shortId = `GR-${String(createdRide.id).slice(-8).toUpperCase()}`;
+                    if (bookingIdVal) bookingIdVal.innerText = shortId;
+                    if (trackRideBtn) {
+                        trackRideBtn.href = `ride.html?id=${encodeURIComponent(createdRide.id)}`;
+                    }
+
+                    if (window.saveBookingRecord) {
+                        window.saveBookingRecord({
+                            bookingId: createdRide.id,
+                            pickup: sanitizedPickup,
+                            drop: sanitizedDrop,
+                            pickupCoords,
+                            dropCoords,
+                            distance: currentDistance,
+                            duration: currentDuration,
+                            vehicle: backendVehicle,
+                            fare: currentServerFare.finalFare,
+                            discount: appliedDiscount,
+                            date: dateInput.value,
+                            time: timeInput.value
+                        });
+                    }
+
+                    successModal.classList.add('active');
+                    successModal.setAttribute('aria-hidden', 'false');
+                    window.GoRide.showToast("Ride Booked Successfully!", "success");
+                    return;
+                }
+
+                // ==========================================
+                // ONLINE PAYMENT FLOW: Razorpay Checkout
+                // ==========================================
+                if (typeof window.Razorpay !== "function") {
+                    window.GoRide.utils.toggleLoading(false);
+                    throw new Error("Razorpay Checkout SDK failed to load. Please refresh the page and try again.");
+                }
+
+                const gatewayData = createdRide.gateway || {};
+                const orderId = (createdRide.payment && createdRide.payment.orderId) || gatewayData.orderId;
+                const keyId = gatewayData.keyId;
+                const fareAmount = createdRide.finalFare || currentServerFare.finalFare;
+                const amountPaise = Math.round(Number(fareAmount) * 100);
+
+                if (!orderId || !keyId) {
+                    window.GoRide.utils.toggleLoading(false);
+                    throw new Error("Payment order could not be generated. Please try again or select Cash.");
+                }
+
                 window.GoRide.utils.toggleLoading(false);
 
-                // Populate real authoritative Booking ID
-                const shortId = `GR-${String(createdRide.id).slice(-8).toUpperCase()}`;
-                if (bookingIdVal) bookingIdVal.innerText = shortId;
+                const currentUser = (api.getUser && api.getUser()) || {};
 
-                // Track ride button links directly to real ride tracking page
-                if (trackRideBtn) {
-                    trackRideBtn.href = `ride.html?id=${encodeURIComponent(createdRide.id)}`;
-                }
+                const rzpOptions = {
+                    key: keyId,
+                    amount: amountPaise,
+                    currency: gatewayData.currency || "INR",
+                    name: "GoRide",
+                    description: `Booking #${String(createdRide.id).slice(-8).toUpperCase()} - ${backendVehicle}`,
+                    order_id: orderId,
+                    prefill: {
+                        name: currentUser.fullName || "",
+                        email: currentUser.email || "",
+                        contact: currentUser.phone || "",
+                    },
+                    theme: {
+                        color: "#059669",
+                    },
+                    handler: async function (response) {
+                        window.GoRide.utils.toggleLoading(true);
+                        if (progressFill) progressFill.style.width = '85%';
 
-                // Save record for dataset ML learning
-                if (window.saveBookingRecord) {
-                    window.saveBookingRecord({
-                        bookingId: createdRide.id,
-                        pickup: sanitizedPickup,
-                        drop: sanitizedDrop,
-                        pickupCoords,
-                        dropCoords,
-                        distance: currentDistance,
-                        duration: currentDuration,
-                        vehicle: backendVehicle,
-                        fare: currentServerFare.finalFare,
-                        discount: appliedDiscount,
-                        date: dateInput.value,
-                        time: timeInput.value
-                    });
-                }
+                        try {
+                            const verifyRes = await api.post("/api/payments/verify", {
+                                rideId: createdRide.id,
+                                razorpayOrderId: response.razorpay_order_id,
+                                razorpayPaymentId: response.razorpay_payment_id,
+                                razorpaySignature: response.razorpay_signature,
+                            });
 
-                successModal.classList.add('active');
-                successModal.setAttribute('aria-hidden', 'false');
-                window.GoRide.showToast("Ride Booked Successfully!", "success");
+                            if (verifyRes && verifyRes.success) {
+                                if (progressFill) progressFill.style.width = '100%';
+                                window.GoRide.utils.toggleLoading(false);
+
+                                const shortId = `GR-${String(createdRide.id).slice(-8).toUpperCase()}`;
+                                if (bookingIdVal) bookingIdVal.innerText = shortId;
+                                if (trackRideBtn) {
+                                    trackRideBtn.href = `ride.html?id=${encodeURIComponent(createdRide.id)}`;
+                                }
+
+                                if (window.saveBookingRecord) {
+                                    window.saveBookingRecord({
+                                        bookingId: createdRide.id,
+                                        pickup: sanitizedPickup,
+                                        drop: sanitizedDrop,
+                                        pickupCoords,
+                                        dropCoords,
+                                        distance: currentDistance,
+                                        duration: currentDuration,
+                                        vehicle: backendVehicle,
+                                        fare: currentServerFare.finalFare,
+                                        discount: appliedDiscount,
+                                        date: dateInput.value,
+                                        time: timeInput.value
+                                    });
+                                }
+
+                                successModal.classList.add('active');
+                                successModal.setAttribute('aria-hidden', 'false');
+                                window.GoRide.showToast("Payment verified & Ride Booked Successfully!", "success");
+                            } else {
+                                throw new Error((verifyRes && verifyRes.message) || "Payment verification failed.");
+                            }
+                        } catch (verifyErr) {
+                            window.GoRide.utils.toggleLoading(false);
+                            console.error("Payment verification error:", verifyErr);
+                            window.GoRide.showToast(verifyErr.message || "Payment verification failed. Please contact support.", "error");
+                        }
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            window.GoRide.utils.toggleLoading(false);
+                            window.GoRide.showToast("Payment was cancelled or closed. Your booking is pending payment.", "warning");
+                        }
+                    }
+                };
+
+                const rzp = new window.Razorpay(rzpOptions);
+                rzp.on('payment.failed', function (resp) {
+                    window.GoRide.utils.toggleLoading(false);
+                    console.error("Payment failed:", resp.error);
+                    window.GoRide.showToast(`Payment failed: ${resp.error.description || "Transaction failed."}`, "error");
+                });
+                rzp.open();
             } else {
                 throw new Error((res && res.message) || "Unable to confirm booking.");
             }

@@ -1,8 +1,11 @@
 const rideRepository = require("../repositories/ride.repository");
 const couponRepository = require("../repositories/coupon.repository");
+const paymentRepository = require("../repositories/payment.repository");
+const razorpayGateway = require("../gateways/razorpay.gateway");
 const couponService = require("./coupon.service");
 const prisma = require("../config/prisma");
 const logger = require("../utils/logger");
+const { config } = require("../config/env");
 const { createFareAudit } = require("../repositories/fareAudit.repository");
 
 const {
@@ -29,6 +32,7 @@ const {
  * Allowed Ride Status Flow
  */
 const RIDE_STATUS_FLOW = {
+  PAYMENT_PENDING: ["REQUESTED", "CANCELLED"],
   REQUESTED: ["ACCEPTED", "CANCELLED"],
   ACCEPTED: ["ARRIVED", "CANCELLED"],
   ARRIVED: ["STARTED"],
@@ -67,7 +71,18 @@ const createRide = async (rideData) => {
     couponCode = null,
     isScheduled = false,
     scheduledFor = null,
+    paymentMethod = "CASH",
   } = rideData;
+
+  const normalizedPaymentMethod = ["CASH", "UPI", "CARD"].includes(
+    String(paymentMethod || "").toUpperCase(),
+  )
+    ? String(paymentMethod).toUpperCase()
+    : "CASH";
+
+  const isOnlinePayment =
+    normalizedPaymentMethod === "UPI" || normalizedPaymentMethod === "CARD";
+  const initialStatus = isOnlinePayment ? "PAYMENT_PENDING" : "REQUESTED";
 
   if (!pickup || !destination || !vehicleType) {
     throw new BadRequestError(
@@ -244,6 +259,35 @@ const createRide = async (rideData) => {
         scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
 
         vehicleType,
+        status: initialStatus,
+      },
+      tx,
+    );
+
+    let orderId = null;
+    if (isOnlinePayment) {
+      const amountPaise = Math.round(serverFinalFare * 100);
+      const rzpOrder = await razorpayGateway.createOrder({
+        amountPaise,
+        currency: "INR",
+        receipt: ride.id,
+        notes: {
+          rideId: ride.id,
+          userId,
+        },
+      });
+      orderId = rzpOrder.id;
+    }
+
+    const paymentRecord = await paymentRepository.upsertPaymentForRide(
+      {
+        rideId: ride.id,
+        userId,
+        amount: serverFinalFare,
+        paymentMethod: normalizedPaymentMethod,
+        status: "PENDING",
+        gateway: isOnlinePayment ? "RAZORPAY" : null,
+        orderId,
       },
       tx,
     );
@@ -256,7 +300,10 @@ const createRide = async (rideData) => {
         discountAmount: verifiedDiscountAmount,
       });
 
-      await couponRepository.incrementCouponUsageTx(tx, validatedCoupon.id);
+      // Only increment immediately for CASH. For online payments, commit upon verified payment.
+      if (!isOnlinePayment) {
+        await couponRepository.incrementCouponUsageTx(tx, validatedCoupon.id);
+      }
     }
 
     await createFareAudit(
@@ -317,18 +364,35 @@ const createRide = async (rideData) => {
       tx,
     );
 
-    await notificationService.dispatchNotification(
-      NotificationFactory.createRideBookedNotification({
-        userId,
-        rideId: ride.id,
-        pickup,
-        destination,
-        status: ride.status,
-      }),
-    );
+    // Only dispatch ride-booked notification immediately if CASH
+    if (!isOnlinePayment) {
+      await notificationService.dispatchNotification(
+        NotificationFactory.createRideBookedNotification({
+          userId,
+          rideId: ride.id,
+          pickup,
+          destination,
+          status: ride.status,
+        }),
+      );
+    }
 
     return {
       ...ride,
+      payment: paymentRecord
+        ? {
+            ...paymentRecord,
+            amount: Number(paymentRecord.amount),
+          }
+        : null,
+      gateway: isOnlinePayment
+        ? {
+            orderId,
+            keyId: config.razorpay?.keyId || null,
+            amount: serverFinalFare,
+            currency: "INR",
+          }
+        : null,
 
       baseFare: Number(ride.baseFare),
       distanceFare: Number(ride.distanceFare),
@@ -353,7 +417,8 @@ const createRide = async (rideData) => {
     };
   });
 
-  if (isScheduled && scheduledFor) {
+  // Only activate scheduled ride queue immediately if CASH
+  if (!isOnlinePayment && isScheduled && scheduledFor) {
     try {
       const { addScheduledRideActivationJob } = require("../queues/scheduledRide.queue");
       await addScheduledRideActivationJob({
@@ -626,7 +691,7 @@ const cancelRide = async (rideId, userId) => {
     throw new UnauthorizedError("Unauthorized.");
   }
 
-  if (!["REQUESTED", "ACCEPTED"].includes(ride.status)) {
+  if (!["PAYMENT_PENDING", "REQUESTED", "ACCEPTED"].includes(ride.status)) {
     throw new ConflictError("Ride cannot be cancelled.");
   }
 
@@ -634,7 +699,7 @@ const cancelRide = async (rideId, userId) => {
     const updateResult = await tx.ride.updateMany({
       where: {
         id: rideId,
-        status: { in: ["REQUESTED", "ACCEPTED"] },
+        status: { in: ["PAYMENT_PENDING", "REQUESTED", "ACCEPTED"] },
       },
       data: {
         status: "CANCELLED",
@@ -643,6 +708,28 @@ const cancelRide = async (rideId, userId) => {
 
     if (updateResult.count === 0) {
       throw new ConflictError("Ride cannot be cancelled.");
+    }
+
+    // If payment was pending, mark it as FAILED
+    await tx.payment.updateMany({
+      where: {
+        rideId,
+        status: "PENDING",
+      },
+      data: {
+        status: "FAILED",
+      },
+    });
+
+    // Revert coupon if applied
+    const existingCouponUsage = await tx.couponUsage.findUnique({
+      where: { rideId },
+    });
+    if (existingCouponUsage) {
+      await tx.couponUsage.delete({ where: { rideId } });
+      if (ride.status !== "PAYMENT_PENDING") {
+        await couponRepository.decrementCouponUsage(existingCouponUsage.couponId);
+      }
     }
 
     const cancelledRide = await tx.ride.findUnique({

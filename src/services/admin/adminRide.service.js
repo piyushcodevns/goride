@@ -76,6 +76,7 @@ const getDriverRides = async (driverId, pagination = {}) => {
  * Admin status transitions.
  */
 const ADMIN_RIDE_STATUS_TRANSITIONS = Object.freeze({
+  PAYMENT_PENDING: ["REQUESTED", "CANCELLED"],
   REQUESTED: ["ACCEPTED", "CANCELLED"],
   ACCEPTED: ["ARRIVED", "CANCELLED"],
   ARRIVED: ["STARTED", "CANCELLED"],

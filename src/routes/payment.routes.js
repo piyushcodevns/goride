@@ -14,6 +14,9 @@ const {
 
 const {
   createPayment,
+  verifyPayment,
+  initiatePayment,
+  handleWebhook,
   getPaymentByRide,
   updatePaymentStatus,
   getMyPayments,
@@ -22,6 +25,8 @@ const {
 const {
   createPaymentSchema,
   updatePaymentStatusSchema,
+  verifyPaymentSchema,
+  initiatePaymentSchema,
 } = require("../validators/payment.validator");
 
 /**
@@ -69,6 +74,103 @@ router.post(
   authenticate,
   validate(createPaymentSchema),
   createPayment,
+);
+
+/**
+ * @swagger
+ * /api/payments/verify:
+ *   post:
+ *     summary: Verify Razorpay online payment
+ *     description: Verifies Razorpay payment signature timing-safely and activates ride for driver dispatch.
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - rideId
+ *               - razorpayOrderId
+ *               - razorpayPaymentId
+ *               - razorpaySignature
+ *             properties:
+ *               rideId:
+ *                 type: string
+ *               razorpayOrderId:
+ *                 type: string
+ *               razorpayPaymentId:
+ *                 type: string
+ *               razorpaySignature:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Payment verified successfully.
+ *       400:
+ *         description: Invalid signature or missing parameters.
+ *       403:
+ *         description: Unauthorized payment verification.
+ *       404:
+ *         description: Ride or payment not found.
+ */
+router.post(
+  "/verify",
+  authenticate,
+  validate(verifyPaymentSchema),
+  verifyPayment,
+);
+
+/**
+ * @swagger
+ * /api/payments/initiate:
+ *   post:
+ *     summary: Initiate / Retry Razorpay Order
+ *     description: Creates or retrieves a Razorpay order for an unpaid pending ride.
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - rideId
+ *             properties:
+ *               rideId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Payment order initialized.
+ *       400:
+ *         description: Ride not pending payment.
+ */
+router.post(
+  "/initiate",
+  authenticate,
+  validate(initiatePaymentSchema),
+  initiatePayment,
+);
+
+/**
+ * @swagger
+ * /api/payments/webhook:
+ *   post:
+ *     summary: Razorpay Webhook Endpoint
+ *     description: Handles asynchronous payment events (captured, failed) from Razorpay.
+ *     tags: [Payments]
+ *     responses:
+ *       200:
+ *         description: Webhook received.
+ *       400:
+ *         description: Invalid signature.
+ */
+router.post(
+  "/webhook",
+  handleWebhook,
 );
 
 /**
