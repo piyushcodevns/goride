@@ -2,11 +2,18 @@
 
 (function() {
     // Determine API Base URL intelligently
-    let defaultBase = "http://localhost:5000";
-    if (window.location.protocol.startsWith("http")) {
+    const isLocalhost = Boolean(
+        typeof window !== "undefined" &&
+        window.location &&
+        (window.location.hostname === "localhost" ||
+         window.location.hostname === "127.0.0.1" ||
+         window.location.hostname === "")
+    );
+    let defaultBase = isLocalhost ? "http://localhost:5000" : "https://goride-production-20a0.up.railway.app";
+    if (typeof window !== "undefined" && window.location && window.location.protocol.startsWith("http")) {
         if (window.location.port === "5000") {
             defaultBase = "";
-        } else if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        } else if (isLocalhost) {
             defaultBase = `${window.location.protocol}//${window.location.hostname}:5000`;
         }
     }

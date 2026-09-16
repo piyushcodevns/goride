@@ -81,6 +81,10 @@
             attribution: "© OpenStreetMap contributors"
         }).addTo(leafletMap);
 
+        if (window.L && window.L.Icon && window.L.Icon.Default) {
+            window.L.Icon.Default.imagePath = "https://unpkg.com/leaflet@1.9.4/dist/images/";
+        }
+
         const markers = [];
 
         if (pickupLat && pickupLng) {
