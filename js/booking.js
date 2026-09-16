@@ -1513,7 +1513,7 @@
                     prefill: {
                         name: currentUser.fullName || "",
                         email: currentUser.email || "",
-                        contact: currentUser.phone || "",
+                        contact: currentUser.phone ? String(currentUser.phone).replace(/\s+/g, "") : "",
                     },
                     theme: {
                         color: "#059669",
@@ -1525,7 +1525,7 @@
                         try {
                             const verifyRes = await api.post("/api/payments/verify", {
                                 rideId: createdRide.id,
-                                razorpayOrderId: response.razorpay_order_id,
+                                razorpayOrderId: response.razorpay_order_id || orderId,
                                 razorpayPaymentId: response.razorpay_payment_id,
                                 razorpaySignature: response.razorpay_signature,
                             });

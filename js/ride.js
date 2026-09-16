@@ -252,7 +252,7 @@
         } else {
             paymentBadge.className = "payment-status-badge badge-warning";
             paymentBadge.textContent = "Payment Pending";
-            if (ride.status === "COMPLETED") {
+            if (ride.status === "PAYMENT_PENDING" || ride.status === "COMPLETED") {
                 payNowBtn.style.display = "block";
                 modalPayAmount.textContent = ui.formatCurrency(finalFare);
             }
@@ -422,7 +422,7 @@
                     prefill: {
                         name: currentUser.fullName || "",
                         email: currentUser.email || "",
-                        contact: currentUser.phone || "",
+                        contact: currentUser.phone ? String(currentUser.phone).replace(/\s+/g, "") : "",
                     },
                     theme: {
                         color: "#059669",
@@ -431,7 +431,7 @@
                         try {
                             const verifyRes = await api.post("/api/payments/verify", {
                                 rideId: rideId,
-                                razorpayOrderId: response.razorpay_order_id,
+                                razorpayOrderId: response.razorpay_order_id || orderData.orderId,
                                 razorpayPaymentId: response.razorpay_payment_id,
                                 razorpaySignature: response.razorpay_signature,
                             });
