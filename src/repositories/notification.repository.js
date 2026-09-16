@@ -194,9 +194,16 @@ const incrementRetryCount = async (id, db = prisma) => {
  * Delete notification
  */
 const deleteNotification = async (id, db = prisma) => {
-  return db.notification.delete({
-    where: { id },
-  });
+  try {
+    return await db.notification.delete({
+      where: { id },
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      return null;
+    }
+    throw error;
+  }
 };
 
 module.exports = {

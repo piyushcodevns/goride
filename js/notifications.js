@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         notifList.querySelectorAll(".delete-btn").forEach(btn => {
             btn.addEventListener("click", async () => {
                 const id = btn.getAttribute("data-id");
-                await handleDeleteNotification(id);
+                await handleDeleteNotification(id, btn);
             });
         });
     };
@@ -228,7 +228,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
-    const handleDeleteNotification = async (id) => {
+    const deletingNotificationIds = new Set();
+
+    const handleDeleteNotification = async (id, btn) => {
+        if (!id || deletingNotificationIds.has(id)) return;
+        deletingNotificationIds.add(id);
+        if (btn) btn.disabled = true;
+
         try {
             await api.delete(`/api/notifications/${id}`);
             cachedNotifications = cachedNotifications.filter(n => n.id !== id);
@@ -236,7 +242,19 @@ document.addEventListener("DOMContentLoaded", async () => {
             await updateUnreadCount();
             if (toast) toast("Notification deleted.", "info");
         } catch (err) {
-            if (toast) toast(err.message || "Failed to delete notification.", "error");
+            const isNotFound = err.status === 404 || err.statusCode === 404 || (err.message && err.message.toLowerCase().includes("not found"));
+            if (isNotFound) {
+                // If notification was already removed or stale, clean up UI state gracefully
+                cachedNotifications = cachedNotifications.filter(n => n.id !== id);
+                renderNotifications(cachedNotifications);
+                await updateUnreadCount();
+                if (toast) toast("Notification was already deleted.", "info");
+            } else {
+                if (toast) toast(err.message || "Failed to delete notification.", "error");
+                if (btn) btn.disabled = false;
+            }
+        } finally {
+            deletingNotificationIds.delete(id);
         }
     };
 

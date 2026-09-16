@@ -135,7 +135,12 @@ const deleteNotification = async (id, userId) => {
     throw new ForbiddenError();
   }
 
-  return notificationRepository.deleteNotification(id);
+  const deleted = await notificationRepository.deleteNotification(id);
+  if (!deleted) {
+    throw new NotificationNotFoundError();
+  }
+
+  return deleted;
 };
 
 const registerPushDevice = (userId, token, platform) =>

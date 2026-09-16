@@ -7,7 +7,7 @@ const assert = require("node:assert/strict");
 const prisma = require("../src/config/prisma");
 const notificationService = require("../src/services/notification.service");
 const NotificationFactory = require("../src/factories/notification.factory");
-const { ValidationError, ForbiddenError } = require("../src/utils/AppError");
+const { ValidationError, ForbiddenError, NotificationNotFoundError } = require("../src/utils/AppError");
 
 describe("PHASE 13: Notification Pipeline, Event Mapping & Multi-Channel Delivery", () => {
   const uniqueId = Date.now();
@@ -201,5 +201,54 @@ describe("PHASE 13: Notification Pipeline, Event Mapping & Multi-Channel Deliver
     const readResult = await notificationService.markAsRead(targetNotif.id, testUser.id);
     assert.equal(readResult.status, "READ");
     assert.ok(readResult.readAt instanceof Date);
+  });
+
+  test("Delete Notification: Enforces authorization, record existence and idempotent 404 semantics", async () => {
+    // 1. Create a dedicated notification for deletion tests
+    const notifToDelete = await notificationService.createNotification({
+      userId: testUser.id,
+      title: "Delete Target",
+      message: "This notification will be deleted.",
+    });
+    assert.ok(notifToDelete.id);
+
+    // 2. Non-owner cannot delete notification (403 Forbidden)
+    await assert.rejects(
+      async () => {
+        await notificationService.deleteNotification(notifToDelete.id, otherUser.id);
+      },
+      (err) => {
+        assert.ok(err instanceof ForbiddenError);
+        return true;
+      },
+    );
+
+    // 3. Authoritative owner deletes notification successfully
+    const deleted = await notificationService.deleteNotification(notifToDelete.id, testUser.id);
+    assert.ok(deleted);
+
+    // 4. Repeated/stale delete returns 404 NotificationNotFoundError (never 500)
+    await assert.rejects(
+      async () => {
+        await notificationService.deleteNotification(notifToDelete.id, testUser.id);
+      },
+      (err) => {
+        assert.ok(err instanceof NotificationNotFoundError);
+        assert.equal(err.statusCode, 404);
+        return true;
+      },
+    );
+
+    // 5. Deleting non-existent notification returns 404 NotificationNotFoundError
+    await assert.rejects(
+      async () => {
+        await notificationService.deleteNotification("non_existent_cuid_12345", testUser.id);
+      },
+      (err) => {
+        assert.ok(err instanceof NotificationNotFoundError);
+        assert.equal(err.statusCode, 404);
+        return true;
+      },
+    );
   });
 });

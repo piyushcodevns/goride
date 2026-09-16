@@ -38,7 +38,11 @@ const PORT = process.env.PORT || 5000;
 if (process.env.WORKER_STANDALONE !== "true") {
   try {
     startAllWorkers();
-    startSchedulers();
+    startSchedulers().catch((err) => {
+      logger.warn("Background schedulers failed to start.", {
+        error: err.message,
+      });
+    });
   } catch (error) {
     logger.warn("Background workers or schedulers could not be started.", {
       error: error.message,

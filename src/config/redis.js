@@ -5,10 +5,12 @@ const isQueueEnabled = () => {
   if (process.env.NODE_ENV === 'test') {
     return false;
   }
-  if (process.env.QUEUE_ENABLED === 'false') {
+  const qVal = String(process.env.QUEUE_ENABLED ?? '').trim().toLowerCase();
+  if (qVal === 'false' || qVal === '0' || qVal === 'no') {
     return false;
   }
-  if (process.env.NOTIFICATION_QUEUE_ENABLED === 'false') {
+  const nqVal = String(process.env.NOTIFICATION_QUEUE_ENABLED ?? '').trim().toLowerCase();
+  if (nqVal === 'false' || nqVal === '0' || nqVal === 'no') {
     return false;
   }
   return true;
