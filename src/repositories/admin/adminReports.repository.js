@@ -32,26 +32,13 @@ const getOverviewMetrics = async ({ fromDate, toDate } = {}) => {
   const userDateFilter = buildDateFilter(fromDate, toDate, "createdAt");
   const couponDateFilter = buildDateFilter(fromDate, toDate, "usedAt");
 
+  // Batch 1: Revenue & Rides
   const [
     revenueSummary,
     totalRides,
     completedRides,
     cancelledRides,
     activeRides,
-    totalUsers,
-    activeUsers,
-    verifiedUsers,
-    blockedUsers,
-    totalDrivers,
-    approvedDrivers,
-    availableDrivers,
-    totalVehicles,
-    approvedVehicles,
-    totalPayments,
-    successfulPayments,
-    failedPayments,
-    totalCouponUsages,
-    couponDiscountSummary,
   ] = await Promise.all([
     // Revenue
     prisma.payment.aggregate({
@@ -73,23 +60,44 @@ const getOverviewMetrics = async ({ fromDate, toDate } = {}) => {
         status: { in: ["REQUESTED", "ACCEPTED", "ARRIVED", "STARTED"] },
       },
     }),
+  ]);
 
-    // Users
+  // Batch 2: Users
+  const [
+    totalUsers,
+    activeUsers,
+    verifiedUsers,
+    blockedUsers,
+  ] = await Promise.all([
     prisma.user.count({ where: { role: "USER", ...userDateFilter } }),
     prisma.user.count({ where: { role: "USER", isActive: true } }),
     prisma.user.count({ where: { role: "USER", isVerified: true } }),
     prisma.user.count({ where: { role: "USER", isBlocked: true } }),
+  ]);
 
-    // Drivers
+  // Batch 3: Drivers & Vehicles
+  const [
+    totalDrivers,
+    approvedDrivers,
+    availableDrivers,
+    totalVehicles,
+    approvedVehicles,
+  ] = await Promise.all([
     prisma.driver.count(),
     prisma.driver.count({ where: { status: "APPROVED" } }),
     prisma.driver.count({ where: { availability: "AVAILABLE" } }),
-
-    // Vehicles
     prisma.vehicle.count(),
     prisma.vehicle.count({ where: { status: "APPROVED" } }),
+  ]);
 
-    // Payments
+  // Batch 4: Payments & Coupons
+  const [
+    totalPayments,
+    successfulPayments,
+    failedPayments,
+    totalCouponUsages,
+    couponDiscountSummary,
+  ] = await Promise.all([
     prisma.payment.count({ where: buildDateFilter(fromDate, toDate, "createdAt") }),
     prisma.payment.count({
       where: { status: "SUCCESS", ...buildDateFilter(fromDate, toDate, "createdAt") },
@@ -97,8 +105,6 @@ const getOverviewMetrics = async ({ fromDate, toDate } = {}) => {
     prisma.payment.count({
       where: { status: "FAILED", ...buildDateFilter(fromDate, toDate, "createdAt") },
     }),
-
-    // Coupons
     prisma.couponUsage.count({ where: couponDateFilter }),
     prisma.couponUsage.aggregate({
       where: couponDateFilter,

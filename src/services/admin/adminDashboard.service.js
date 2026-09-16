@@ -1,50 +1,76 @@
 const dashboardRepository = require("../../repositories/admin/adminDashboard.repository");
 
 const getDashboardData = async () => {
+  // Batch 1: Core counts (Users, Drivers, Vehicles)
   const [
     [totalUsers, activeUsers, inactiveUsers, verifiedUsers],
     driverStatusCounts,
     driverAvailabilityCounts,
     totalVehicles,
-    rideStatusCounts,
-    paymentStatusCounts,
-    revenueResult,
-    revenuePeriodResult,
-    [todayRides, todayCompletedRides, todayCancelledRides, todayRevenueResult],
-    activeRides,
-    couponsUsed,
-    notificationsSent,
-    recentRides,
-    recentPayments,
-    revenueGraphResult,
-    rideGraphResult,
-    userRegistrationGraphResult,
-    peakHoursResult,
-    cityWiseRevenueResult,
-    vehicleWiseRevenueResult,
-    cancellationRate,
   ] = await Promise.all([
     dashboardRepository.getUserStats(),
     dashboardRepository.getDriverStats(),
     dashboardRepository.getDriverAvailabilityStats(),
     dashboardRepository.getVehicleStats(),
+  ]);
+
+  // Batch 2: Ride & Payment Statuses and Revenues
+  const [
+    rideStatusCounts,
+    paymentStatusCounts,
+    revenueResult,
+    revenuePeriodResult,
+  ] = await Promise.all([
     dashboardRepository.getRideStats(),
     dashboardRepository.getPaymentStats(),
     dashboardRepository.getRevenueStats(),
     dashboardRepository.getRevenuePeriodStats(),
+  ]);
+
+  // Batch 3: Today & Realtime Counts
+  const [
+    [todayRides, todayCompletedRides, todayCancelledRides, todayRevenueResult],
+    activeRides,
+    couponsUsed,
+    notificationsSent,
+    cancellationRate,
+  ] = await Promise.all([
     dashboardRepository.getTodayStats(),
     dashboardRepository.getActiveRideCount(),
     dashboardRepository.getCouponUsageCount(),
     dashboardRepository.getNotificationStats(),
+    dashboardRepository.getCancellationRate(),
+  ]);
+
+  // Batch 4: Recent Activities
+  const [
+    recentRides,
+    recentPayments,
+  ] = await Promise.all([
     dashboardRepository.getRecentRides(),
     dashboardRepository.getRecentPayments(),
+  ]);
+
+  // Batch 5: Trend Graphs
+  const [
+    revenueGraphResult,
+    rideGraphResult,
+    userRegistrationGraphResult,
+  ] = await Promise.all([
     dashboardRepository.getRevenueGraph(),
     dashboardRepository.getRideGraph(),
     dashboardRepository.getUserRegistrationGraph(),
+  ]);
+
+  // Batch 6: Advanced Breakdowns
+  const [
+    peakHoursResult,
+    cityWiseRevenueResult,
+    vehicleWiseRevenueResult,
+  ] = await Promise.all([
     dashboardRepository.getPeakHoursGraph(),
     dashboardRepository.getCityWiseRevenueGraph(),
     dashboardRepository.getVehicleWiseRevenueGraph(),
-    dashboardRepository.getCancellationRate(),
   ]);
 
   // =========================

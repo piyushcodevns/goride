@@ -27,6 +27,27 @@ describe("Active Ride Resolution & Transparent Route ETA", () => {
       },
     });
 
+    function seedRoute(startLat, startLng, endLat, endLng, distance = 4.2, duration = 14.0) {
+      MapsCacheService.setRoute(
+        Number(startLat).toFixed(6),
+        Number(startLng).toFixed(6),
+        Number(endLat).toFixed(6),
+        Number(endLng).toFixed(6),
+        {
+          distance,
+          duration,
+          eta: `${Math.round(duration)} minutes`,
+          trafficModel: "STATIC_ROUTE_ESTIMATE",
+          isTrafficAware: false,
+          isVehicleSpecific: false,
+          geometry: "mock_polyline",
+        },
+      );
+    }
+
+    seedRoute(25.328, 82.974, 25.308, 83.010, 4.5, 15.0);
+    seedRoute(25.289, 83.006, 25.267, 82.991, 3.2, 12.0);
+
     const timestamp = Date.now();
     riderUser = await prisma.user.create({
       data: {
@@ -64,7 +85,6 @@ describe("Active Ride Resolution & Transparent Route ETA", () => {
         await prisma.ride.deleteMany({ where: { userId: otherUser.id } });
         await prisma.user.delete({ where: { id: otherUser.id } });
       }
-      await prisma.$disconnect();
     } catch (_) {}
   });
 

@@ -7,6 +7,7 @@ const assert = require("node:assert/strict");
 const prisma = require("../src/config/prisma");
 const rideService = require("../src/services/ride.service");
 const couponService = require("../src/services/coupon.service");
+const MapsCacheService = require("../src/services/maps-cache.service");
 const { NotFoundError, BadRequestError } = require("../src/utils/AppError");
 
 describe("MODULE 22: Coupon Optionality & Server-Side Security Verification", () => {
@@ -52,6 +53,15 @@ describe("MODULE 22: Coupon Optionality & Server-Side Security Verification", ()
     assert.ok(testUser.id);
     assert.ok(adminUser.id);
     assert.ok(flatCoupon.id);
+
+    MapsCacheService.setRoute("28.631500", "77.216700", "28.612900", "77.229500", {
+      distance: 4.8,
+      duration: 12,
+      eta: "12 minutes",
+      trafficModel: "STATIC_ROUTE_ESTIMATE",
+      isTrafficAware: false,
+      isVehicleSpecific: false,
+    });
   });
 
   beforeEach(async () => {

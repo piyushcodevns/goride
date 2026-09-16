@@ -400,7 +400,8 @@ describe("MODULE 22: Mandatory Email Verification & Redis Pending Registration",
   });
 
   after(async () => {
-    await pendingService.closePendingRegistrationClient();
-    await prisma.$disconnect();
+    try {
+      await pendingService.closePendingRegistrationClient();
+    } catch (_) {}
   });
 });

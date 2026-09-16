@@ -15,6 +15,7 @@ const rideRepository = require("../src/repositories/ride.repository");
 const couponRepository = require("../src/repositories/coupon.repository");
 const notificationService = require("../src/services/notification.service");
 const razorpayGateway = require("../src/gateways/razorpay.gateway");
+const MapsCacheService = require("../src/services/maps-cache.service");
 const { BadRequestError, ForbiddenError, ConflictError } = require("../src/utils/AppError");
 
 describe("GoRide Payment Module: End-to-End Razorpay Integration & Hardening", () => {
@@ -95,6 +96,28 @@ describe("GoRide Payment Module: End-to-End Razorpay Integration & Hardening", (
 
     assert.ok(riderUser.id);
     assert.ok(driverProfile.id);
+
+    const testRoutes = [
+      ["28.570800", "77.326100", "28.564200", "77.334400", 5.2, 15],
+      ["28.631500", "77.216700", "28.612900", "77.229500", 4.8, 12],
+      ["28.556200", "77.100000", "28.498600", "77.087800", 12.0, 25],
+      ["28.520800", "77.201400", "28.549400", "77.194200", 4.5, 12],
+      ["28.549200", "77.252900", "28.570000", "77.240000", 3.8, 10],
+      ["28.552100", "77.058300", "28.629500", "77.077900", 10.5, 22],
+      ["28.667500", "77.228500", "28.656200", "77.230400", 2.2, 8],
+      ["28.632800", "77.219700", "28.631000", "77.227000", 1.8, 6],
+      ["28.549400", "77.194200", "28.558400", "77.207500", 2.5, 7],
+    ];
+    for (const [lat1, lon1, lat2, lon2, dist, dur] of testRoutes) {
+      MapsCacheService.setRoute(lat1, lon1, lat2, lon2, {
+        distance: dist,
+        duration: dur,
+        eta: `${dur} minutes`,
+        trafficModel: "STATIC_ROUTE_ESTIMATE",
+        isTrafficAware: false,
+        isVehicleSpecific: false,
+      });
+    }
   });
 
   test("1. Cash Booking: Immediately creates ride with REQUESTED and driver-visible", async () => {
