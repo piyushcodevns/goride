@@ -13,7 +13,10 @@ const {
   updateDriverAvailability,
 } = require("../repositories/driver.repository");
 
-const { getRouteDetails } = require("./openRoute.service");
+const {
+  getRouteDetails,
+  validateVaranasiServiceArea,
+} = require("./openRoute.service");
 
 const { calculateFare } = require("./fare.service");
 
@@ -125,6 +128,21 @@ const createRide = async (rideData) => {
   ) {
     throw new BadRequestError(
       "Valid pickup and destination coordinates are required.",
+    );
+  }
+
+  const isVaranasiBooking =
+    String(city || "").toUpperCase() === "VARANASI" ||
+    process.env.ENFORCE_VARANASI_GEOFENCE === "true";
+
+  if (isVaranasiBooking) {
+    validateVaranasiServiceArea(
+      { latitude: pickupLatitude, longitude: pickupLongitude },
+      "Pickup location",
+    );
+    validateVaranasiServiceArea(
+      { latitude: destinationLatitude, longitude: destinationLongitude },
+      "Destination location",
     );
   }
 

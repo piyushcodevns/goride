@@ -359,7 +359,8 @@
   font-size: 0.92rem;
 }
 
-.input-wrapper input#pickup-input {
+.input-wrapper input#pickup-input,
+.input-wrapper input#dropoff-input {
   padding-right: 3rem;
 }
 

@@ -1,7 +1,10 @@
 const PricingCacheService = require("./pricing-cache.service");
 const PricingEngine = require("./pricing.engine");
 const PricingRulesEngine = require("./pricing-rules.engine");
-const { getRouteDetails } = require("./openRoute.service");
+const {
+  getRouteDetails,
+  validateVaranasiServiceArea,
+} = require("./openRoute.service");
 
 const DEFAULT_CITY = "DEFAULT";
 
@@ -108,6 +111,27 @@ const calculateFare = async ({
 
   rideDate = new Date(),
 }) => {
+  const isVaranasiBooking =
+    String(city || "").toUpperCase() === "VARANASI" ||
+    process.env.ENFORCE_VARANASI_GEOFENCE === "true";
+
+  if (
+    isVaranasiBooking &&
+    pickupLatitude !== undefined &&
+    pickupLongitude !== undefined &&
+    destinationLatitude !== undefined &&
+    destinationLongitude !== undefined
+  ) {
+    validateVaranasiServiceArea(
+      { latitude: pickupLatitude, longitude: pickupLongitude },
+      "Pickup location",
+    );
+    validateVaranasiServiceArea(
+      { latitude: destinationLatitude, longitude: destinationLongitude },
+      "Destination location",
+    );
+  }
+
   const routeInputs = await resolveRouteInputs({
     pickupLatitude,
     pickupLongitude,

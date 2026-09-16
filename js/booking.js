@@ -17,6 +17,7 @@
     const findRidesBtn = document.getElementById('find-rides-btn');
     const confirmBookingBtn = document.getElementById('confirm-booking-btn');
     const currentLocationBtn = document.querySelector('.current-location-btn');
+    const pickDropoffMapBtn = document.getElementById('pick-dropoff-map-btn');
     const toggleButtons = document.querySelectorAll('.booking-toggle-row .toggle-btn');
     const vehicleItems = document.querySelectorAll('.vehicles-list .vehicle-item');
     const paymentOptions = document.querySelectorAll('.payment-option input[type="radio"]');
@@ -891,6 +892,10 @@
             performLiveValidation();
         });
 
+        if (window.MapProvider.registerMapClicked) {
+            window.MapProvider.registerMapClicked(handleMapClickPin);
+        }
+
         window.addEventListener('resize', debounce(() => {
             if (window.MapProvider.invalidateSize) {
                 window.MapProvider.invalidateSize();
@@ -956,11 +961,105 @@
         });
     }
 
+    // Active target field for map pin placement ('pickup' | 'dropoff')
+    let activeLocationTarget = 'pickup';
+
+    if (pickupInput) {
+        pickupInput.addEventListener('focus', () => {
+            activeLocationTarget = 'pickup';
+        });
+    }
+
+    if (dropoffInput) {
+        dropoffInput.addEventListener('focus', () => {
+            activeLocationTarget = 'dropoff';
+        });
+    }
+
+    if (pickDropoffMapBtn) {
+        pickDropoffMapBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            activeLocationTarget = 'dropoff';
+            dropoffInput.focus();
+            window.GoRide.showToast("Click anywhere on the map to set your drop-off pin.", "info");
+        });
+    }
+
+    // Map Pin click/drag handler: reverse-geocodes clicked/dragged point and sets valid coordinates
+    async function handleMapClickPin(lat, lng, forcedTargetType) {
+        if (!window.MapProvider || !window.MapProvider.validateServiceArea) return;
+        const isValid = window.MapProvider.validateServiceArea({ lat, lng });
+        if (!isValid) {
+            window.GoRide.showToast("Selected point is outside our 25 km Varanasi service area.", "error");
+            return;
+        }
+
+        let targetType = forcedTargetType || activeLocationTarget || 'pickup';
+        if (!forcedTargetType) {
+            if (activeLocationTarget === 'pickup' && pickupInput.dataset.lat && !dropoffInput.dataset.lat) {
+                targetType = 'dropoff';
+            } else if (activeLocationTarget === 'dropoff' && dropoffInput.dataset.lat && !pickupInput.dataset.lat) {
+                targetType = 'pickup';
+            }
+        }
+
+        const targetInput = targetType === 'pickup' ? pickupInput : dropoffInput;
+        const targetSuggestions = targetType === 'pickup' ? pickupSuggestions : dropoffSuggestions;
+        const targetSummary = document.getElementById(targetType === 'pickup' ? 'summary-pickup-text' : 'summary-dropoff-text');
+
+        if (targetSuggestions) targetSuggestions.style.display = 'none';
+        if (window.MapProvider && window.MapProvider.addMarker) {
+            window.MapProvider.addMarker(lat, lng, targetType);
+        }
+
+        targetInput.value = "Resolving pinned location...";
+        targetInput.dataset.lat = lat.toFixed(6);
+        targetInput.dataset.lng = lng.toFixed(6);
+
+        try {
+            const api = (window.GoRide && window.GoRide.api);
+            let address = `Pinned Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+
+            if (api) {
+                const res = await api.request(`/api/maps/reverse-geocode?latitude=${lat.toFixed(6)}&longitude=${lng.toFixed(6)}`, {
+                    method: "GET"
+                });
+                if (res && res.success && res.data && res.data.address) {
+                    address = res.data.address;
+                }
+            }
+
+            targetInput.value = address;
+            targetInput.dataset.address = address;
+            targetInput.dataset.placeId = `pin-${lat.toFixed(5)}_${lng.toFixed(5)}`;
+            if (targetSummary) targetSummary.textContent = address;
+            window.GoRide.showToast(`${targetType === 'pickup' ? 'Pickup' : 'Drop-off'} location pinned!`, "success");
+        } catch (err) {
+            const fallback = `Pinned Location (${lat.toFixed(4)}, ${lng.toFixed(4)}), Varanasi`;
+            targetInput.value = fallback;
+            targetInput.dataset.address = fallback;
+            targetInput.dataset.placeId = `pin-${lat.toFixed(5)}_${lng.toFixed(5)}`;
+            if (targetSummary) targetSummary.textContent = fallback;
+            window.GoRide.showToast(`${targetType === 'pickup' ? 'Pickup' : 'Drop-off'} location pinned.`, "info");
+        } finally {
+            if (targetType === 'pickup' && (!dropoffInput.dataset.lat || !dropoffInput.dataset.lng)) {
+                activeLocationTarget = 'dropoff';
+            }
+            checkAndTriggerRoute();
+            performLiveValidation();
+        }
+    }
+
     // Autocomplete dropdown UI
     function showSuggestions(results, inputEl, listEl) {
         listEl.innerHTML = '';
         if (!results || results.length === 0) {
-            listEl.innerHTML = '<li class="info-item" style="padding: 10px; color: var(--color-text-secondary); font-size: 0.85rem;">No locations found.</li>';
+            listEl.innerHTML = `
+                <li class="info-item" style="padding: 12px; color: var(--color-text-secondary); font-size: 0.85rem; line-height: 1.4;">
+                    <span>📍 No matching locations found in Varanasi.</span>
+                    <small style="display: block; margin-top: 4px; color: #2563EB;">👉 Tip: Click on the map to pinpoint narrow alleys or exact locations.</small>
+                </li>
+            `;
             listEl.style.display = 'block';
             return;
         }
@@ -1005,6 +1104,9 @@
         if (type === 'pickup') {
             const summaryPickup = document.getElementById('summary-pickup-text');
             if (summaryPickup) summaryPickup.textContent = item.name || item.address;
+            if (!dropoffInput.dataset.lat || !dropoffInput.dataset.lng) {
+                activeLocationTarget = 'dropoff';
+            }
         } else {
             const summaryDrop = document.getElementById('summary-dropoff-text');
             if (summaryDrop) summaryDrop.textContent = item.name || item.address;
@@ -1066,7 +1168,11 @@
     if (pickupInput && pickupSuggestions) setupKeyboardAutocomplete(pickupInput, pickupSuggestions);
     if (dropoffInput && dropoffSuggestions) setupKeyboardAutocomplete(dropoffInput, dropoffSuggestions);
 
-    // Debounced searches
+    // Stale request tracking IDs
+    let pickupSearchRequestId = 0;
+    let dropoffSearchRequestId = 0;
+
+    // Debounced searches with stale request protection
     const triggerPickupSearch = debounce(() => {
         const query = pickupInput.value;
         if (query.trim().length === 0) {
@@ -1080,17 +1186,23 @@
             return;
         }
 
+        const thisRequestId = ++pickupSearchRequestId;
         pickupSuggestions.innerHTML = '<li class="info-item" style="padding: 10px; color: var(--color-text-secondary); font-size: 0.85rem;">⏳ Searching locations...</li>';
         pickupSuggestions.style.display = 'block';
 
+        const pickupProximity = (pickupInput.dataset.lat && pickupInput.dataset.lng)
+            ? { lat: parseFloat(pickupInput.dataset.lat), lng: parseFloat(pickupInput.dataset.lng) }
+            : null;
+
         if (window.MapProvider && window.MapProvider.searchPlaces) {
             window.MapProvider.searchPlaces(query, (err, results) => {
+                if (thisRequestId !== pickupSearchRequestId) return; // Discard stale response
                 if (err) {
-                    pickupSuggestions.innerHTML = '<li class="info-item" style="padding: 10px; color: #DC2626; font-size: 0.85rem;">⚠️ Unable to fetch locations.</li>';
+                    pickupSuggestions.innerHTML = '<li class="info-item" style="padding: 10px; color: #DC2626; font-size: 0.85rem;">⚠️ Unable to fetch locations. Click on map to drop pin.</li>';
                     return;
                 }
                 showSuggestions(results, pickupInput, pickupSuggestions);
-            });
+            }, { proximity: pickupProximity });
         }
     }, 300);
 
@@ -1107,17 +1219,23 @@
             return;
         }
 
+        const thisRequestId = ++dropoffSearchRequestId;
         dropoffSuggestions.innerHTML = '<li class="info-item" style="padding: 10px; color: var(--color-text-secondary); font-size: 0.85rem;">⏳ Searching locations...</li>';
         dropoffSuggestions.style.display = 'block';
 
+        const dropoffProximity = (pickupInput.dataset.lat && pickupInput.dataset.lng)
+            ? { lat: parseFloat(pickupInput.dataset.lat), lng: parseFloat(pickupInput.dataset.lng) }
+            : null;
+
         if (window.MapProvider && window.MapProvider.searchPlaces) {
             window.MapProvider.searchPlaces(query, (err, results) => {
+                if (thisRequestId !== dropoffSearchRequestId) return; // Discard stale response
                 if (err) {
-                    dropoffSuggestions.innerHTML = '<li class="info-item" style="padding: 10px; color: #DC2626; font-size: 0.85rem;">⚠️ Unable to fetch locations.</li>';
+                    dropoffSuggestions.innerHTML = '<li class="info-item" style="padding: 10px; color: #DC2626; font-size: 0.85rem;">⚠️ Unable to fetch locations. Click on map to drop pin.</li>';
                     return;
                 }
                 showSuggestions(results, dropoffInput, dropoffSuggestions);
-            });
+            }, { proximity: dropoffProximity });
         }
     }, 300);
 

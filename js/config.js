@@ -8,7 +8,7 @@
     window.APP_CONFIG = {
         API_BASE_URL: "https://goride-production-20a0.up.railway.app",
         CITY: "Varanasi",
-        BACKEND_CITY: "DEFAULT",
+        BACKEND_CITY: "VARANASI",
         COUNTRY: "IN",
         
         // Varanasi Cantt Center coordinates
@@ -20,12 +20,12 @@
         DEFAULT_MAP_ZOOM: 13,
         SERVICE_RADIUS_KM: 25, // 25 km geofence service area
         
-        // Strict boundary coordinates for Varanasi service area
+        // Operational boundary coordinates for full 25km Varanasi service area (including Babatpur Airport & Mughalsarai)
         MAP_BOUNDS: {
-            south: 25.22,
-            west: 82.85,
-            north: 25.40,
-            east: 83.10
+            south: 25.12,
+            west: 82.72,
+            north: 25.52,
+            east: 83.22
         },
         
         // External Geocoding & Routing Providers
@@ -35,7 +35,8 @@
             OSRM: "https://router.project-osrm.org/route/v1/driving",
             DEBOUNCE_DELAY: 300,
             MIN_CHARS: 2,
-            MAX_SUGGESTIONS: 5
+            SEARCH_CANDIDATE_LIMIT: 20,
+            MAX_SUGGESTIONS: 6
         },
         
         // UI Constants

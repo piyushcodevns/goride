@@ -50,6 +50,36 @@ const validateCoordinates = (point, name) => {
   }
 };
 
+const VARANASI_CENTER = { latitude: 25.3176, longitude: 82.9739 };
+const VARANASI_SERVICE_RADIUS_KM = 25.0;
+
+const calculateHaversineDistance = (c1, c2) => {
+  const R = 6371; // Earth radius in km
+  const dLat = ((Number(c2.latitude) - Number(c1.latitude)) * Math.PI) / 180;
+  const dLon = ((Number(c2.longitude) - Number(c1.longitude)) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((Number(c1.latitude) * Math.PI) / 180) *
+      Math.cos((Number(c2.latitude) * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+const validateVaranasiServiceArea = (point, name = "Location") => {
+  if (!point || point.latitude == null || point.longitude == null) {
+    throw new BadRequestError(`${name} coordinates are required.`);
+  }
+  const distance = calculateHaversineDistance(VARANASI_CENTER, point);
+  if (distance > VARANASI_SERVICE_RADIUS_KM) {
+    throw new BadRequestError(
+      `${name} (${Number(point.latitude).toFixed(4)}, ${Number(point.longitude).toFixed(4)}) is outside the GoRide 25 km Varanasi service area.`,
+    );
+  }
+  return true;
+};
+
 /**
  * Get Route Details
  * Authoritative static route calculation from OpenStreetMap road network via OpenRouteService.
@@ -269,14 +299,24 @@ const reverseGeocode = async (latitude, longitude) => {
 
     const feature = response.data?.features?.[0];
 
-    if (!feature) {
-      throw new AppError("Address not found.", 404);
-    }
+    const resolvedAddress =
+      feature?.properties?.label ||
+      (feature?.properties
+        ? [
+            feature.properties.name,
+            feature.properties.street,
+            feature.properties.locality || feature.properties.county,
+            "Varanasi",
+          ]
+            .filter(Boolean)
+            .join(", ")
+        : null) ||
+      `Pinned Location (${Number(latitude).toFixed(4)}, ${Number(longitude).toFixed(4)}), Varanasi`;
 
     const result = {
-      address: feature.properties.label,
-      latitude: feature.geometry.coordinates[1],
-      longitude: feature.geometry.coordinates[0],
+      address: resolvedAddress,
+      latitude: feature?.geometry?.coordinates?.[1] ?? Number(latitude),
+      longitude: feature?.geometry?.coordinates?.[0] ?? Number(longitude),
     };
 
     MapsCacheService.setReverseGeocode(
@@ -307,6 +347,10 @@ module.exports = {
   getRouteDetails,
   geocodeAddress,
   reverseGeocode,
+  calculateHaversineDistance,
+  validateVaranasiServiceArea,
+  VARANASI_CENTER,
+  VARANASI_SERVICE_RADIUS_KM,
 };
 
 
