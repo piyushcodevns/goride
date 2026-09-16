@@ -52,6 +52,13 @@
     const cancelActiveRideBtn = document.getElementById('cancel-active-ride-btn');
     const dismissActiveRideBtn = document.getElementById('dismiss-active-ride-btn');
 
+    // Active Ride Persistent Banner elements
+    const activeRideBanner = document.getElementById('active-ride-banner');
+    const activeRideBannerBadge = document.getElementById('active-ride-banner-badge');
+    const activeRideBannerDesc = document.getElementById('active-ride-banner-desc');
+    const activeRideBannerTrackBtn = document.getElementById('active-ride-banner-track-btn');
+    const activeRideBannerCancelBtn = document.getElementById('active-ride-banner-cancel-btn');
+
 
     // ----------------------------------------------------
     // STATE VARIABLES
@@ -1374,6 +1381,13 @@
             return;
         }
 
+        // Proactive client-side active ride check: prevent avoidable 409 conflict
+        if (currentActiveRideObj && currentActiveRideObj.id) {
+            showActiveRideModal(currentActiveRideObj);
+            window.GoRide.showToast("You already have an active ride in progress.", "warning");
+            return;
+        }
+
         const sanitizedPickup = sanitizeInput(pickupInput.value);
         const sanitizedDrop = sanitizeInput(dropoffInput.value);
         pickupInput.value = sanitizedPickup;
@@ -1589,15 +1603,22 @@
             }
         } catch (err) {
             window.GoRide.utils.toggleLoading(false);
-            console.error("Booking error:", err);
             const msg = err.message || "Failed to create ride. Please check your details and try again.";
 
             const activeRide = (err.data && err.data.activeRide) ||
-                               (err.data && err.data.data && err.data.data.activeRide);
-            if (activeRide || msg.toLowerCase().includes("active ride")) {
+                               (err.data && err.data.data && err.data.data.activeRide) ||
+                               currentActiveRideObj;
+
+            if (err.status === 409 || activeRide || msg.toLowerCase().includes("active ride")) {
+                console.warn("Active ride booking conflict:", activeRide || msg);
+                if (activeRide) {
+                    currentActiveRideObj = activeRide;
+                    updateActiveRideBanner(activeRide);
+                }
                 showActiveRideModal(activeRide);
-                window.GoRide.showToast("You already have an active ride.", "warning");
+                window.GoRide.showToast("You already have an active ride in progress.", "warning");
             } else {
+                console.error("Booking error:", err);
                 window.GoRide.showToast(msg, "error");
             }
         } finally {
@@ -1666,25 +1687,87 @@
         dismissActiveRideBtn.addEventListener('click', closeActiveRideModal);
     }
 
-    if (cancelActiveRideBtn) {
-        cancelActiveRideBtn.addEventListener('click', async () => {
-            if (!currentActiveRideObj || !currentActiveRideObj.id) return;
-            const rideId = currentActiveRideObj.id;
-            try {
-                window.GoRide.utils.toggleLoading(true);
-                const api = window.GoRide && window.GoRide.api;
-                if (!api) throw new Error("API helper unavailable.");
+    function updateActiveRideBanner(ride) {
+        if (!activeRideBanner) return;
+        if (!ride || !ride.id) {
+            activeRideBanner.style.display = 'none';
+            return;
+        }
 
-                await api.patch(`/api/rides/${encodeURIComponent(rideId)}/cancel`);
-                window.GoRide.utils.toggleLoading(false);
-                closeActiveRideModal();
-                window.GoRide.showToast("Previous ride cancelled. You can now confirm your new booking.", "success");
-                currentActiveRideObj = null;
+        const shortId = `GR-${String(ride.id).slice(-8).toUpperCase()}`;
+        const status = ride.status || 'ACTIVE';
+
+        if (activeRideBannerBadge) {
+            activeRideBannerBadge.innerText = status;
+            if (status === 'PAYMENT_PENDING') {
+                activeRideBannerBadge.style.background = '#D97706';
+            } else {
+                activeRideBannerBadge.style.background = '#059669';
+            }
+        }
+
+        if (activeRideBannerDesc) {
+            const pickupText = ride.pickup ? `from "${ride.pickup}"` : '';
+            const dropText = ride.destination ? `to "${ride.destination}"` : '';
+            const routeDesc = (pickupText && dropText) ? ` (${pickupText} → ${dropText})` : '';
+
+            if (status === 'PAYMENT_PENDING') {
+                activeRideBannerDesc.innerText = `You have an unconfirmed booking #${shortId}${routeDesc} awaiting payment. Complete checkout or cancel it to start a new booking.`;
+            } else if (status === 'REQUESTED') {
+                activeRideBannerDesc.innerText = `Booking #${shortId}${routeDesc} is actively looking for nearby drivers. Track your ride status or cancel to modify details.`;
+            } else {
+                activeRideBannerDesc.innerText = `Booking #${shortId}${routeDesc} is currently in progress (${status}). Track your driver and ride live.`;
+            }
+        }
+
+        if (activeRideBannerTrackBtn) {
+            activeRideBannerTrackBtn.href = `ride.html?id=${encodeURIComponent(ride.id)}`;
+        }
+
+        const canCancel = Boolean(ride.id && (status === 'PAYMENT_PENDING' || status === 'REQUESTED'));
+        if (activeRideBannerCancelBtn) {
+            activeRideBannerCancelBtn.style.display = canCancel ? 'inline-flex' : 'none';
+            activeRideBannerCancelBtn.innerText = status === 'PAYMENT_PENDING' ? 'Cancel Pending Booking' : 'Cancel Ride Request';
+        }
+
+        activeRideBanner.style.display = 'flex';
+    }
+
+    async function handleCancelActiveRide() {
+        if (!currentActiveRideObj || !currentActiveRideObj.id) return;
+        const rideId = currentActiveRideObj.id;
+        try {
+            window.GoRide.utils.toggleLoading(true);
+            const api = window.GoRide && window.GoRide.api;
+            if (!api) throw new Error("API helper unavailable.");
+
+            await api.patch(`/api/rides/${encodeURIComponent(rideId)}/cancel`);
+            window.GoRide.utils.toggleLoading(false);
+            closeActiveRideModal();
+            currentActiveRideObj = null;
+            updateActiveRideBanner(null);
+            window.GoRide.showToast("Previous ride cancelled. You can now confirm your new booking.", "success");
+            if (typeof performLiveValidation === 'function') {
                 performLiveValidation();
-            } catch (err) {
-                window.GoRide.utils.toggleLoading(false);
-                console.error("Failed to cancel active ride:", err);
-                window.GoRide.showToast(err.message || "Failed to cancel active ride.", "error");
+            }
+        } catch (err) {
+            window.GoRide.utils.toggleLoading(false);
+            console.error("Failed to cancel active ride:", err);
+            window.GoRide.showToast(err.message || "Failed to cancel active ride.", "error");
+        }
+    }
+
+    if (cancelActiveRideBtn) {
+        cancelActiveRideBtn.addEventListener('click', handleCancelActiveRide);
+    }
+
+    if (activeRideBannerCancelBtn) {
+        activeRideBannerCancelBtn.addEventListener('click', () => {
+            const confirmMsg = currentActiveRideObj && currentActiveRideObj.status === 'PAYMENT_PENDING'
+                ? "Are you sure you want to cancel this pending booking?"
+                : "Are you sure you want to cancel your active ride request?";
+            if (window.confirm(confirmMsg)) {
+                handleCancelActiveRide();
             }
         });
     }
@@ -1696,6 +1779,7 @@
             api.get("/api/rides/active").then(res => {
                 if (res && res.success && res.data) {
                     currentActiveRideObj = res.data;
+                    updateActiveRideBanner(res.data);
                 }
             }).catch(() => {});
         }

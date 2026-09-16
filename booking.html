@@ -150,6 +150,22 @@
 
                     <!-- LEFT COLUMN: Booking Controls, Ride Options, Payment, CTA -->
                     <div class="workspace-left">
+                        <!-- Active Ride Banner -->
+                        <div id="active-ride-banner" class="active-ride-banner" style="display: none;" role="region" aria-label="Active Ride Notification">
+                            <div class="active-ride-banner-header">
+                                <div class="active-ride-banner-title">
+                                    <span>🚗</span>
+                                    <span>Active Ride in Progress</span>
+                                </div>
+                                <span id="active-ride-banner-badge" class="active-ride-banner-badge">REQUESTED</span>
+                            </div>
+                            <p id="active-ride-banner-desc" class="active-ride-banner-desc">You currently have an active ride request on your account.</p>
+                            <div class="active-ride-banner-actions">
+                                <a href="ride.html" id="active-ride-banner-track-btn" class="primary-btn">Track / View Ride</a>
+                                <button type="button" id="active-ride-banner-cancel-btn" class="secondary-btn" style="display: none;">Cancel Ride &amp; Book New</button>
+                            </div>
+                        </div>
+
                         <form id="booking-form" class="booking-form-element" novalidate>
 
                             <!-- Ride Mode Toggle: Ride Now vs Schedule Later -->

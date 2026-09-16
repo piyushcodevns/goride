@@ -165,6 +165,8 @@ describe("Active Ride Resolution & Transparent Route ETA", () => {
           assert.ok(err.data?.activeRide);
           assert.equal(err.data.activeRide.id, createdRide.id);
           assert.equal(err.data.activeRide.status, "PAYMENT_PENDING");
+          assert.ok("paymentMethod" in err.data.activeRide);
+          assert.ok("paymentStatus" in err.data.activeRide);
           return true;
         },
       );

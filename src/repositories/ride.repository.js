@@ -210,6 +210,17 @@ const getActiveRideByUserId = async (userId, db = prisma) => {
         in: ["PAYMENT_PENDING", "REQUESTED", "ACCEPTED", "ARRIVED", "STARTED"],
       },
     },
+    include: {
+      payment: {
+        select: {
+          id: true,
+          status: true,
+          paymentMethod: true,
+          amount: true,
+          orderId: true,
+        },
+      },
+    },
     orderBy: {
       createdAt: "desc",
     },

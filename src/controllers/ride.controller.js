@@ -56,7 +56,8 @@ const getActiveRide = async (req, res, next) => {
             pickup: activeRide.pickup,
             destination: activeRide.destination,
             vehicleType: activeRide.vehicleType,
-            paymentMethod: activeRide.paymentMethod,
+            paymentMethod: activeRide.payment?.paymentMethod || null,
+            paymentStatus: activeRide.payment?.status || null,
             finalFare: activeRide.finalFare,
             createdAt: activeRide.createdAt,
           }
