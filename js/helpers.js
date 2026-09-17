@@ -225,18 +225,22 @@
                 if (isAuth && user) {
                     const firstName = (user.fullName || "Account").split(" ")[0];
                     navButtons.innerHTML = `
-                        <a href="notifications.html" class="nav-btn nav-btn-outline nav-btn-notif" title="Notifications" style="position: relative;">
-                            <span>🔔</span>
-                            <span id="nav-unread-badge" class="nav-badge" style="display: none; position: absolute; top: -5px; right: -5px; background: #DC2626; color: #fff; font-size: 0.68rem; font-weight: 700; border-radius: 999px; padding: 2px 6px; min-width: 16px; text-align: center; line-height: 1.1;">0</span>
+                        <a href="notifications.html" class="nav-btn nav-btn-outline nav-btn-notif" title="Notifications" aria-label="Notifications">
+                            <svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                            <span id="nav-unread-badge" class="nav-badge" style="display: none;">0</span>
                         </a>
-                        <a href="rides.html" class="nav-btn nav-btn-outline" title="My Rides">
-                            <span>🚗 My Rides</span>
+                        <a href="rides.html" class="nav-btn nav-btn-outline nav-btn-rides" title="My Rides">
+                            <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 10.7 2 11.3 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg>
+                            <span>My Rides</span>
                         </a>
                         <a href="profile.html" class="nav-btn nav-btn-profile" title="Profile">
-                            <span class="user-avatar-mini">${firstName.charAt(0).toUpperCase()}</span>
+                            <span class="user-avatar-mini" aria-hidden="true">${firstName.charAt(0).toUpperCase()}</span>
                             <span>${firstName}</span>
                         </a>
-                        <button type="button" id="nav-logout-btn" class="nav-btn nav-btn-logout" title="Log Out">Logout</button>
+                        <button type="button" id="nav-logout-btn" class="nav-btn nav-btn-logout" title="Log Out" aria-label="Log Out">
+                            <svg class="nav-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                            <span>Logout</span>
+                        </button>
                     `;
 
                     // Fetch unread count for badge
@@ -266,7 +270,10 @@
                 } else {
                     navButtons.innerHTML = `
                         <a href="login.html" class="login-btn">Login</a>
-                        <a href="booking.html" class="book-btn">Book Ride</a>
+                        <a href="booking.html" class="book-btn">
+                            <svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 10.7 2 11.3 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg>
+                            <span>Book Ride</span>
+                        </a>
                     `;
                 }
             }
@@ -278,7 +285,7 @@
                 const existingRidesLink = navLinks.querySelector('a[href="rides.html"]');
                 if (!existingRidesLink) {
                     const li = document.createElement("li");
-                    li.innerHTML = '<a class="nav-link" href="rides.html">My Rides</a>';
+                    li.innerHTML = '<a class="nav-link" href="rides.html"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 10.7 2 11.3 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg><span>My Rides</span></a>';
                     if (targetParent) {
                         navLinks.insertBefore(li, targetParent);
                     } else {
@@ -289,7 +296,7 @@
                 const existingNotifLink = navLinks.querySelector('a[href="notifications.html"]');
                 if (!existingNotifLink) {
                     const li = document.createElement("li");
-                    li.innerHTML = '<a class="nav-link" href="notifications.html">Notifications</a>';
+                    li.innerHTML = '<a class="nav-link" href="notifications.html"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><span>Notifications</span></a>';
                     if (targetParent) {
                         navLinks.insertBefore(li, targetParent);
                     } else {

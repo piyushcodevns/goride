@@ -59,29 +59,70 @@ function initMain() {
   const navLinks = document.querySelector('.nav-links');
   const navButtons = document.querySelector('.nav-buttons');
 
-  if (menuToggle && navLinks) {
-    menuToggle.addEventListener('click', () => {
-      navLinks.classList.toggle('active');
-      if (navButtons) navButtons.classList.toggle('active');
-      const expanded = navLinks.classList.contains('active');
-      menuToggle.setAttribute('aria-expanded', expanded);
+  if (menuToggle && navLinks && !menuToggle.dataset.navInitialized) {
+    menuToggle.dataset.navInitialized = 'true';
+    // Ensure mobile backdrop exists in DOM
+    let navBackdrop = document.querySelector('.nav-backdrop');
+    if (!navBackdrop) {
+      navBackdrop = document.createElement('div');
+      navBackdrop.className = 'nav-backdrop';
+      navBackdrop.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(navBackdrop);
+    }
+
+    const closeNavDrawer = () => {
+      navLinks.classList.remove('active');
+      if (navButtons) navButtons.classList.remove('active');
+      if (navBackdrop) navBackdrop.classList.remove('active');
+      menuToggle.setAttribute('aria-expanded', 'false');
+    };
+
+    const openNavDrawer = () => {
+      navLinks.classList.add('active');
+      if (navButtons) navButtons.classList.add('active');
+      if (navBackdrop) navBackdrop.classList.add('active');
+      menuToggle.setAttribute('aria-expanded', 'true');
+    };
+
+    menuToggle.setAttribute('aria-expanded', 'false');
+
+    menuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isExpanded = navLinks.classList.contains('active');
+      if (isExpanded) {
+        closeNavDrawer();
+      } else {
+        openNavDrawer();
+      }
     });
 
-    navLinks.querySelectorAll('a').forEach((link) => {
-      link.addEventListener('click', () => {
-        navLinks.classList.remove('active');
-        if (navButtons) navButtons.classList.remove('active');
-      });
+    // Close on backdrop click
+    if (navBackdrop) {
+      navBackdrop.addEventListener('click', closeNavDrawer);
+    }
+
+    // Close on navigation clicks
+    navLinks.addEventListener('click', (e) => {
+      if (e.target.closest('a')) {
+        closeNavDrawer();
+      }
     });
 
     if (navButtons) {
-      navButtons.querySelectorAll('a, button').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          navLinks.classList.remove('active');
-          navButtons.classList.remove('active');
-        });
+      navButtons.addEventListener('click', (e) => {
+        if (e.target.closest('a, button')) {
+          closeNavDrawer();
+        }
       });
     }
+
+    // Close on Escape key press and return focus to toggle
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && navLinks.classList.contains('active')) {
+        closeNavDrawer();
+        menuToggle.focus();
+      }
+    });
   }
 
   // FAQ Accordion

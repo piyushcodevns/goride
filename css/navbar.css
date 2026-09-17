@@ -1,42 +1,44 @@
 /* ==========================================================================
-   GO RIDE - MASTER NAVBAR DESIGN SYSTEM (V2.0)
+   GO RIDE - OPTION C MODERN ICON-BASED PILL NAVIGATION SYSTEM
    ========================================================================== */
 
+/* ----------------------------------------------------
+ * Header Container (Sticky & Crisp White Glass)
+ * ---------------------------------------------------- */
 .header {
   position: sticky;
   top: 0;
   z-index: var(--z-index-sticky, 1100);
-  padding: 0.75rem 0;
-  /* Premium Frosted Glass: ~80% white + ~20% GoRide blue tint, blur(14px) */
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(219, 234, 254, 0.72) 100%);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow: 0 4px 20px -2px rgba(37, 99, 235, 0.07);
-  transition: background var(--transition-fast, 0.2s ease),
-              border-color var(--transition-fast, 0.2s ease),
-              box-shadow var(--transition-fast, 0.2s ease);
+  width: 100%;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border, #E2E8F0);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02);
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .header.is-scrolled {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(219, 234, 254, 0.82) 100%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(203, 213, 225, 0.8);
-  box-shadow: 0 8px 25px -4px rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.98);
+  border-bottom-color: rgba(203, 213, 225, 0.9);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08);
 }
 
+/* ----------------------------------------------------
+ * Top-Level Navbar Flex Layout
+ * ---------------------------------------------------- */
 .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.25rem;
-  padding: 0.5rem 0;
-  font-family: var(--font-family-body, system-ui, sans-serif);
+  gap: 1rem;
+  padding: 0.65rem 0;
+  font-family: var(--font-family-body, 'Poppins', system-ui, sans-serif);
+  position: relative;
 }
 
 /* ----------------------------------------------------
- * Brand Logo & Title
+ * Brand Logo & Name (Left)
  * ---------------------------------------------------- */
 .brand {
   display: inline-flex;
@@ -44,137 +46,199 @@
   gap: 0.65rem;
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--color-text-primary, #1F2937);
+  color: var(--color-text-primary, #0F172A);
   text-decoration: none;
   flex-shrink: 0;
   letter-spacing: -0.02em;
-  transition: opacity var(--transition-fast, 0.15s ease);
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .brand:hover {
-  opacity: 0.9;
+  opacity: 0.92;
+  transform: translateY(-0.5px);
 }
 
 .brand img {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
   flex-shrink: 0;
 }
 
 .brand span {
-  font-family: var(--font-family-heading, var(--font-family-body, system-ui, sans-serif));
   font-weight: 700;
-  color: var(--color-text-primary, #1F2937);
+  color: var(--color-text-primary, #0F172A);
 }
 
 /* ----------------------------------------------------
- * Navigation Links (Desktop)
+ * Option C: Centered Pill Navigation Group (Desktop)
  * ---------------------------------------------------- */
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 1.5rem; /* increased spacing for visual polish */
+  gap: 0.25rem;
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0.25rem 0.35rem;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E2E8F0);
+  border-radius: var(--radius-full, 999px);
+  box-shadow: 0 2px 6px -1px rgba(15, 23, 42, 0.05);
 }
 
 .nav-links li {
   list-style: none;
+  display: inline-flex;
+  align-items: center;
 }
 
+/* Base Nav Pill Link */
 .nav-link {
-  display: inline-block;
-  color: var(--color-text-secondary, #4B5563);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--color-text-secondary, #475569);
   font-weight: 500;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   text-decoration: none;
-  padding: 0.45rem 0.8rem;
-  border-radius: var(--radius-sm, 8px);
-  transition: color var(--transition-fast, 0.15s ease), background-color var(--transition-fast, 0.15s ease);
+  padding: 0.48rem 0.95rem;
+  border-radius: var(--radius-full, 999px);
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  user-select: none;
+  line-height: 1.2;
 }
 
-.nav-link:hover,
+/* Nav SVG Icon Styling */
+.nav-icon {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+  transition: stroke 0.18s ease, transform 0.18s ease;
+}
+
+/* Inactive Hover & Focus */
+.nav-link:hover {
+  color: var(--color-text-primary, #0F172A);
+  background: var(--color-surface-muted, #F1F5F9);
+}
+
 .nav-link:focus-visible {
-  color: var(--color-primary, #2563EB);
-  background: rgba(37, 99, 235, 0.06);
+  outline: 2px solid var(--color-primary, #2563EB);
+  outline-offset: 2px;
 }
 
+/* Option C: Solid Blue Active Pill */
 .nav-link.is-active,
 .nav-link[aria-current="page"] {
-  color: var(--color-primary, #2563EB);
-  font-weight: 600;
-}
-
-.nav-link.highlight-link {
-  color: var(--color-primary, #2563EB);
-  background: var(--color-primary-light, #EFF6FF);
-  border: 1.5px solid var(--color-primary, #2563EB);
-  padding: 0.35rem 0.95rem;
-  border-radius: var(--radius-full, 999px);
-  font-weight: 600;
-  font-size: 0.88rem;
-  transition: all var(--transition-fast, 0.15s ease);
-}
-
-.nav-link.highlight-link:hover {
   background: var(--color-primary, #2563EB);
   color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-  transform: translateY(-1px);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);
+}
+
+.nav-link.is-active .nav-icon,
+.nav-link[aria-current="page"] .nav-icon {
+  stroke: #FFFFFF;
+}
+
+.nav-link.is-active:hover,
+.nav-link[aria-current="page"]:hover {
+  background: var(--color-primary-hover, #1D4ED8);
+  color: #FFFFFF;
+}
+
+/* Option C: Become Driver Pill Link */
+.nav-link.highlight-link,
+.nav-btn-driver {
+  color: var(--color-primary, #2563EB);
+  background: var(--color-primary-light, #EFF6FF);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  font-weight: 600;
+  border-radius: var(--radius-full, 999px);
+  padding: 0.45rem 0.95rem;
+}
+
+.nav-link.highlight-link:hover,
+.nav-btn-driver:hover {
+  background: var(--color-primary, #2563EB);
+  color: #FFFFFF;
+  border-color: var(--color-primary, #2563EB);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  transform: translateY(-0.5px);
+}
+
+.nav-link.highlight-link:hover .nav-icon,
+.nav-btn-driver:hover .nav-icon {
+  stroke: #FFFFFF;
 }
 
 /* ----------------------------------------------------
- * Navigation Buttons (Login, Book Ride, Authenticated CTAs)
+ * Account Actions (Right)
  * ---------------------------------------------------- */
 .nav-buttons {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex-shrink: 0;
 }
 
 .nav-buttons a,
 .nav-buttons button {
   text-decoration: none;
+  font-family: inherit;
 }
 
+/* Unauthenticated Buttons */
 .login-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 1.15rem;
-  font-size: 0.9rem;
+  gap: 0.4rem;
+  padding: 0.48rem 1.05rem;
+  font-size: 0.88rem;
   font-weight: 600;
   border-radius: var(--radius-full, 999px);
-  color: var(--color-primary, #2563EB);
-  background: var(--color-primary-light, #EFF6FF);
-  border: 1px solid rgba(37, 99, 235, 0.15);
-  transition: all var(--transition-fast, 0.15s ease);
+  color: var(--color-text-secondary, #475569);
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.18s ease;
   cursor: pointer;
   white-space: nowrap;
 }
 
 .login-btn:hover {
-  background: rgba(37, 99, 235, 0.12);
-  color: var(--color-primary-hover, #1D4ED8);
-  transform: translateY(-1px);
+  background: var(--color-surface-muted, #F1F5F9);
+  color: var(--color-text-primary, #0F172A);
+}
+
+.login-btn.is-active {
+  background: var(--color-primary-light, #EFF6FF);
+  color: var(--color-primary, #2563EB);
+  border-color: rgba(37, 99, 235, 0.2);
 }
 
 .book-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.52rem 1.25rem;
-  font-size: 0.9rem;
+  gap: 0.45rem;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.88rem;
   font-weight: 600;
   border-radius: var(--radius-full, 999px);
   color: #FFFFFF;
   background: var(--color-primary, #2563EB);
   border: 1px solid var(--color-primary, #2563EB);
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
-  transition: all var(--transition-fast, 0.15s ease);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  transition: all 0.18s ease;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -182,85 +246,139 @@
 .book-btn:hover {
   background: var(--color-primary-hover, #1D4ED8);
   border-color: var(--color-primary-hover, #1D4ED8);
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.38);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  transform: translateY(-0.5px);
 }
 
-/* Authenticated User Nav Controls */
+.book-btn.is-active {
+  background: var(--color-primary-active, #1E40AF);
+  border-color: var(--color-primary-active, #1E40AF);
+}
+
+/* Authenticated User Actions */
 .nav-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.48rem 0.95rem;
-  font-size: 0.88rem;
+  padding: 0.46rem 0.95rem;
+  font-size: 0.86rem;
   font-weight: 500;
   border-radius: var(--radius-full, 999px);
   text-decoration: none;
   cursor: pointer;
-  transition: all var(--transition-fast, 0.15s ease);
+  transition: all 0.18s ease;
   white-space: nowrap;
+  line-height: 1.2;
 }
 
 .nav-btn-outline {
-  border: 1px solid var(--color-border, #E5E7EB);
-  background: var(--color-surface, #F8FAFC);
-  color: var(--color-text-primary, #1F2937);
+  border: 1px solid var(--color-border, #E2E8F0);
+  background: #FFFFFF;
+  color: var(--color-text-secondary, #475569);
 }
 
 .nav-btn-outline:hover {
-  background: var(--color-gray-100, #F3F4F6);
-  border-color: var(--color-gray-300, #D1D5DB);
+  background: var(--color-surface-muted, #F1F5F9);
+  color: var(--color-text-primary, #0F172A);
+  border-color: var(--color-border-strong, #CBD5E1);
 }
 
+/* Notifications Button & Live Badge */
+.nav-btn-notif {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border, #E2E8F0);
+  background: #FFFFFF;
+  color: var(--color-text-secondary, #475569);
+}
+
+.nav-btn-notif:hover {
+  background: var(--color-surface-muted, #F1F5F9);
+  color: var(--color-primary, #2563EB);
+  border-color: var(--color-border-strong, #CBD5E1);
+}
+
+.nav-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full, 999px);
+  background: var(--color-danger, #DC2626);
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  padding: 0 4px;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 1px 4px rgba(220, 38, 38, 0.35);
+  pointer-events: none;
+}
+
+/* Profile Pill with Avatar Circle */
 .nav-btn-profile {
   background: var(--color-primary-light, #EFF6FF);
   color: var(--color-primary, #2563EB);
-  border: 1px solid rgba(37, 99, 235, 0.2);
+  border: 1px solid rgba(37, 99, 235, 0.22);
   font-weight: 600;
+  padding: 0.3rem 0.85rem 0.3rem 0.35rem;
 }
 
 .nav-btn-profile:hover {
   background: var(--color-primary, #2563EB);
   color: #FFFFFF;
-}
-
-.nav-btn-logout {
-  background: transparent;
-  border: 1px solid #FECACA;
-  color: #DC2626;
-  font-family: inherit;
-  font-weight: 500;
-}
-
-.nav-btn-logout:hover {
-  background: #DC2626;
-  color: #FFFFFF;
-  border-color: #DC2626;
+  border-color: var(--color-primary, #2563EB);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  transform: translateY(-0.5px);
 }
 
 .user-avatar-mini {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: var(--color-primary, #2563EB);
   color: #FFFFFF;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
+  flex-shrink: 0;
+  transition: background-color 0.18s ease, color 0.18s ease;
 }
 
-.nav-badge {
-  background: #DC2626;
+.nav-btn-profile:hover .user-avatar-mini {
+  background: #FFFFFF;
+  color: var(--color-primary, #2563EB);
+}
+
+/* Logout Button */
+.nav-btn-logout {
+  background: #FEF2F2;
+  border: 1px solid #FEE2E2;
+  color: var(--color-danger, #DC2626);
+  font-weight: 500;
+  padding: 0.46rem 0.85rem;
+}
+
+.nav-btn-logout:hover {
+  background: var(--color-danger, #DC2626);
   color: #FFFFFF;
-  font-size: 0.68rem;
-  font-weight: 700;
-  border-radius: 999px;
-  padding: 1px 5px;
-  min-width: 16px;
-  text-align: center;
-  line-height: 1.1;
+  border-color: var(--color-danger, #DC2626);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+  transform: translateY(-0.5px);
+}
+
+.nav-btn-logout .nav-icon {
+  stroke: currentColor;
 }
 
 /* ----------------------------------------------------
@@ -268,82 +386,161 @@
  * ---------------------------------------------------- */
 .menu-toggle {
   display: none;
-  background: transparent;
-  border: 1px solid var(--color-border, #E5E7EB);
-  border-radius: var(--radius-sm, 8px);
-  padding: 0.45rem 0.7rem;
-  font-size: 1.35rem;
-  line-height: 1;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E2E8F0);
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   cursor: pointer;
-  color: var(--color-text-primary, #1F2937);
-  transition: background-color var(--transition-fast, 0.15s ease), border-color var(--transition-fast, 0.15s ease);
+  color: var(--color-text-primary, #0F172A);
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 
 .menu-toggle:hover {
-  background: var(--color-gray-100, #F3F4F6);
-  border-color: var(--color-gray-300, #D1D5DB);
+  background: var(--color-surface-muted, #F1F5F9);
+  border-color: var(--color-border-strong, #CBD5E1);
+}
+
+.menu-toggle:focus-visible {
+  outline: 2px solid var(--color-primary, #2563EB);
+  outline-offset: 2px;
+}
+
+.menu-toggle svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
+/* Mobile Backdrop Overlay */
+.nav-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: calc(var(--z-index-sticky, 1100) - 1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.nav-backdrop.active {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* ----------------------------------------------------
- * Responsive Mobile Navigation Drawer (<= 992px)
+ * Responsive Breakpoints (1024px, 992px, 768px, 375px, 320px)
  * ---------------------------------------------------- */
+
+/* Tablet Landscape / Small Laptop (993px - 1100px) */
+@media (max-width: 1100px) and (min-width: 993px) {
+  .nav-links {
+    gap: 0.15rem;
+    padding: 0.2rem 0.3rem;
+  }
+
+  .nav-link {
+    padding: 0.42rem 0.75rem;
+    font-size: 0.84rem;
+    gap: 0.35rem;
+  }
+
+  .nav-buttons {
+    gap: 0.4rem;
+  }
+
+  .book-btn {
+    padding: 0.48rem 1rem;
+    font-size: 0.84rem;
+  }
+}
+
+/* Tablet & Mobile Drawer (<= 992px) */
 @media (max-width: 992px) {
   .navbar {
     flex-wrap: wrap;
-    padding: 0.35rem 0;
+    padding: 0.45rem 0;
   }
 
   .menu-toggle {
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
     margin-left: auto;
   }
 
+  /* Drawer Container */
   .nav-links {
     display: none;
     order: 3;
     width: 100%;
     flex-direction: column;
     align-items: stretch;
-    gap: 0.35rem;
-    padding: 1rem 0 0.5rem;
+    gap: 0.4rem;
+    padding: 1rem;
     margin-top: 0.75rem;
-    border-top: 1px solid var(--color-border, #E5E7EB);
+    background: #FFFFFF;
+    border: 1px solid var(--color-border, #E2E8F0);
+    border-radius: 16px;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
   }
 
   .nav-links.active {
     display: flex;
-    animation: navDrawerSlide 0.2s ease forwards;
+    animation: navDrawerSlideDown 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .nav-links li {
+    display: block;
+    width: 100%;
   }
 
   .nav-link {
-    display: block;
+    display: flex;
+    align-items: center;
     width: 100%;
-    padding: 0.65rem 0.85rem;
+    padding: 0.7rem 1rem;
     font-size: 0.95rem;
-    border-radius: var(--radius-sm, 8px);
+    border-radius: 10px;
+    gap: 0.75rem;
+  }
+
+  .nav-link .nav-icon {
+    width: 18px;
+    height: 18px;
   }
 
   .nav-link.highlight-link {
     text-align: center;
+    justify-content: center;
     margin-top: 0.35rem;
   }
 
+  /* Account Actions in Drawer */
   .nav-buttons {
     display: none;
     order: 4;
     width: 100%;
     flex-direction: column;
-    gap: 0.65rem;
-    padding: 0.75rem 0 0.5rem;
-    margin-top: 0.35rem;
-    border-top: 1px dashed var(--color-border, #E5E7EB);
+    gap: 0.5rem;
+    padding: 0.75rem 0 0.25rem;
+    margin-top: 0.25rem;
+    border-top: 1px dashed var(--color-border, #E2E8F0);
   }
 
   .nav-buttons.active {
     display: flex;
-    animation: navDrawerSlide 0.2s ease forwards;
+    animation: navDrawerSlideDown 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .nav-buttons .login-btn,
@@ -354,16 +551,73 @@
     justify-content: center;
     padding: 0.72rem 1rem;
     font-size: 0.95rem;
+    border-radius: 10px;
+    min-height: 44px; /* Accessible touch target */
+  }
+
+  .nav-btn-notif {
+    width: 100%;
+    height: 44px;
+    border-radius: 10px;
+  }
+
+  .nav-badge {
+    position: static;
+    margin-left: 0.5rem;
+    display: inline-block;
   }
 }
 
-@keyframes navDrawerSlide {
+/* Compact Mobile (<= 480px, including 375px & 320px) */
+@media (max-width: 480px) {
+  .brand span {
+    font-size: 1.15rem;
+  }
+
+  .brand img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .menu-toggle {
+    width: 36px;
+    height: 36px;
+  }
+
+  .nav-links {
+    padding: 0.85rem;
+    border-radius: 12px;
+  }
+
+  .nav-link {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Animations */
+@keyframes navDrawerSlideDown {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Accessibility: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .brand,
+  .nav-link,
+  .login-btn,
+  .book-btn,
+  .nav-btn,
+  .menu-toggle,
+  .nav-backdrop {
+    transition: none !important;
+    animation: none !important;
   }
 }
