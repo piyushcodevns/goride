@@ -14,6 +14,7 @@
      * @param {Object} bookingData - The booking object from booking.js
      */
     window.saveBookingRecord = function(bookingData) {
+        if (window.GORIDE_ENABLE_LOCAL_DATASET !== true) return false;
         try {
             // Get existing records
             const existingRecords = getBookingRecords();
