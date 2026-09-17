@@ -300,9 +300,47 @@
         }
     };
 
+    const loadRazorpaySdk = function() {
+        if (typeof window.Razorpay === "function") {
+            return Promise.resolve(window.Razorpay);
+        }
+        return new Promise((resolve, reject) => {
+            const existingScript = document.querySelector('script[src*="checkout.razorpay.com"]');
+            if (existingScript) {
+                if (typeof window.Razorpay === "function") {
+                    return resolve(window.Razorpay);
+                }
+                existingScript.addEventListener("load", () => {
+                    if (typeof window.Razorpay === "function") resolve(window.Razorpay);
+                    else reject(new Error("Razorpay SDK was not initialized."));
+                });
+                existingScript.addEventListener("error", () => {
+                    reject(new Error("Failed to load Razorpay payment gateway SDK."));
+                });
+                return;
+            }
+
+            const script = document.createElement("script");
+            script.src = "https://checkout.razorpay.com/v1/checkout.js";
+            script.async = true;
+            script.onload = () => {
+                if (typeof window.Razorpay === "function") {
+                    resolve(window.Razorpay);
+                } else {
+                    reject(new Error("Razorpay SDK was not initialized."));
+                }
+            };
+            script.onerror = () => {
+                reject(new Error("Unable to load Razorpay payment gateway. Please check your internet connection or ad-blocker."));
+            };
+            document.head.appendChild(script);
+        });
+    };
+
     window.GoRide.api = ApiHelper;
     window.GoRide.ui = UIHelpers;
     window.GoRide.showToast = UIHelpers.showToast;
+    window.GoRide.loadRazorpaySdk = loadRazorpaySdk;
 
     // Run updateNavbar on DOMContentLoaded
     if (document.readyState === "loading") {

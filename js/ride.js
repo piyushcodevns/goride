@@ -398,7 +398,15 @@
 
                 // Online payment via Razorpay
                 if (typeof window.Razorpay !== "function") {
-                    throw new Error("Razorpay Checkout SDK failed to load. Please refresh the page.");
+                    if (window.GoRide && typeof window.GoRide.loadRazorpaySdk === "function") {
+                        try {
+                            await window.GoRide.loadRazorpaySdk();
+                        } catch (sdkErr) {
+                            throw new Error(sdkErr.message || "Razorpay Checkout SDK failed to load. Please refresh the page.");
+                        }
+                    } else {
+                        throw new Error("Razorpay Checkout SDK failed to load. Please refresh the page.");
+                    }
                 }
 
                 const initRes = await api.post("/api/payments/initiate", {
@@ -411,12 +419,16 @@
 
                 const orderData = initRes.data;
                 const currentUser = (api.getUser && api.getUser()) || {};
+                const brandLogoUrl = (window.location && window.location.origin)
+                    ? `${window.location.origin}/assets/svg/logo.svg`
+                    : "assets/svg/logo.svg";
 
                 const rzp = new window.Razorpay({
                     key: orderData.keyId,
                     amount: Math.round(Number(orderData.amount) * 100),
                     currency: orderData.currency || "INR",
                     name: "GoRide",
+                    image: brandLogoUrl,
                     description: `Ride Payment #${String(rideId).slice(-8).toUpperCase()}`,
                     order_id: orderData.orderId,
                     prefill: {
