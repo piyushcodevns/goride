@@ -1,0 +1,1708 @@
+const rideService = require("../services/ride.service");
+const { createRideSchema } = require("../validators/ride.validator");
+const { getDriverByUserId } = require("../repositories/driver.repository");
+
+/**
+ * Create Ride
+ */
+const createRide = async (req, res) => {
+  try {
+    const validatedData = createRideSchema.parse(req.body);
+
+    const ride = await rideService.createRide({
+      ...validatedData,
+      userId: req.user.id,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Ride created successfully.",
+      data: ride,
+    });
+  } catch (error) {
+    if (error.name === "ZodError") {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed.",
+        errors: error.errors,
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Get Ride By ID
+ */
+const getRideById = async (req, res) => {
+  try {
+    const ride = await rideService.getRideById(req.params.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Ride fetched successfully.",
+      data: ride,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Get Logged-in User Ride History
+ */
+const getMyRides = async (req, res) => {
+  try {
+    const rides = await rideService.getUserRides(req.user.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Ride history fetched successfully.",
+      data: rides,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Get Available Rides For Driver
+ */
+const getAvailableRides = async (req, res) => {
+  try {
+    const driver = await getDriverByUserId(req.user.id);
+
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver profile not found.",
+      });
+    }
+
+    const rides = await rideService.getAvailableRides(driver.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Available rides fetched successfully.",
+      data: rides,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+/**
+ * Assign Driver
+ */
+const assignDriver = async (req, res) => {
+  try {
+    // Logged-in user se driver profile nikalo
+    const driver = await getDriverByUserId(req.user.id);
+
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver profile not found.",
+      });
+    }
+
+    const ride = await rideService.assignDriver(
+      req.params.id,
+      driver.id,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Ride accepted successfully.",
+      data: ride,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Update Ride Status
+ */
+const updateRideStatus = async (req, res) => {
+  try {
+    const driver = await getDriverByUserId(req.user.id);
+
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver profile not found.",
+      });
+    }
+
+    const ride = await rideService.updateRideStatus(
+      req.params.id,
+      driver.id,
+      req.body.status,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Ride status updated successfully.",
+      data: ride,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const cancelRide = async (req, res) => {
+  try {
+    const ride = await rideService.cancelRide(req.params.id, req.user.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Ride cancelled successfully.",
+      data: ride,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Reject Ride
+ */
+const rejectRide = async (req, res) => {
+  try {
+    const driver = await getDriverByUserId(req.user.id);
+
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver profile not found.",
+      });
+    }
+
+    const result = await rideService.rejectRide(
+      req.params.id,
+      driver.id,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+      data: result,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Driver Current Ride
+ */
+const getDriverCurrentRide = async (req, res) => {
+  try {
+    const driver = await getDriverByUserId(req.user.id);
+
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver profile not found.",
+      });
+    }
+
+    const ride = await rideService.getDriverCurrentRide(driver.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Current ride fetched successfully.",
+      data: ride,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+module.exports = {
+  createRide,
+  getRideById,
+  getMyRides,
+  getAvailableRides,
+  assignDriver,
+  updateRideStatus,
+  cancelRide,
+  rejectRide,
+  getDriverCurrentRide,
+};
+const rideRepository = require("../repositories/ride.repository");
+const prisma = require("../config/prisma");
+const { createFareAudit } = require("../repositories/fareAudit.repository");
+
+const {
+  getDriverById,
+  updateDriverAvailability,
+} = require("../repositories/driver.repository");
+
+const { getRouteDetails } = require("./openRoute.service");
+
+const { calculateFare } = require("./fare.service");
+
+const {
+  BadRequestError,
+  ConflictError,
+  UnauthorizedError,
+  NotFoundError,
+} = require("../utils/AppError");
+
+const notificationService = require("./notification.service");
+const NotificationFactory = require("../factories/notification.factory");
+
+/**
+ * Allowed Ride Status Flow
+ */
+const RIDE_STATUS_FLOW = {
+  REQUESTED: ["ACCEPTED", "CANCELLED"],
+  ACCEPTED: ["ARRIVED", "CANCELLED"],
+  ARRIVED: ["STARTED"],
+  STARTED: ["COMPLETED"],
+  COMPLETED: [],
+  CANCELLED: [],
+};
+
+/**
+ * Validate Status Transition
+ */
+const validateStatusTransition = (currentStatus, newStatus) => {
+  const allowedStatuses = RIDE_STATUS_FLOW[currentStatus];
+
+  if (!allowedStatuses.includes(newStatus)) {
+    throw new BadRequestError(
+      `Invalid ride status transition: ${currentStatus} → ${newStatus}`,
+    );
+  }
+};
+
+/**
+ * Create Ride
+ */
+const createRide = async (rideData) => {
+  const {
+    userId,
+    pickup,
+    destination,
+    pickupLatitude,
+    pickupLongitude,
+    destinationLatitude,
+    destinationLongitude,
+    vehicleType,
+
+    city = "DEFAULT",
+    waitingMinutes = 0,
+    tollCharge = 0,
+    isAirportRide = false,
+    isPeakHour = false,
+    isNightRide = false,
+    isRaining = false,
+    isEventRide = false,
+    discountAmount = 0,
+
+    isScheduled = false,
+    scheduledFor = null,
+  } = rideData;
+
+  if (!pickup || !destination || !vehicleType) {
+    throw new BadRequestError(
+      "Pickup, destination and vehicle type are required.",
+    );
+  }
+
+  if (pickup.trim().toLowerCase() === destination.trim().toLowerCase()) {
+    throw new BadRequestError("Pickup and destination cannot be same.");
+  }
+
+  const activeRide = await rideRepository.getActiveRideByUserId(userId);
+
+  if (activeRide) {
+    throw new ConflictError("You already have an active ride.");
+  }
+
+  if (
+    pickupLatitude == null ||
+    pickupLongitude == null ||
+    destinationLatitude == null ||
+    destinationLongitude == null ||
+    Number.isNaN(pickupLatitude) ||
+    Number.isNaN(pickupLongitude) ||
+    Number.isNaN(destinationLatitude) ||
+    Number.isNaN(destinationLongitude)
+  ) {
+    throw new BadRequestError(
+      "Valid pickup and destination coordinates are required.",
+    );
+  }
+
+  /**
+   * Scheduled Ride Validation
+   */
+  if (isScheduled) {
+    if (!scheduledFor) {
+      throw new BadRequestError("Scheduled date and time are required.");
+    }
+
+    const scheduledDate = new Date(scheduledFor);
+
+    if (Number.isNaN(scheduledDate.getTime())) {
+      throw new BadRequestError("Invalid scheduled date and time.");
+    }
+
+    const now = new Date();
+
+    if (scheduledDate <= now) {
+      throw new BadRequestError("Scheduled ride must be in the future.");
+    }
+
+    const minimumScheduleTime = new Date(now.getTime() + 15 * 60 * 1000);
+
+    if (scheduledDate < minimumScheduleTime) {
+      throw new BadRequestError(
+        "Scheduled ride must be at least 15 minutes in advance.",
+      );
+    }
+  }
+
+  /**
+   * Get Route Details
+   */
+  const routeDetails = await getRouteDetails(
+    {
+      latitude: pickupLatitude,
+      longitude: pickupLongitude,
+    },
+    {
+      latitude: destinationLatitude,
+      longitude: destinationLongitude,
+    },
+  );
+
+  /**
+   * Calculate Enterprise Fare
+   */
+  const fareDetails = await calculateFare({
+    city,
+
+    vehicleType,
+
+    distanceKm: routeDetails.distance,
+
+    durationMinutes: routeDetails.duration,
+
+    waitingMinutes,
+
+    tollCharge,
+
+    isAirportRide,
+
+    isPeakHour,
+
+    isNightRide,
+
+    isRaining,
+
+    isEventRide,
+
+    discountAmount,
+  });
+
+  /**
+   * ETA
+   */
+  const rideStartTime = isScheduled ? new Date(scheduledFor) : new Date();
+
+  const estimatedArrival = new Date(
+    rideStartTime.getTime() + routeDetails.duration * 60 * 1000,
+  );
+
+  return await prisma.$transaction(async (tx) => {
+    const ride = await rideRepository.createRide(
+      {
+        userId,
+
+        pickup: pickup.trim(),
+        pickupLatitude,
+        pickupLongitude,
+
+        destination: destination.trim(),
+        destinationLatitude,
+        destinationLongitude,
+
+        distance: routeDetails.distance,
+        duration: routeDetails.duration,
+
+        estimatedArrival,
+
+        routeGeometry: routeDetails.geometry,
+
+        estimatedFare: fareDetails.estimatedFare,
+
+        baseFare: fareDetails.baseFare,
+        distanceFare: fareDetails.distanceFare,
+        durationFare: fareDetails.durationFare,
+
+        platformFee: fareDetails.platformFee,
+        bookingFee: fareDetails.bookingFee,
+
+        gstAmount: fareDetails.gstAmount,
+
+        waitingCharge: fareDetails.waitingCharge,
+        airportCharge: fareDetails.airportCharge,
+        tollCharge: fareDetails.tollCharge,
+
+        surgeMultiplier: fareDetails.surgeMultiplier,
+        surgeAmount: fareDetails.surgeAmount,
+
+        fareBreakdown: fareDetails.fareBreakdown,
+
+        discountAmount: fareDetails.discountAmount,
+
+        finalFare: fareDetails.finalFare,
+
+        isScheduled,
+        scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
+
+        vehicleType,
+      },
+      tx,
+    );
+
+    await createFareAudit(
+      {
+        rideId: ride.id,
+        pricingConfigId: fareDetails.pricingConfigId,
+
+        baseFare: fareDetails.baseFare,
+        distanceFare: fareDetails.distanceFare,
+        durationFare: fareDetails.durationFare,
+
+        surgeAmount: fareDetails.surgeAmount,
+        discountAmount: fareDetails.discountAmount,
+        platformFee: fareDetails.platformFee,
+
+        finalFare: fareDetails.finalFare,
+
+        breakdown: {
+          ...fareDetails.fareBreakdown,
+
+          pricingRules: fareDetails.pricingRules,
+
+          inputSnapshot: {
+            city,
+            vehicleType,
+
+            distanceKm: routeDetails.distance,
+            durationMinutes: routeDetails.duration,
+
+            waitingMinutes,
+            tollCharge,
+
+            isAirportRide,
+            isPeakHour,
+            isNightRide,
+            isRaining,
+            isEventRide,
+          },
+
+          discountSnapshot: {
+            requestedDiscount: discountAmount,
+            appliedDiscount: fareDetails.discountAmount,
+          },
+
+          pricingSnapshot: {
+            pricingConfigId: fareDetails.pricingConfigId,
+
+            baseFare: fareDetails.baseFare,
+            pricePerKm: fareDetails.fareBreakdown?.pricePerKm ?? null,
+            pricePerMinute: fareDetails.fareBreakdown?.pricePerMinute ?? null,
+
+            gstPercentage: fareDetails.fareBreakdown.gstPercentage,
+            minimumFare: fareDetails.fareBreakdown.minimumFare,
+          },
+        },
+      },
+      tx,
+    );
+
+    await notificationService.dispatchNotification(
+      NotificationFactory.createRideBookedNotification({
+        userId,
+        rideId: ride.id,
+        pickup,
+        destination,
+        status: ride.status,
+      }),
+    );
+
+    return {
+      ...ride,
+
+      baseFare: Number(ride.baseFare),
+      distanceFare: Number(ride.distanceFare),
+      durationFare: Number(ride.durationFare),
+
+      bookingFee: Number(ride.bookingFee),
+      platformFee: Number(ride.platformFee),
+
+      surgeAmount: Number(ride.surgeAmount),
+      surgeMultiplier: Number(ride.surgeMultiplier),
+
+      airportCharge: Number(ride.airportCharge),
+      tollCharge: Number(ride.tollCharge),
+      waitingCharge: Number(ride.waitingCharge),
+
+      gstAmount: Number(ride.gstAmount),
+
+      discountAmount: Number(ride.discountAmount),
+
+      estimatedFare: Number(ride.estimatedFare),
+      finalFare: Number(ride.finalFare),
+    };
+  });
+};
+
+/**
+ * Get Ride By ID
+ */
+const getRideById = async (rideId) => {
+  const ride = await rideRepository.getRideById(rideId);
+
+  if (!ride) {
+    throw new NotFoundError("Ride not found.");
+  }
+
+  return ride;
+};
+
+/**
+ * User Ride History
+ */
+const getUserRides = async (userId) => {
+  return await rideRepository.getUserRides(userId);
+};
+
+/**
+ * Available Rides
+ */
+const getAvailableRides = async (driverId) => {
+  const driver = await getDriverById(driverId);
+
+  if (!driver) {
+    throw new NotFoundError("Driver not found.");
+  }
+
+  if (driver.status !== "APPROVED") {
+    throw new BadRequestError("Driver is not approved.");
+  }
+
+  const rejectedRideIds =
+    await rideRepository.getRejectedRideIdsByDriver(driverId);
+
+  const rides = await rideRepository.getAvailableRides();
+
+  return rides.filter((ride) => !rejectedRideIds.includes(ride.id));
+};
+
+/**
+ * Assign Driver
+ */
+const assignDriver = async (rideId, driverId) => {
+  return prisma.$transaction(async (tx) => {
+    const ride = await rideRepository.getRideById(rideId, tx);
+
+    if (!ride) {
+      throw new NotFoundError("Ride not found.");
+    }
+
+    if (ride.status !== "REQUESTED") {
+      throw new ConflictError("Ride is not available.");
+    }
+
+    const driver = await getDriverById(driverId, tx);
+
+    if (!driver) {
+      throw new NotFoundError("Driver not found.");
+    }
+
+    if (driver.status !== "APPROVED") {
+      throw new BadRequestError("Driver is not approved.");
+    }
+
+    if (driver.availability !== "AVAILABLE") {
+      throw new ConflictError("Driver is not available.");
+    }
+
+    if (!driver.vehicle) {
+      throw new BadRequestError("Vehicle registration required.");
+    }
+
+    const activeRide = await rideRepository.getActiveRideByDriverId(
+      driverId,
+      tx,
+    );
+
+    if (activeRide) {
+      throw new ConflictError("Driver already has an active ride.");
+    }
+
+    const updatedRide = await rideRepository.assignDriver(rideId, driverId, tx);
+
+    await updateDriverAvailability(driverId, "BUSY", tx);
+
+    await notificationService.dispatchNotification(
+      NotificationFactory.createRideAcceptedNotification({
+        userId: ride.userId,
+        rideId: ride.id,
+        driverId,
+        status: "ACCEPTED",
+      }),
+    );
+    return updatedRide;
+  });
+};
+
+/**
+ * Update Ride Status
+ */
+const updateRideStatus = async (rideId, driverId, status) => {
+  const ride = await getRideById(rideId);
+
+  if (ride.driverId !== driverId) {
+    throw new UnauthorizedError("Unauthorized.");
+  }
+
+  validateStatusTransition(ride.status, status);
+
+  return prisma.$transaction(async (tx) => {
+    const updatedRide = await rideRepository.updateRideStatus(
+      rideId,
+      status,
+      tx,
+    );
+
+    /**
+     * Ride Status Notifications
+     */
+
+    if (status === "ARRIVED") {
+      await notificationService.dispatchNotification(
+        NotificationFactory.createDriverArrivedNotification({
+          userId: ride.userId,
+          rideId: ride.id,
+          driverId,
+          status: "ARRIVED",
+        }),
+      );
+    }
+
+    if (status === "STARTED") {
+      await notificationService.dispatchNotification(
+        NotificationFactory.createRideStartedNotification({
+          userId: ride.userId,
+          rideId: ride.id,
+          driverId,
+          status: "STARTED",
+        }),
+      );
+    }
+
+    if (status === "COMPLETED") {
+      await updateDriverAvailability(driverId, "AVAILABLE", tx);
+
+      await notificationService.dispatchNotification(
+        NotificationFactory.createRideCompletedNotification({
+          userId: ride.userId,
+          rideId: ride.id,
+          driverId,
+          status: "COMPLETED",
+        }),
+      );
+    }
+
+    return updatedRide;
+  });
+};
+
+/**
+ * Reject Ride
+ */
+const rejectRide = async (rideId, driverId) => {
+  const ride = await getRideById(rideId);
+
+  if (!ride) {
+    throw new NotFoundError("Ride not found.");
+  }
+
+  if (ride.status !== "REQUESTED") {
+    throw new ConflictError("Only requested rides can be rejected.");
+  }
+
+  await rideRepository.createRideReject(rideId, driverId);
+
+  await notificationService.dispatchNotification(
+    NotificationFactory.createRideRejectedNotification({
+      userId: ride.userId,
+      rideId: ride.id,
+      driverId,
+    }),
+  );
+
+  return {
+    message: "Ride rejected successfully.",
+    rideId,
+  };
+};
+
+/**
+ * Cancel Ride
+ */
+const cancelRide = async (rideId, userId) => {
+  const ride = await getRideById(rideId);
+
+  if (ride.userId !== userId) {
+    throw new UnauthorizedError("Unauthorized.");
+  }
+
+  if (!["REQUESTED", "ACCEPTED"].includes(ride.status)) {
+    throw new ConflictError("Ride cannot be cancelled.");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const cancelledRide = await rideRepository.cancelRide(rideId, tx);
+
+    if (ride.driverId) {
+      await updateDriverAvailability(ride.driverId, "AVAILABLE", tx);
+    }
+
+    await notificationService.dispatchNotification(
+      NotificationFactory.createRideCancelledNotification({
+        userId: ride.userId,
+        rideId: ride.id,
+        pickup: ride.pickup,
+        destination: ride.destination,
+        status: "CANCELLED",
+      }),
+    );
+
+    return cancelledRide;
+  });
+};
+
+/**
+ * Driver Current Ride
+ */
+const getDriverCurrentRide = async (driverId) => {
+  return await rideRepository.getCurrentRideByDriver(driverId);
+};
+
+module.exports = {
+  createRide,
+  getRideById,
+  getUserRides,
+  getAvailableRides,
+  assignDriver,
+  updateRideStatus,
+  rejectRide,
+  cancelRide,
+  getDriverCurrentRide,
+};
+const prisma = require("../config/prisma");
+const { ConflictError } = require("../utils/AppError");
+
+/**
+ * Create a new ride
+ */
+const createRide = async (data, db = prisma) => {
+  return db.ride.create({
+    data,
+  });
+};
+
+/** 
+ * Get ride by ID
+ */
+const getRideById = async (rideId, db = prisma) => {
+  return db.ride.findUnique({
+    where: {
+      id: rideId,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          profileImage: true,
+        },
+      },
+      driver: {
+        include: {
+          vehicle: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phone: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+    },
+  });
+};
+
+/**
+ * Get all rides of a user
+ */
+const getUserRides = async (userId) => {
+  return prisma.ride.findMany({
+    where: {
+      userId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      driver: {
+        include: {
+          vehicle: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phone: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+    },
+  });
+};
+
+/**
+ * Assign driver to ride
+ */
+const assignDriver = async (rideId, driverId, db = prisma) => {
+  const result = await db.ride.updateMany({
+    where: {
+      id: rideId,
+      driverId: null,
+      status: "REQUESTED",
+    },
+    data: {
+      driverId,
+      status: "ACCEPTED",
+    },
+  });
+
+  if (result.count === 0) {
+    throw new ConflictError(
+      "Ride is no longer available or has already been accepted.",
+    );
+  }
+
+  return getRideById(rideId, db);
+};
+
+/**
+ * Update ride status
+ */
+const updateRideStatus = async (rideId, status, db = prisma) => {
+  await db.ride.update({
+    where: {
+      id: rideId,
+    },
+    data: {
+      status,
+    },
+  });
+
+  return getRideById(rideId, db);
+};
+
+/**
+ * Update Ride
+ */
+const updateRide = async (rideId, data, db = prisma) => {
+  await db.ride.update({
+    where: {
+      id: rideId,
+    },
+    data,
+  });
+
+  return getRideById(rideId, db);
+};
+
+/**
+ * Get Ride For Coupon
+ */
+const getRideForCoupon = async (rideId, db = prisma) => {
+  return db.ride.findUnique({
+    where: {
+      id: rideId,
+    },
+    select: {
+      id: true,
+      userId: true,
+      finalFare: true,
+      status: true,
+      couponId: true,
+    },
+  });
+};
+
+/**
+ * Get active ride of a user
+ */
+const getActiveRideByUserId = async (userId, db = prisma) => {
+  return db.ride.findFirst({
+    where: {
+      userId,
+      isScheduled: false,
+      status: {
+        in: ["REQUESTED", "ACCEPTED", "ARRIVED", "STARTED"],
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
+/**
+ * Get active ride of a driver
+ */
+const getActiveRideByDriverId = async (driverId, db = prisma) => {
+  return db.ride.findFirst({
+    where: {
+      driverId,
+      status: {
+        in: ["ACCEPTED", "ARRIVED", "STARTED"],
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
+/**
+ * Get available rides for drivers
+ */
+const getAvailableRides = async () => {
+  return prisma.ride.findMany({
+    where: {
+      status: "REQUESTED",
+      driverId: null,
+      isScheduled: false,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          phone: true,
+          profileImage: true,
+        },
+      },
+    },
+  });
+};
+
+/**
+ * Cancel Ride
+ */
+const cancelRide = async (rideId, db = prisma) => {
+  await db.ride.update({
+    where: {
+      id: rideId,
+    },
+    data: {
+      status: "CANCELLED",
+    },
+  });
+
+  return getRideById(rideId, db);
+};
+
+/**
+ * Get Current Active Ride Of Driver
+ */
+const getCurrentRideByDriver = async (driverId) => {
+  return prisma.ride.findFirst({
+    where: {
+      driverId,
+      status: {
+        in: ["ACCEPTED", "ARRIVED", "STARTED"],
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          phone: true,
+          profileImage: true,
+        },
+      },
+      driver: {
+        include: {
+          vehicle: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              phone: true,
+            },
+          },
+        },
+      },
+    },
+  });
+};
+
+/**
+ * Save Ride Reject History
+ */
+const createRideReject = async (rideId, driverId) => {
+  return prisma.rideReject.create({
+    data: {
+      rideId,
+      driverId,
+    },
+  });
+};
+
+/**
+ * Check if driver already rejected this ride
+ */
+const hasDriverRejectedRide = async (rideId, driverId) => {
+  return prisma.rideReject.findUnique({
+    where: {
+      rideId_driverId: {
+        rideId,
+        driverId,
+      },
+    },
+  });
+};
+
+/**
+ * Get all rejected ride ids of a driver
+ */
+const getRejectedRideIdsByDriver = async (driverId) => {
+  const rejected = await prisma.rideReject.findMany({
+    where: {
+      driverId,
+    },
+    select: {
+      rideId: true,
+    },
+  });
+
+  return rejected.map((item) => item.rideId);
+};
+
+module.exports = {
+  createRide,
+  getRideById,
+  getUserRides,
+  assignDriver,
+  updateRideStatus,
+  updateRide,
+  getRideForCoupon,
+  getActiveRideByUserId,
+  getActiveRideByDriverId,
+  getAvailableRides,
+  cancelRide,
+  getCurrentRideByDriver,
+  createRideReject,
+  hasDriverRejectedRide,
+  getRejectedRideIdsByDriver,
+};
+const express = require("express");
+
+const rideController = require("../controllers/ride.controller");
+const { authenticate } = require("../middleware/auth.middleware");
+
+const router = express.Router();
+
+/**
+ * @swagger
+ * tags:
+ *   name: Ride
+ *   description: Ride Management APIs
+ */
+
+/**
+ * @swagger
+ * /api/rides:
+ *   post:
+ *     summary: Create a new ride
+ *     description: Creates a new ride request for the authenticated customer.
+ *     tags: [Ride]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateRideRequest'
+ *     responses:
+ *       201:
+ *         description: Ride created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Validation failed.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post("/", authenticate, rideController.createRide);
+
+/**
+ * @swagger
+ * /api/rides/my-rides:
+ *   get:
+ *     summary: Get user's ride history
+ *     description: Returns all rides created by the authenticated user.
+ *     tags: [Ride]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Ride history fetched successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       401:
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get("/my-rides", authenticate, rideController.getMyRides);
+
+/**
+ * @swagger
+ * /api/rides/available:
+ *   get:
+ *     summary: Get available ride requests
+ *     description: Returns all available ride requests for authenticated drivers.
+ *     tags: [Ride]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Available rides fetched successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       401:
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: No available rides found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get("/available", authenticate, rideController.getAvailableRides);
+
+/**
+ * @swagger
+ * /api/rides/driver/current:
+ *   get:
+ *     summary: Get driver's current active ride
+ *     description: Returns the currently active ride assigned to the authenticated driver.
+ *     tags: [Ride]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current ride fetched successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       401:
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: No active ride found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get(
+  "/driver/current",
+  authenticate,
+  rideController.getDriverCurrentRide,
+);
+
+/**
+ * @swagger
+ * /api/rides/{id}:
+ *   get:
+ *     summary: Get ride details by ID
+ *     description: Returns complete details of a specific ride for the authenticated user or driver.
+ *     tags: [Ride]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Ride ID
+ *         schema:
+ *           type: string
+ *         example: cms123456789
+ *     responses:
+ *       200:
+ *         description: Ride fetched successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       401:
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Ride not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get("/:id", authenticate, rideController.getRideById);
+
+/**
+ * @swagger
+ * /api/rides/{id}/assign-driver:
+ *   patch:
+ *     summary: Assign driver to a ride
+ *     description: Allows an authenticated driver to accept and assign themselves to an available ride request.
+ *     tags: [Ride]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Ride ID
+ *         schema:
+ *           type: string
+ *         example: cms123456789
+ *     responses:
+ *       200:
+ *         description: Ride accepted successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Ride cannot be accepted due to invalid status or driver availability.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Ride not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.patch("/:id/assign-driver", authenticate, rideController.assignDriver);
+
+/**
+ * @swagger
+ * /api/rides/{id}/reject:
+ *   patch:
+ *     summary: Reject a ride request
+ *     description: Allows an authenticated driver to reject an available ride request.
+ *     tags: [Ride]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Ride ID
+ *         schema:
+ *           type: string
+ *         example: cms123456789
+ *     responses:
+ *       200:
+ *         description: Ride rejected successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Ride cannot be rejected due to invalid status.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Ride not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.patch("/:id/reject", authenticate, rideController.rejectRide);
+
+/**
+ * @swagger
+ * /api/rides/{id}/status:
+ *   patch:
+ *     summary: Update ride status
+ *     description: Updates the current ride status through the allowed ride lifecycle flow (ACCEPTED → ARRIVED → STARTED → COMPLETED).
+ *     tags: [Ride]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Ride ID
+ *         schema:
+ *           type: string
+ *         example: cms123456789
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum:
+ *                   - ACCEPTED
+ *                   - ARRIVED
+ *                   - STARTED
+ *                   - COMPLETED
+ *                 example: STARTED
+ *     responses:
+ *       200:
+ *         description: Ride status updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Invalid status transition.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Ride not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.patch("/:id/status", authenticate, rideController.updateRideStatus);
+
+/**
+ * @swagger
+ * /api/rides/{id}/cancel:
+ *   patch:
+ *     summary: Cancel a ride
+ *     description: Cancels an existing ride request created by the authenticated user.
+ *     tags: [Ride]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Ride ID
+ *         schema:
+ *           type: string
+ *         example: cms123456789
+ *     responses:
+ *       200:
+ *         description: Ride cancelled successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Ride cannot be cancelled due to current status.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Ride not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.patch("/:id/cancel", authenticate, rideController.cancelRide);
+
+module.exports = router;
+const { z } = require("zod");
+
+const coordinateSchema = z
+  .number({
+    required_error: "Coordinate is required.",
+    invalid_type_error: "Coordinate must be a number.",
+  })
+  .finite();
+
+const createRideSchema = z
+  .object({
+    pickup: z
+      .string({
+        required_error: "Pickup location is required.",
+        invalid_type_error: "Pickup location must be a string.",
+      })
+      .trim()
+      .min(1, "Pickup location is required.")
+      .max(255, "Pickup location is too long."),
+
+    pickupLatitude: coordinateSchema
+      .min(-90, "Invalid pickup latitude.")
+      .max(90, "Invalid pickup latitude."),
+
+    pickupLongitude: coordinateSchema
+      .min(-180, "Invalid pickup longitude.")
+      .max(180, "Invalid pickup longitude."),
+
+    destination: z
+      .string({
+        required_error: "Destination is required.",
+        invalid_type_error: "Destination must be a string.",
+      })
+      .trim()
+      .min(1, "Destination is required.")
+      .max(255, "Destination is too long."),
+
+    destinationLatitude: coordinateSchema
+      .min(-90, "Invalid destination latitude.")
+      .max(90, "Invalid destination latitude."),
+
+    destinationLongitude: coordinateSchema
+      .min(-180, "Invalid destination longitude.")
+      .max(180, "Invalid destination longitude."),
+
+    vehicleType: z.enum(["BIKE", "AUTO", "CAR"], {
+      required_error: "Vehicle type is required.",
+      invalid_type_error: "Invalid vehicle type.",
+    }),
+
+    city: z
+      .string()
+      .trim()
+      .max(100)
+      .optional()
+      .default("DEFAULT"),
+
+    waitingMinutes: z
+      .number()
+      .min(0)
+      .optional()
+      .default(0),
+
+    tollCharge: z
+      .number()
+      .min(0)
+      .optional()
+      .default(0),
+
+    isAirportRide: z
+      .boolean()
+      .optional()
+      .default(false),
+
+    isPeakHour: z
+      .boolean()
+      .optional()
+      .default(false),
+
+    isNightRide: z
+      .boolean()
+      .optional()
+      .default(false),
+
+    isRaining: z
+      .boolean()
+      .optional()
+      .default(false),
+
+    isEventRide: z
+      .boolean()
+      .optional()
+      .default(false),
+
+    discountAmount: z
+      .number()
+      .min(0)
+      .optional()
+      .default(0),
+
+    isScheduled: z.boolean().optional().default(false),
+
+    scheduledFor: z.string().datetime().optional().nullable(),
+  })
+  .strict();
+
+module.exports = {
+  createRideSchema,
+};
+  

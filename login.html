@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <title>Sign In | Go Ride</title>
+    <meta name="description" content="Sign in to your Go Ride account to book rides, view history, and manage your profile.">
+    <meta name="keywords" content="Sign In, Login, Go Ride, Ride booking account">
+    <meta name="author" content="Go Ride">
+    <meta name="theme-color" content="#2563EB">
+    <link rel="canonical" href="https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/login.html">
+
+    <!-- OpenGraph Tags -->
+    <meta property="og:title" content="Sign In | Go Ride">
+    <meta property="og:description" content="Sign in to your Go Ride account to book rides, view history, and manage your profile.">
+    <meta property="og:image" content="https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/assets/svg/logo.svg">
+    <meta property="og:url" content="https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/login.html">
+    <meta property="og:type" content="website">
+
+    <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Schema.org JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Sign In | Go Ride",
+      "description": "Sign in to your Go Ride account to book rides, view history, and manage your profile.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Go Ride Technologies",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://goride-frontend-ieukthm4z-piyushcodevns-projects.vercel.app/assets/svg/logo.svg"
+        }
+      }
+    }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <!-- Page Loader -->
+    <div id="page-loader" aria-hidden="true"></div>
+
+    <!-- Reusable Navbar -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar" aria-label="Primary navigation">
+                <a class="brand" href="index.html">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                    <span>Go Ride</span>
+                </a>
+
+                <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+
+                <ul class="nav-links">
+                    <li><a class="nav-link" href="index.html"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg><span>Home</span></a></li>
+                    <li><a class="nav-link" href="services.html"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg><span>Services</span></a></li>
+                    <li><a class="nav-link" href="index.html#safety"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg><span>Safety</span></a></li>
+                    <li><a class="nav-link" href="about.html"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg><span>About</span></a></li>
+                    <li><a class="nav-link" href="contact.html"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg><span>Contact</span></a></li>
+                    <li><a class="nav-link highlight-link" href="driver-signup.html"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><line x1="2" y1="12" x2="22" y2="12"></line></svg><span>Become Driver</span></a></li>
+                </ul>
+
+                <div class="nav-buttons">
+                    <a href="login.html" class="login-btn is-active">Login</a>
+                    <a href="booking.html" class="book-btn"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 10.7 2 11.3 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg><span>Book Ride</span></a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Auth Layout Section -->
+    <main class="auth-section">
+        <div class="container">
+            <div class="auth-wrapper reveal">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" class="auth-logo" loading="lazy" decoding="async">
+                        <h2>Welcome Back</h2>
+                        <p>Enter your details to access your Go Ride account</p>
+                    </div>
+
+                    <form id="login-form" class="auth-form" novalidate autocomplete="off">
+                        <!-- Email input -->
+                        <div class="input-group">
+                            <label for="login-email">Email Address</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon" aria-hidden="true">✉️</span>
+                                <input type="email" id="login-email" name="email" placeholder="Enter your email..." required autocomplete="off" value="">
+                            </div>
+                        </div>
+
+                        <!-- Password input -->
+                        <div class="input-group">
+                            <label for="login-password">Password</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon" aria-hidden="true">🔒</span>
+                                <input type="password" id="login-password" name="password" placeholder="Enter your password..." required autocomplete="new-password" value="">
+                                <button type="button" id="toggle-password" class="password-toggle-btn" aria-label="Show password">👁️</button>
+                            </div>
+                        </div>
+
+                        <!-- Remember Me & Forgot Password Row -->
+                        <div class="auth-row">
+                            <label class="remember-checkbox">
+                                <input type="checkbox" id="remember-me" name="remember">
+                                <span class="checkbox-box"></span>
+                                <span class="checkbox-text">Remember Me</span>
+                            </label>
+                            <a href="forgot-password.html" class="forgot-link">Forgot Password?</a>
+                        </div>
+
+                        <!-- Submit button -->
+                        <button type="submit" id="login-submit-btn" class="primary-btn auth-submit-btn">
+                            Sign In
+                        </button>
+                    </form>
+
+                    <div class="auth-footer">
+                        <p>Don't have an account? <a href="register.html">Sign Up</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Reusable Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a class="brand" href="index.html">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                        <span>Go Ride</span>
+                    </a>
+                    <p>Ride smarter, ride better with dependable travel for every journey.</p>
+                </div>
+                <div>
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="booking.html">Book Ride</a></li>
+                        <li><a href="terms.html">Terms &amp; Conditions</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="login.html">Login</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="booking.html">City Rides</a></li>
+                        <li><a href="driver-signup.html">Become a Driver</a></li>
+                        <li><a href="rides.html">Ride History</a></li>
+                        <li><a href="notifications.html">Notifications</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">© 2026 Go Ride Technologies. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Back to top button -->
+    <button id="backToTop" class="scroll-to-top" aria-label="Back to top">↑</button>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="js/config.js" defer></script>
+    <script src="js/toast.js" defer></script>
+    <script src="js/helpers.js" defer></script>
+    <script src="js/main.js" defer></script>
+    <script src="js/animations.js" defer></script>
+    <script src="js/login.js" defer></script>
+</body>
+</html>

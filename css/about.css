@@ -1,0 +1,18 @@
+/* ==========================================================================
+   GO RIDE - ABOUT PAGE STYLES (V1.0)
+   ========================================================================== */
+
+.about-hero {
+  background: linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%);
+  color: #ffffff;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.about-mission-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  margin: 2rem 0;
+  border: 1px solid var(--color-border);
+}

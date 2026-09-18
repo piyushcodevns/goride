@@ -1,0 +1,452 @@
+/* ==========================================================================
+   GO RIDE - ACTIVE RIDE & TRACKING STYLES (V1.0)
+   ========================================================================== */
+
+.ride-tracking-hero {
+  background: linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%);
+  color: #ffffff;
+  padding: 2.5rem 0;
+  margin-bottom: 2rem;
+}
+
+.ride-tracking-hero h1 {
+  font-size: 1.85rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: #ffffff;
+}
+
+.ride-tracking-hero p {
+  color: #DBEAFE;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.tracking-layout {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 1.75rem;
+  margin-bottom: 3rem;
+  align-items: start;
+}
+
+@media (max-width: 968px) {
+  .tracking-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tracking-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Status Card */
+.status-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-full);
+}
+
+.status-pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+.status-indicator.badge-info {
+  background: #EFF6FF;
+  color: #1D4ED8;
+}
+.status-indicator.badge-info .status-pulse { background: #2563EB; }
+
+.status-indicator.badge-warning {
+  background: #FEF3C7;
+  color: #B45309;
+}
+.status-indicator.badge-warning .status-pulse { background: #F59E0B; }
+
+.status-indicator.badge-primary {
+  background: #EEF2FF;
+  color: #4338CA;
+}
+.status-indicator.badge-primary .status-pulse { background: #4F46E5; }
+
+.status-indicator.badge-success {
+  background: #DCFCE7;
+  color: #15803D;
+}
+.status-indicator.badge-success .status-pulse { background: #16A34A; }
+
+.status-indicator.badge-danger {
+  background: #FEE2E2;
+  color: #B91C1C;
+}
+.status-indicator.badge-danger .status-pulse { background: #DC2626; animation: none; }
+
+.status-indicator.badge-secondary {
+  background: #F1F5F9;
+  color: #475569;
+}
+.status-indicator.badge-secondary .status-pulse { background: #64748B; animation: none; }
+
+.status-headline {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 0.35rem;
+}
+
+.status-subtext {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Route Timeline */
+.timeline-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+}
+
+.route-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  position: relative;
+  padding-left: 28px;
+}
+
+.route-timeline::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 24px;
+  left: 9px;
+  width: 2px;
+  background: #CBD5E1;
+  border-style: dashed;
+}
+
+.timeline-point {
+  position: relative;
+}
+
+.timeline-point::before {
+  content: "";
+  position: absolute;
+  left: -28px;
+  top: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 4px solid #22C55E;
+}
+
+.timeline-point.dropoff::before {
+  border-color: #EF4444;
+}
+
+.timeline-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 2px;
+}
+
+.timeline-address {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1.35;
+}
+
+/* Driver Card */
+.driver-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+}
+
+.driver-profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.driver-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border: 2px solid rgba(37, 99, 235, 0.2);
+}
+
+.driver-info h3 {
+  margin: 0 0 2px;
+  font-size: 1.05rem;
+  color: var(--color-text-primary);
+}
+
+.driver-rating {
+  font-size: 0.85rem;
+  color: #D97706;
+  font-weight: 600;
+}
+
+.driver-vehicle-tag {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  background: #F1F5F9;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  color: #334155;
+  font-weight: 500;
+}
+
+/* Fare & Payment Card */
+.fare-payment-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+}
+
+.fare-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.fare-row.total {
+  border-top: 1px solid var(--color-border);
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.payment-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+
+/* Action Buttons */
+.ride-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.btn-cancel {
+  background: transparent;
+  border: 1px solid #FECACA;
+  color: #DC2626;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+}
+
+.btn-cancel:hover {
+  background: #FEF2F2;
+  border-color: #DC2626;
+}
+
+.btn-pay {
+  background: #16A34A;
+  color: #ffffff;
+  border: none;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+}
+
+.btn-pay:hover {
+  background: #15803D;
+}
+
+.btn-review {
+  background: #2563EB;
+  color: #ffffff;
+  border: none;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  text-align: center;
+}
+
+.btn-review:hover {
+  background: #1D4ED8;
+}
+
+/* Map Card */
+.map-view-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  position: sticky;
+  top: 90px;
+  height: 560px;
+  display: flex;
+  flex-direction: column;
+}
+
+#ride-map {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+}
+
+/* Modal styling for review & payment */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+  padding: 1rem;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.modal-card {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E2E8F0);
+  border-radius: 24px;
+  padding: 2.25rem;
+  max-width: 460px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.25);
+  transform: translateY(24px) scale(0.98);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-overlay.active .modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.modal-card h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary, #0F172A);
+  margin-bottom: 0.5rem;
+}
+
+.modal-card p {
+  color: var(--color-text-secondary, #64748B);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 1.25rem 0;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+.rating-star {
+  color: #CBD5E1;
+  transition: color var(--transition-fast);
+}
+
+.rating-star.selected,
+.rating-star:hover {
+  color: #F59E0B;
+}
+
+.empty-ride-state {
+  text-align: center;
+  padding: 4rem 1.5rem;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  margin: 2rem auto;
+  max-width: 540px;
+}
+
+.empty-ride-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}

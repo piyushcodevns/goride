@@ -1,0 +1,17 @@
+{
+  "name": "Go Ride Technologies",
+  "short_name": "Go Ride",
+  "description": "Safe, fast, and affordable ride booking portal",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563EB",
+  "icons": [
+    {
+      "src": "assets/svg/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

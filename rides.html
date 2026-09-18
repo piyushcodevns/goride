@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>My Rides | Go Ride</title>
+    <meta name="description" content="View your ride booking history, invoices, and track ongoing trips.">
+    <meta name="theme-color" content="#2563EB">
+
+    <link rel="icon" href="assets/svg/logo.svg" type="image/svg+xml">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/ride.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+
+    <style>
+        .rides-hero {
+            background: linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%);
+            color: #ffffff;
+            padding: 2.5rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .rides-hero h1 {
+            font-size: 1.85rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem;
+            color: #ffffff;
+        }
+
+        .rides-hero p {
+            color: #DBEAFE;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.75rem;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .tab-btn {
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            padding: 0.6rem 1.25rem;
+            border-radius: var(--radius-full);
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background: var(--color-gray-100);
+            color: var(--color-text-primary);
+        }
+
+        .tab-btn.active {
+            background: var(--color-primary);
+            color: #ffffff;
+            border-color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .rides-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            margin-bottom: 3rem;
+        }
+
+        .ride-history-card {
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border);
+            transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .ride-history-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .card-top-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--color-gray-200);
+            margin-bottom: 1rem;
+        }
+
+        .booking-tag {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--color-text-primary);
+        }
+
+        .booking-date {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            margin-left: 8px;
+        }
+
+        .card-route-info {
+            display: grid;
+            grid-template-columns: 1fr 180px;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        @media (max-width: 680px) {
+            .card-route-info {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .route-stop {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .route-stop-icon {
+            font-size: 1.1rem;
+            line-height: 1;
+            margin-top: 2px;
+        }
+
+        .route-stop-text {
+            font-size: 0.92rem;
+            color: var(--color-text-primary);
+            line-height: 1.35;
+        }
+
+        .card-price-action {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 680px) {
+            .card-price-action {
+                align-items: flex-start;
+                border-top: 1px solid var(--color-gray-200);
+                padding-top: 1rem;
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+
+        .price-tag {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Reusable Navbar -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar" aria-label="Primary navigation">
+                <a class="brand" href="index.html">
+                    <img src="assets/svg/logo.svg" alt="Go Ride logo">
+                    <span>Go Ride</span>
+                </a>
+
+                <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+
+                <ul class="nav-links">
+                    <li><a class="nav-link" href="index.html"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg><span>Home</span></a></li>
+                    <li><a class="nav-link" href="booking.html"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 10.7 2 11.3 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg><span>Book Ride</span></a></li>
+                    <li><a class="nav-link is-active" href="rides.html"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg><span>My Rides</span></a></li>
+                    <li><a class="nav-link" href="profile.html"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>Profile</span></a></li>
+                    <li><a class="nav-link" href="contact.html"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg><span>Contact</span></a></li>
+                </ul>
+
+                <div class="nav-buttons">
+                    <a href="login.html" class="login-btn">Login</a>
+                    <a href="booking.html" class="book-btn"><svg class="nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 10.7 2 11.3 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg><span>Book Ride</span></a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Header -->
+    <section class="rides-hero">
+        <div class="container">
+            <h1>My Rides &amp; Bookings</h1>
+            <p>View your past journeys, track ongoing trips, and manage receipts.</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Filter Tabs -->
+        <div class="filter-tabs" role="tablist">
+            <button type="button" class="tab-btn active" data-filter="ALL">All Trips</button>
+            <button type="button" class="tab-btn" data-filter="ACTIVE">Active &amp; Ongoing</button>
+            <button type="button" class="tab-btn" data-filter="COMPLETED">Completed</button>
+            <button type="button" class="tab-btn" data-filter="CANCELLED">Cancelled</button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="rides-loading" class="empty-ride-state">
+            <div class="status-pulse" style="width: 24px; height: 24px; margin: 0 auto 1rem; background: var(--color-primary);"></div>
+            <h3>Loading Your Rides...</h3>
+            <p>Fetching your trip history from the database.</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="rides-empty" class="empty-ride-state" style="display: none;">
+            <div class="empty-ride-icon">🚗</div>
+            <h3>No Rides Found</h3>
+            <p id="empty-message">You haven't taken any rides yet. Ready for your first journey?</p>
+            <div style="margin-top: 1.5rem;">
+                <a href="booking.html" class="primary-btn" style="text-decoration: none;">Book a Ride Now</a>
+            </div>
+        </div>
+
+        <!-- Rides List Container -->
+        <div id="rides-list" class="rides-list" style="display: none;"></div>
+    </main>
+
+    <!-- Reusable Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a class="brand" href="index.html">
+                        <img src="assets/svg/logo.svg" alt="Go Ride logo" loading="lazy" decoding="async">
+                        <span>Go Ride</span>
+                    </a>
+                    <p>Ride smarter, ride better with dependable travel for every journey.</p>
+                </div>
+                <div>
+                    <h3>Navigation</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="booking.html">Book Ride</a></li>
+                        <li><a href="rides.html">My Rides</a></li>
+                        <li><a href="profile.html">Profile</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Legal</h3>
+                    <ul>
+                        <li><a href="terms.html">Terms &amp; Conditions</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">© 2026 Go Ride Technologies. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/helpers.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/rides.js"></script>
+</body>
+</html>

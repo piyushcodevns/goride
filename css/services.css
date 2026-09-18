@@ -1,0 +1,17 @@
+/* ==========================================================================
+   GO RIDE - SERVICES PAGE STYLES (V1.0)
+   ========================================================================== */
+
+.services-hero {
+  background: linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%);
+  color: #ffffff;
+  padding: 3.5rem 0;
+  text-align: center;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 2.5rem 0;
+}
